@@ -697,64 +697,18 @@ export default function HomeScreen({
 
         {/* 3. UNIFIED BOTTOM LIQUID GLASS NAVIGATION BAR */}
         <View style={styles.unifiedBottomRow}>
-          {/* LEFT TIMER BUTTON WITH STATE ICONS (INCREASED SIZE BY 2.5DP) */}
+          {/* LEFT TIMER BUTTON (CAMERA TAB ONLY) */}
           {activeTab === 'camera' ? (
             <LiquidGlassIconButton
               idPrefix="btnCameraTimer"
               isDark={isDark}
               onPress={toggleTimerMode}
             >
-              {cameraTimerMode === '3s' ? (
-                <Svg width={30.5} height={30.5} viewBox="0 0 24 24">
-                  <Circle cx="12" cy="12" r="9" stroke={iconColor} strokeWidth="1.8" fill="none" />
-                  <Path
-                    d="M9.5 9h5l-2.5 3 2.5 3h-5"
-                    stroke={iconColor}
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </Svg>
-              ) : cameraTimerMode === '5s' ? (
-                <Svg width={30.5} height={30.5} viewBox="0 0 24 24">
-                  <Circle cx="12" cy="12" r="9" stroke={iconColor} strokeWidth="1.8" fill="none" />
-                  <Path
-                    d="M14.5 9h-4v3h2.5a1.5 1.5 0 011.5 1.5v0a1.5 1.5 0 01-1.5 1.5h-3.5"
-                    stroke={iconColor}
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </Svg>
-              ) : cameraTimerMode === 'timelapse' ? (
-                <Svg width={30.5} height={30.5} viewBox="0 0 24 24">
-                  <Circle cx="12" cy="12" r="3" fill={iconColor} />
-                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
-                    <Path
-                      key={i}
-                      d="M12 2v3"
-                      stroke={iconColor}
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      transform={`rotate(${angle} 12 12)`}
-                    />
-                  ))}
-                </Svg>
-              ) : cameraTimerMode === 'jump_cut' ? (
-                <Svg width={30.5} height={30.5} viewBox="0 0 24 24">
-                  <Circle cx="6" cy="6" r="3" stroke={iconColor} strokeWidth="1.8" fill="none" />
-                  <Circle cx="6" cy="18" r="3" stroke={iconColor} strokeWidth="1.8" fill="none" />
-                  <Path d="M8.5 8.5L19 19M8.5 15.5L19 5" stroke={iconColor} strokeWidth="1.8" strokeLinecap="round" />
-                </Svg>
-              ) : (
-                <Image
-                  source={require('../../assets/images/custom_timer_icon.png')}
-                  style={{ width: 30.5, height: 30.5, tintColor: iconColor }}
-                  resizeMode="contain"
-                />
-              )}
+              <Image
+                source={require('../../assets/images/custom_timer_icon.png')}
+                style={{ width: 28, height: 28, tintColor: iconColor }}
+                resizeMode="contain"
+              />
             </LiquidGlassIconButton>
           ) : (
             <View style={{ width: 44 }} />
@@ -769,7 +723,7 @@ export default function HomeScreen({
             isDark={isDark}
           />
 
-          {/* RIGHT CAMERA ROTATE BUTTON (INCREASED SIZE BY 2.5DP) */}
+          {/* RIGHT CAMERA ROTATE BUTTON (CAMERA TAB ONLY) */}
           {activeTab === 'camera' ? (
             <LiquidGlassIconButton
               idPrefix="btnCameraFlip"
@@ -778,7 +732,7 @@ export default function HomeScreen({
             >
               <Image
                 source={require('../../assets/images/custom_flip_icon.png')}
-                style={{ width: 32.5, height: 32.5, tintColor: iconColor }}
+                style={{ width: 30, height: 30, tintColor: iconColor }}
                 resizeMode="contain"
               />
             </LiquidGlassIconButton>
