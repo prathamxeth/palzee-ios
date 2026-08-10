@@ -285,15 +285,13 @@ export default function PalCameraPreview({
 
   return (
     <View style={styles.container}>
-      {/* 1. EXACT CAMERA VIEWPORT CARD WITH 50% REDUCED BORDER BRIGHTNESS */}
+      {/* 1. EXACT CAMERA VIEWPORT CARD */}
       <View
         style={[
           styles.viewportCardContainer,
           {
             width: cameraWidth,
             height: cameraHeight,
-            borderColor: dimmedBorderColor,
-            borderWidth: 1.5,
             marginTop: 20,
           },
         ]}
@@ -629,6 +627,8 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: 'transparent',
     overflow: 'hidden',
+    zIndex: 10000,
+    elevation: 20,
   },
   progressBarFill: {
     width: '100%',

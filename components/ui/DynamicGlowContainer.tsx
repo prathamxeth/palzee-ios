@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, useColorScheme } from 'react-native';
-import Svg, { Defs, Filter, FeGaussianBlur, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 
 interface DynamicGlowContainerProps {
@@ -26,14 +26,14 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
 
   return (
     <View style={[styles.wrapper, { backgroundColor: containerBg }]}>
-      {/* ONE SINGLE UNIFIED SCREEN EDGE COLOUR BOUNDARY LINE */}
+      {/* 1. ONE SINGLE UNIFIED SCREEN EDGE COLOUR BOUNDARY LINE */}
       <View
         style={[
           styles.outerContainer,
           { backgroundColor: containerBg },
           showBorder && {
             borderColor: accentColor,
-            borderWidth: 3.0,
+            borderWidth: 2.5,
             shadowColor: accentColor,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.85,
@@ -43,36 +43,48 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           style,
         ]}
       >
-        <View style={[styles.innerContainer, { backgroundColor: containerBg }]}>
-          {children}
-        </View>
-
-        {/* SOFT GAUSSIAN BLURRED GLOW EMANATING 360 DEGREES OUT OF ALL CORNERS & EDGES */}
+        {/* 2. SOFT INWARD AMBIENT GLOW (ZERO SECONDARY BORDER LINES) */}
         {showBorder && (
           <View style={styles.inwardGlowOverlay} pointerEvents="none">
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
               <Defs>
-                <Filter id="cornerGlowBlur" x="-20%" y="-20%" width="140%" height="140%">
-                  <FeGaussianBlur stdDeviation="5" />
-                </Filter>
+                <LinearGradient id="softInwardTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
+                  <Stop offset="1%" stopColor={accentColor} stopOpacity="0.06" />
+                  <Stop offset="2.5%" stopColor={accentColor} stopOpacity="0" />
+                </LinearGradient>
+
+                <LinearGradient id="softInwardBottom" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
+                  <Stop offset="1%" stopColor={accentColor} stopOpacity="0.06" />
+                  <Stop offset="2.5%" stopColor={accentColor} stopOpacity="0" />
+                </LinearGradient>
+
+                <LinearGradient id="softInwardLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
+                  <Stop offset="1.5%" stopColor={accentColor} stopOpacity="0.06" />
+                  <Stop offset="3.5%" stopColor={accentColor} stopOpacity="0" />
+                </LinearGradient>
+
+                <LinearGradient id="softInwardRight" x1="100%" y1="0%" x2="0%" y2="0%">
+                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
+                  <Stop offset="1.5%" stopColor={accentColor} stopOpacity="0.06" />
+                  <Stop offset="3.5%" stopColor={accentColor} stopOpacity="0" />
+                </LinearGradient>
               </Defs>
 
-              <Rect
-                x="0"
-                y="0"
-                width="100%"
-                height="100%"
-                rx={48}
-                ry={48}
-                stroke={accentColor}
-                strokeWidth={12}
-                strokeOpacity={0.26}
-                fill="none"
-                filter="url(#cornerGlowBlur)"
-              />
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardTop)" />
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardBottom)" />
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardLeft)" />
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardRight)" />
             </Svg>
           </View>
         )}
+
+        {/* 3. FOREGROUND CONTENT WITH ZERO MARGIN OFFSETS */}
+        <View style={[styles.innerContainer, { zIndex: 1000 }]}>
+          {children}
+        </View>
       </View>
     </View>
   );
@@ -87,15 +99,15 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 48,
     backgroundColor: '#000000',
+    overflow: 'hidden',
     position: 'relative',
   },
   innerContainer: {
     flex: 1,
-    backgroundColor: '#000000',
-    borderRadius: 45,
+    backgroundColor: 'transparent',
+    borderRadius: 48,
     overflow: 'hidden',
     position: 'relative',
-    margin: 3.0,
   },
   inwardGlowOverlay: {
     ...StyleSheet.absoluteFillObject,
