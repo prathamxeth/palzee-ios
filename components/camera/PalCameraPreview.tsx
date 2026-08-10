@@ -302,8 +302,8 @@ export default function PalCameraPreview({
             StyleSheet.absoluteFill,
             {
               borderRadius: 32,
-              borderWidth: 1.5,
-              borderColor: baseAccentColor,
+              borderWidth: 1.25,
+              borderColor: dimmedBorderColor,
               opacity: 0.95,
               zIndex: 100,
             },
@@ -442,7 +442,7 @@ export default function PalCameraPreview({
                 width: 5,
                 top: 32, // straight boundary top offset
                 height: cameraHeight - 64, // straight boundary height
-                right: -7, // dead-centered in the 9dp gap between camera border (0) and screen edge!
+                right: -5.5, // moved left by 0.1dp
               },
             ]}
             pointerEvents="none"
