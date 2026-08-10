@@ -53,7 +53,7 @@ const LucideBell = ({
   strokeWidth?: number;
 }) =>
   Platform.OS === 'ios' ? (
-    <SymbolView name="bell.fill" size={size} tintColor={color} />
+    <SymbolView name="bell" size={size} tintColor={color} />
   ) : (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -85,6 +85,126 @@ const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) =>
     </Svg>
   );
 
+const LiquidGlassIconButton = ({
+  onPress,
+  children,
+  isDark = true,
+  idPrefix = 'btn',
+}: {
+  onPress: () => void;
+  children: React.ReactNode;
+  isDark?: boolean;
+  idPrefix?: string;
+}) => (
+  <TouchableOpacity style={styles.circleIconBtn} activeOpacity={0.8} onPress={onPress}>
+    <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
+      <Defs>
+        <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop
+            offset="0%"
+            stopColor={isDark ? '#28282E' : '#FFFFFF'}
+            stopOpacity={isDark ? 0.75 : 0.85}
+          />
+          <Stop
+            offset="50%"
+            stopColor={isDark ? '#18181B' : '#F7F6F3'}
+            stopOpacity={isDark ? 0.6 : 0.75}
+          />
+          <Stop
+            offset="100%"
+            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+            stopOpacity={isDark ? 0.85 : 0.9}
+          />
+        </LinearGradient>
+        <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop
+            offset="0%"
+            stopColor="#FFFFFF"
+            stopOpacity={isDark ? 0.35 : 0.9}
+          />
+          <Stop
+            offset="100%"
+            stopColor={isDark ? '#FFFFFF' : '#000000'}
+            stopOpacity={isDark ? 0.08 : 0.08}
+          />
+        </LinearGradient>
+      </Defs>
+      <Rect
+        x="0.75"
+        y="0.75"
+        width="42.5"
+        height="42.5"
+        rx="21.25"
+        fill={`url(#${idPrefix}Grad)`}
+        stroke={`url(#${idPrefix}Bdr)`}
+        strokeWidth="1.5"
+      />
+    </Svg>
+    {children}
+  </TouchableOpacity>
+);
+
+const LiquidGlassPillButton = ({
+  onPress,
+  text,
+  isDark = true,
+  textColor,
+  idPrefix = 'pill',
+}: {
+  onPress: () => void;
+  text: string;
+  isDark?: boolean;
+  textColor: string;
+  idPrefix?: string;
+}) => (
+  <TouchableOpacity style={styles.actionPillContainer} activeOpacity={0.8} onPress={onPress}>
+    <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
+      <Defs>
+        <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop
+            offset="0%"
+            stopColor={isDark ? '#28282E' : '#FFFFFF'}
+            stopOpacity={isDark ? 0.75 : 0.85}
+          />
+          <Stop
+            offset="50%"
+            stopColor={isDark ? '#18181B' : '#F7F6F3'}
+            stopOpacity={isDark ? 0.6 : 0.75}
+          />
+          <Stop
+            offset="100%"
+            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+            stopOpacity={isDark ? 0.85 : 0.9}
+          />
+        </LinearGradient>
+        <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop
+            offset="0%"
+            stopColor="#FFFFFF"
+            stopOpacity={isDark ? 0.35 : 0.9}
+          />
+          <Stop
+            offset="100%"
+            stopColor={isDark ? '#FFFFFF' : '#000000'}
+            stopOpacity={isDark ? 0.08 : 0.08}
+          />
+        </LinearGradient>
+      </Defs>
+      <Rect
+        x="0.75"
+        y="0.75"
+        width="116.5"
+        height="34.5"
+        rx="17.25"
+        fill={`url(#${idPrefix}Grad)`}
+        stroke={`url(#${idPrefix}Bdr)`}
+        strokeWidth="1.5"
+      />
+    </Svg>
+    <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
+  </TouchableOpacity>
+);
+
 const LiquidGlassNavPillBar = ({
   activeTab,
   onSelectTab,
@@ -102,29 +222,29 @@ const LiquidGlassNavPillBar = ({
             <Stop
               offset="0%"
               stopColor={isDark ? '#28282E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.75 : 0.85}
+              stopOpacity={isDark ? 0.75 : 0.82}
             />
             <Stop
               offset="50%"
               stopColor={isDark ? '#18181B' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.6 : 0.75}
+              stopOpacity={isDark ? 0.6 : 0.72}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.85 : 0.9}
+              stopOpacity={isDark ? 0.85 : 0.88}
             />
           </LinearGradient>
           <LinearGradient id="capsuleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.28 : 0.15}
+              stopColor={isDark ? '#FFFFFF' : '#FFFFFF'}
+              stopOpacity={isDark ? 0.28 : 0.9}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.05 : 0.05}
+              stopOpacity={isDark ? 0.05 : 0.08}
             />
           </LinearGradient>
         </Defs>
@@ -148,13 +268,13 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('camera')}
         >
           {activeTab === 'camera' && (
-            <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+            <Svg width={100.5} height={49} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.95 : 0.95}
+                    stopOpacity={isDark ? 0.95 : 0.98}
                   />
                   <Stop
                     offset="100%"
@@ -165,22 +285,22 @@ const LiquidGlassNavPillBar = ({
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.45 : 0.15}
+                    stopColor="#FFFFFF"
+                    stopOpacity={isDark ? 0.45 : 0.95}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.05}
+                    stopOpacity={isDark ? 0.15 : 0.08}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
                 x="0.5"
                 y="0.5"
-                width="95"
-                height="43"
-                rx="21.5"
+                width="99.5"
+                height="48"
+                rx="24"
                 fill="url(#actGrad1)"
                 stroke="url(#actBdr1)"
                 strokeWidth="1.2"
@@ -205,13 +325,13 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('pals')}
         >
           {activeTab === 'pals' && (
-            <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+            <Svg width={100.5} height={49} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.95 : 0.95}
+                    stopOpacity={isDark ? 0.95 : 0.98}
                   />
                   <Stop
                     offset="100%"
@@ -222,22 +342,22 @@ const LiquidGlassNavPillBar = ({
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.45 : 0.15}
+                    stopColor="#FFFFFF"
+                    stopOpacity={isDark ? 0.45 : 0.95}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.05}
+                    stopOpacity={isDark ? 0.15 : 0.08}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
                 x="0.5"
                 y="0.5"
-                width="95"
-                height="43"
-                rx="21.5"
+                width="99.5"
+                height="48"
+                rx="24"
                 fill="url(#actGrad2)"
                 stroke="url(#actBdr2)"
                 strokeWidth="1.2"
@@ -326,8 +446,8 @@ export default function HomeScreen({
   const mainTextColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
   const subtextColor = isDark ? '#8E8E93' : Colors.PalTextMuted;
   const cardBg = isDark ? '#161616' : '#FFFFFF';
-  const pillBg = isDark ? '#262626' : '#E5E3DD';
-  const pillBorder = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)';
+  const pillBg = isDark ? '#262626' : 'rgba(255, 255, 255, 0.65)';
+  const pillBorder = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(255, 255, 255, 0.85)';
   const logoTextColor = isDark
     ? Colors.LogoTextAccent.dark[selectedThemeColor as keyof typeof Colors.LogoTextAccent.dark] || '#11D5F3'
     : Colors.LogoTextAccent.light[selectedThemeColor as keyof typeof Colors.LogoTextAccent.light] || '#9E3E64';
@@ -374,49 +494,19 @@ export default function HomeScreen({
 
           <View style={styles.headerRightIcons}>
             {/* 1. PLUS BUTTON (+ Icon) */}
-            <TouchableOpacity
-              style={[
-                styles.circleIconBtn,
-                {
-                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
-                },
-              ]}
-              activeOpacity={0.7}
-              onPress={() => setShowCreateModal(true)}
-            >
-              <LucidePlus size={28} color={iconColor} strokeWidth={1.8} />
-            </TouchableOpacity>
+            <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowCreateModal(true)}>
+              <LucidePlus size={26} color={iconColor} strokeWidth={1.8} />
+            </LiquidGlassIconButton>
 
             {/* 2. NOTIFICATION BELL ICON */}
-            <TouchableOpacity
-              style={[
-                styles.circleIconBtn,
-                {
-                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
-                },
-              ]}
-              activeOpacity={0.7}
-              onPress={() => setShowChatDrawer(true)}
-            >
-              <LucideBell size={26} color={iconColor} strokeWidth={1.8} />
-            </TouchableOpacity>
+            <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowChatDrawer(true)}>
+              <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
+            </LiquidGlassIconButton>
 
             {/* 3. USER PROFILE PERSON ICON */}
-            <TouchableOpacity
-              style={[
-                styles.circleIconBtn,
-                {
-                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
-                },
-              ]}
-              activeOpacity={0.7}
-              onPress={() => setShowProfileMenu(true)}
-            >
-              <MaterialPersonIcon size={26} color={iconColor} />
-            </TouchableOpacity>
+            <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
+              <MaterialPersonIcon size={24} color={iconColor} />
+            </LiquidGlassIconButton>
           </View>
         </View>
 
@@ -481,34 +571,26 @@ export default function HomeScreen({
                     </Text>
 
                     <View style={styles.pillActionRow}>
-                      <TouchableOpacity
-                        style={[
-                          styles.actionPill,
-                          { backgroundColor: pillBg, borderColor: pillBorder },
-                        ]}
+                      <LiquidGlassPillButton
+                        idPrefix="pillCreate"
+                        text="create pal"
+                        isDark={isDark}
+                        textColor={mainTextColor}
                         onPress={() => setShowCreateModal(true)}
-                      >
-                        <Text style={[styles.actionPillText, { color: mainTextColor }]}>
-                          create pal
-                        </Text>
-                      </TouchableOpacity>
+                      />
                       <Text style={[styles.actionHintText, { color: mainTextColor }]}>
                         (new group)
                       </Text>
                     </View>
 
                     <View style={[styles.pillActionRow, { marginTop: 8 }]}>
-                      <TouchableOpacity
-                        style={[
-                          styles.actionPill,
-                          { backgroundColor: pillBg, borderColor: pillBorder },
-                        ]}
+                      <LiquidGlassPillButton
+                        idPrefix="pillJoin"
+                        text="join pal"
+                        isDark={isDark}
+                        textColor={mainTextColor}
                         onPress={() => setShowCreateModal(true)}
-                      >
-                        <Text style={[styles.actionPillText, { color: mainTextColor }]}>
-                          join pal
-                        </Text>
-                      </TouchableOpacity>
+                      />
                       <Text style={[styles.actionHintText, { color: mainTextColor }]}>
                         (with a code)
                       </Text>
@@ -602,9 +684,48 @@ export default function HomeScreen({
             activeOpacity={1}
             onPress={() => setShowProfileMenu(false)}
           >
-            <View style={styles.profileCard}>
-              <Text style={styles.profileNameText}>{user.displayName}</Text>
-              <Text style={styles.profileEmailText}>{user.email}</Text>
+            <View
+              style={[
+                styles.profileCard,
+                { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
+              ]}
+            >
+              <Text style={[styles.profileNameText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                {user.displayName}
+              </Text>
+              <Text style={[styles.profileEmailText, { color: isDark ? '#8E8E93' : '#666666' }]}>
+                {user.email}
+              </Text>
+
+              {/* BORDER GLOW THEME COLOR SELECTOR */}
+              <Text
+                style={[
+                  styles.themeSectionLabel,
+                  { color: isDark ? '#8E8E93' : '#666666' },
+                ]}
+              >
+                theme accent
+              </Text>
+
+              <View style={styles.themeGridRow}>
+                {Object.keys(Colors.BorderGlow).map((colorKey) => {
+                  const isSelected = selectedThemeColor === colorKey;
+                  const swatchColor =
+                    Colors.BorderGlow[colorKey as keyof typeof Colors.BorderGlow];
+                  return (
+                    <TouchableOpacity
+                      key={colorKey}
+                      activeOpacity={0.8}
+                      style={[
+                        styles.profileThemeSwatch,
+                        { backgroundColor: swatchColor },
+                        isSelected && styles.activeProfileThemeSwatch,
+                      ]}
+                      onPress={() => onSelectedThemeColorChange(colorKey)}
+                    />
+                  );
+                })}
+              </View>
 
               <TouchableOpacity
                 style={styles.signOutBtn}
@@ -670,20 +791,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  circleIconBtnWrapper: {
+    borderRadius: 22,
+    overflow: 'hidden',
+  },
   circleIconBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#161616',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
+    position: 'relative',
   },
   plusIconText: {
     color: '#FFFFFF',
@@ -784,13 +902,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  actionPill: {
-    backgroundColor: '#262626',
+  actionPillContainer: {
+    width: 118,
+    height: 36,
     borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.16)',
-    paddingHorizontal: 16,
-    paddingVertical: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -862,9 +980,10 @@ const styles = StyleSheet.create({
     height: 52,
     position: 'relative',
     borderRadius: 26,
+    justifyContent: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
   },
@@ -872,13 +991,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 4,
+    padding: 1.5,
     height: 52,
   },
   liquidTabButton: {
-    width: 96,
-    height: 44,
-    borderRadius: 22,
+    width: 100.5,
+    height: 49,
+    borderRadius: 24.5,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -920,7 +1039,32 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontFamily: Fonts.IBMPlexMono,
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  themeSectionLabel: {
+    fontFamily: Fonts.IBMPlexMono,
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  themeGridRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  profileThemeSwatch: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  activeProfileThemeSwatch: {
+    borderColor: '#FFFFFF',
+    transform: [{ scale: 1.15 }],
   },
   themeSelectBtn: {
     backgroundColor: '#2C2C2E',
