@@ -483,36 +483,38 @@ export default function HomeScreen({
           },
         ]}
       >
-        {/* 1. TOP HEADER: PALZEE LOGO & RIGHT CIRCLE ICONS */}
-        <View style={styles.topHeader}>
-          <Text
-            style={[
-              styles.palzeeLogoText,
-              {
-                color: logoTextColor,
-              },
-            ]}
-          >
-            PALZEE
-          </Text>
+        {/* 1. TOP HEADER: PALZEE LOGO & RIGHT CIRCLE ICONS (ONLY SHOWN IN PALS FEED TAB) */}
+        {activeTab !== 'camera' && (
+          <View style={styles.topHeader}>
+            <Text
+              style={[
+                styles.palzeeLogoText,
+                {
+                  color: logoTextColor,
+                },
+              ]}
+            >
+              PALZEE
+            </Text>
 
-          <View style={styles.headerRightIcons}>
-            {/* 1. PLUS BUTTON (+ Icon) */}
-            <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowCreateModal(true)}>
-              <LucidePlus size={26} color={iconColor} strokeWidth={1.8} />
-            </LiquidGlassIconButton>
+            <View style={styles.headerRightIcons}>
+              {/* 1. PLUS BUTTON (+ Icon) */}
+              <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowCreateModal(true)}>
+                <LucidePlus size={26} color={iconColor} strokeWidth={1.8} />
+              </LiquidGlassIconButton>
 
-            {/* 2. NOTIFICATION BELL ICON */}
-            <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowChatDrawer(true)}>
-              <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
-            </LiquidGlassIconButton>
+              {/* 2. NOTIFICATION BELL ICON */}
+              <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowChatDrawer(true)}>
+                <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
+              </LiquidGlassIconButton>
 
-            {/* 3. USER PROFILE PERSON ICON */}
-            <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
-              <MaterialPersonIcon size={24} color={iconColor} />
-            </LiquidGlassIconButton>
+              {/* 3. USER PROFILE PERSON ICON */}
+              <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
+                <MaterialPersonIcon size={24} color={iconColor} />
+              </LiquidGlassIconButton>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* 2. MAIN FEED OR CAMERA PREVIEW SECTION */}
         {activeTab === 'camera' ? (
