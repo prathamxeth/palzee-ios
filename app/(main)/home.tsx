@@ -448,9 +448,9 @@ export default function HomeScreen({
   const cardBg = isDark ? '#161616' : '#FFFFFF';
   const pillBg = isDark ? '#262626' : 'rgba(255, 255, 255, 0.65)';
   const pillBorder = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(255, 255, 255, 0.85)';
-  const logoTextColor = isDark
-    ? Colors.LogoTextAccent.dark[selectedThemeColor as keyof typeof Colors.LogoTextAccent.dark] || '#11D5F3'
-    : Colors.LogoTextAccent.light[selectedThemeColor as keyof typeof Colors.LogoTextAccent.light] || '#9E3E64';
+  const logoTextColor =
+    Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] ||
+    '#310BED';
 
   if (showGroupsView) {
     return (

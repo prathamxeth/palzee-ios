@@ -40,6 +40,8 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
 
   const accentColor =
     Colors.BorderGlow[themeColor as keyof typeof Colors.BorderGlow] || '#11D5F3';
+  const logoTextColor =
+    Colors.LogoTextAccent[themeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
   const [cursorVisible, setCursorVisible] = useState(true);
 
@@ -166,7 +168,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
               <View style={styles.btnPlaceholder} />
             )}
 
-            <Text style={[styles.palzeeLogo, { color: accentColor }]}>PALZEE</Text>
+            <Text style={[styles.palzeeLogo, { color: logoTextColor }]}>PALZEE</Text>
 
             {step === 'FORM' ? (
               <TouchableOpacity

@@ -50,24 +50,14 @@ export const Colors = {
     cyan: '#5D96FF',
   },
 
-  // Distinct PALZEE Logo Text Accents per theme (matching Android PAL text scheme)
+  // Distinct PALZEE Logo Text Accents per theme (matching Android PAL logoColor scheme)
   LogoTextAccent: {
-    light: {
-      blue: '#9E3E64',
-      green: '#10B981',
-      orange: '#FF921E',
-      pink: '#E9B7CE',
-      purple: '#E8BDF9',
-      cyan: '#60A5FA',
-    },
-    dark: {
-      blue: '#11D5F3',
-      green: '#65EA7B',
-      orange: '#FE9068',
-      pink: '#FE75F5',
-      purple: '#AA6DFE',
-      cyan: '#5D96FF',
-    },
+    blue: '#310BED',
+    green: '#FF530A',
+    orange: '#0BBEFF',
+    pink: '#38D4C2',
+    purple: '#FFA600',
+    cyan: '#77E4BE',
   },
 };
 
