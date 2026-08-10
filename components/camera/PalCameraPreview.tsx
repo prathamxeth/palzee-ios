@@ -188,8 +188,17 @@ export default function PalCameraPreview({
     setIsRecording(true);
     progressAnim.setValue(0);
 
-    const duration =
-      timerMode === '3s' ? 3000 : timerMode === '5s' ? 5000 : timerMode === 'timelapse' ? 10000 : 2500;
+    let duration = 2000; // Default 'off' state records exact 2s clip
+
+    if (timerMode === '3s') {
+      duration = 3000; // 3s clip after 3s countdown
+    } else if (timerMode === '5s') {
+      duration = 5000; // 5s clip after 5s countdown
+    } else if (timerMode === 'timelapse') {
+      duration = 10000; // 10s timelapse clip
+    } else if (timerMode === 'jump_cut') {
+      duration = 3300; // 3.3s jump cut burst sequence
+    }
 
     Animated.timing(progressAnim, {
       toValue: 1,
