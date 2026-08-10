@@ -291,20 +291,20 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR */}
-          {timerMode !== 'off' && (
-            <View style={styles.modePillContainer} pointerEvents="none">
-              <Text style={styles.modePillText}>
-                {timerMode === '3s'
-                  ? '3 second timer'
-                  : timerMode === '5s'
-                  ? '5 second timer'
-                  : timerMode === 'timelapse'
-                  ? 'timelapse'
-                  : 'jump cut'}
-              </Text>
-            </View>
-          )}
+          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR MATCHING SCREENSHOTS */}
+          <View style={styles.modePillContainer} pointerEvents="none">
+            <Text style={styles.modePillText}>
+              {timerMode === 'off'
+                ? 'off'
+                : timerMode === '3s'
+                ? '3 second timer'
+                : timerMode === '5s'
+                ? '5 second timer'
+                : timerMode === 'timelapse'
+                ? 'timelapse'
+                : 'jump cut'}
+            </Text>
+          </View>
 
           {/* ZOOM OPTIONS (.5, 1) ROTATED 90 DEG CLOCKWISE */}
           <View style={styles.zoomRowCentered}>
@@ -485,13 +485,13 @@ const styles = StyleSheet.create({
   },
   modePillContainer: {
     position: 'absolute',
-    right: 12,
-    top: '40%',
+    right: 8,
+    top: '44%',
     backgroundColor: '#FFFFFF',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    transform: [{ rotate: '-90deg' }],
+    transform: [{ rotate: '90deg' }],
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -501,7 +501,8 @@ const styles = StyleSheet.create({
   modePillText: {
     color: '#000000',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   zoomRowCentered: {
     position: 'absolute',
