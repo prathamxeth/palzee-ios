@@ -97,13 +97,14 @@ const LiquidGlassIconButton = ({
   idPrefix?: string;
 }) => (
   <TouchableOpacity style={styles.circleIconBtn} activeOpacity={0.8} onPress={onPress}>
+    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
     <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor={isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.75 : 0.85}
+            stopOpacity={isDark ? 0.75 : 0.88}
           />
           <Stop
             offset="50%"
@@ -113,14 +114,14 @@ const LiquidGlassIconButton = ({
           <Stop
             offset="100%"
             stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.85 : 0.9}
+            stopOpacity={isDark ? 0.85 : 0.65}
           />
         </LinearGradient>
         <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.35 : 0.9}
+            stopOpacity={isDark ? 0.35 : 0.95}
           />
           <Stop
             offset="100%"
@@ -158,13 +159,14 @@ const LiquidGlassPillButton = ({
   idPrefix?: string;
 }) => (
   <TouchableOpacity style={styles.actionPillContainer} activeOpacity={0.8} onPress={onPress}>
+    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
     <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor={isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.75 : 0.85}
+            stopOpacity={isDark ? 0.75 : 0.88}
           />
           <Stop
             offset="50%"
@@ -174,14 +176,14 @@ const LiquidGlassPillButton = ({
           <Stop
             offset="100%"
             stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.85 : 0.9}
+            stopOpacity={isDark ? 0.85 : 0.65}
           />
         </LinearGradient>
         <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.35 : 0.9}
+            stopOpacity={isDark ? 0.35 : 0.95}
           />
           <Stop
             offset="100%"
@@ -216,30 +218,31 @@ const LiquidGlassNavPillBar = ({
 }) => (
   <View style={styles.bottomSwitcherContainer}>
     <View style={styles.liquidOuterCapsule}>
+      <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
       <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="capsuleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor={isDark ? '#28282E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.75 : 0.82}
+              stopOpacity={isDark ? 0.75 : 0.88}
             />
             <Stop
               offset="50%"
               stopColor={isDark ? '#18181B' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.6 : 0.72}
+              stopOpacity={isDark ? 0.6 : 0.75}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.85 : 0.88}
+              stopOpacity={isDark ? 0.85 : 0.65}
             />
           </LinearGradient>
           <LinearGradient id="capsuleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#FFFFFF' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.28 : 0.9}
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.28 : 0.95}
             />
             <Stop
               offset="100%"
@@ -278,20 +281,20 @@ const LiquidGlassNavPillBar = ({
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#24242A' : '#F0EEE9'}
-                    stopOpacity={isDark ? 0.95 : 0.95}
+                    stopColor={isDark ? '#24242A' : '#F2EFF4'}
+                    stopOpacity={isDark ? 0.95 : 0.92}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.45 : 0.95}
+                    stopOpacity={isDark ? 0.45 : 1.0}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.08}
+                    stopOpacity={isDark ? 0.15 : 0.06}
                   />
                 </LinearGradient>
               </Defs>
@@ -335,20 +338,20 @@ const LiquidGlassNavPillBar = ({
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#24242A' : '#F0EEE9'}
-                    stopOpacity={isDark ? 0.95 : 0.95}
+                    stopColor={isDark ? '#24242A' : '#F2EFF4'}
+                    stopOpacity={isDark ? 0.95 : 0.92}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.45 : 0.95}
+                    stopOpacity={isDark ? 0.45 : 1.0}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.08}
+                    stopOpacity={isDark ? 0.15 : 0.06}
                   />
                 </LinearGradient>
               </Defs>
@@ -802,6 +805,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    overflow: 'hidden',
   },
   plusIconText: {
     color: '#FFFFFF',
@@ -980,6 +984,7 @@ const styles = StyleSheet.create({
     height: 50,
     position: 'relative',
     borderRadius: 25,
+    overflow: 'hidden',
     justifyContent: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
