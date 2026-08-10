@@ -322,6 +322,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
   const systemScheme = useColorScheme();
   const isDark = systemScheme === 'dark';
   const flowBg = isDark ? '#000000' : '#F7F6F3';
+  const textColor = isDark ? '#FFFFFF' : '#1A1A1A';
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -349,7 +350,9 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   activeOpacity={0.6}
                   onPress={() => Linking.openURL('https://palzee.app/help')}
                 >
-                  <Text style={styles.needHelpText}>need help?</Text>
+                  <Text style={[styles.needHelpText, { color: textColor }]}>
+                    need help?
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -362,6 +365,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   <Text
                     style={[
                       styles.monoText,
+                      { color: textColor },
                       step === 'CREATING' && styles.greyText,
                     ]}
                   >
@@ -378,7 +382,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                     <Text
                       style={[
                         styles.monoText,
-                        { marginTop: 20 },
+                        { marginTop: 20, color: textColor },
                         step === 'CREATING' && styles.greyText,
                       ]}
                     >
@@ -407,7 +411,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         />
 
                         {firstName ? (
-                          <Text style={styles.inputText}>
+                          <Text style={[styles.inputText, { color: textColor }]}>
                             {firstName}
                             <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
@@ -430,7 +434,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                           activeOpacity={0.7}
                           onPress={handleFirstNameSubmit}
                         >
-                          <Text style={styles.continueText}>continue &#8594;</Text>
+                          <Text style={[styles.continueText, { color: textColor }]}>continue &#8594;</Text>
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
@@ -438,7 +442,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                           activeOpacity={0.7}
                           onPress={onClose}
                         >
-                          <Text style={styles.cancelText}>cancel</Text>
+                          <Text style={[styles.cancelText, { color: textColor }]}>cancel</Text>
                         </TouchableOpacity>
                       )}
                     </View>

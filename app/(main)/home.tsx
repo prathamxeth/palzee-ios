@@ -75,11 +75,11 @@ const LucideBell = ({
 
 const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) =>
   Platform.OS === 'ios' ? (
-    <SymbolView name="person.fill" size={size} tintColor={color} />
+    <SymbolView name="person" size={size} tintColor={color} />
   ) : (
     <Svg width={size} height={size} viewBox="0 -960 960 960">
       <Path
-        d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T225-378q62-31 126-46.5T480-440q64 0 128 15.5T735-378q30 16 47.5 44.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-54 0-109 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"
+        d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T225-378q62-31 126-46.5T480-440q64 0 128 15.5T735-378q30 16 47.5 44.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-54 0-109 13.5T260-306q-9 5-14.5 14t-5.5 20v32Z"
         fill={color}
       />
     </Svg>
@@ -88,22 +88,44 @@ const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) =>
 const LiquidGlassNavPillBar = ({
   activeTab,
   onSelectTab,
+  isDark = true,
 }: {
   activeTab: 'camera' | 'pals';
   onSelectTab: (tab: 'camera' | 'pals') => void;
+  isDark?: boolean;
 }) => (
   <View style={styles.bottomSwitcherContainer}>
     <View style={styles.liquidOuterCapsule}>
       <Svg width={204} height={52} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="capsuleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#28282E" stopOpacity="0.75" />
-            <Stop offset="50%" stopColor="#18181B" stopOpacity="0.6" />
-            <Stop offset="100%" stopColor="#0E0E10" stopOpacity="0.85" />
+            <Stop
+              offset="0%"
+              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+              stopOpacity={isDark ? 0.75 : 0.85}
+            />
+            <Stop
+              offset="50%"
+              stopColor={isDark ? '#18181B' : '#F7F6F3'}
+              stopOpacity={isDark ? 0.6 : 0.75}
+            />
+            <Stop
+              offset="100%"
+              stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.85 : 0.9}
+            />
           </LinearGradient>
           <LinearGradient id="capsuleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.28" />
-            <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.05" />
+            <Stop
+              offset="0%"
+              stopColor={isDark ? '#FFFFFF' : '#000000'}
+              stopOpacity={isDark ? 0.28 : 0.15}
+            />
+            <Stop
+              offset="100%"
+              stopColor={isDark ? '#FFFFFF' : '#000000'}
+              stopOpacity={isDark ? 0.05 : 0.05}
+            />
           </LinearGradient>
         </Defs>
         <Rect
@@ -129,18 +151,49 @@ const LiquidGlassNavPillBar = ({
             <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#4A4A54" stopOpacity="0.95" />
-                  <Stop offset="100%" stopColor="#24242A" stopOpacity="0.95" />
+                  <Stop
+                    offset="0%"
+                    stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
+                    stopOpacity={isDark ? 0.95 : 0.95}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={isDark ? '#24242A' : '#F0EEE9'}
+                    stopOpacity={isDark ? 0.95 : 0.95}
+                  />
                 </LinearGradient>
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
-                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.15" />
+                  <Stop
+                    offset="0%"
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.45 : 0.15}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.15 : 0.05}
+                  />
                 </LinearGradient>
               </Defs>
-              <Rect x="0.5" y="0.5" width="95" height="43" rx="21.5" fill="url(#actGrad1)" stroke="url(#actBdr1)" strokeWidth="1.2" />
+              <Rect
+                x="0.5"
+                y="0.5"
+                width="95"
+                height="43"
+                rx="21.5"
+                fill="url(#actGrad1)"
+                stroke="url(#actBdr1)"
+                strokeWidth="1.2"
+              />
             </Svg>
           )}
-          <Text style={activeTab === 'camera' ? styles.activeSegmentText : styles.inactiveSegmentText}>
+          <Text
+            style={[
+              activeTab === 'camera'
+                ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
+                : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+            ]}
+          >
             camera
           </Text>
         </TouchableOpacity>
@@ -155,18 +208,49 @@ const LiquidGlassNavPillBar = ({
             <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#4A4A54" stopOpacity="0.95" />
-                  <Stop offset="100%" stopColor="#24242A" stopOpacity="0.95" />
+                  <Stop
+                    offset="0%"
+                    stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
+                    stopOpacity={isDark ? 0.95 : 0.95}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={isDark ? '#24242A' : '#F0EEE9'}
+                    stopOpacity={isDark ? 0.95 : 0.95}
+                  />
                 </LinearGradient>
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
-                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.15" />
+                  <Stop
+                    offset="0%"
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.45 : 0.15}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.15 : 0.05}
+                  />
                 </LinearGradient>
               </Defs>
-              <Rect x="0.5" y="0.5" width="95" height="43" rx="21.5" fill="url(#actGrad2)" stroke="url(#actBdr2)" strokeWidth="1.2" />
+              <Rect
+                x="0.5"
+                y="0.5"
+                width="95"
+                height="43"
+                rx="21.5"
+                fill="url(#actGrad2)"
+                stroke="url(#actBdr2)"
+                strokeWidth="1.2"
+              />
             </Svg>
           )}
-          <Text style={activeTab === 'pals' ? styles.activeSegmentText : styles.inactiveSegmentText}>
+          <Text
+            style={[
+              activeTab === 'pals'
+                ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
+                : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+            ]}
+          >
             pals
           </Text>
         </TouchableOpacity>
@@ -235,6 +319,19 @@ export default function HomeScreen({
     setShowCreateModal(false);
   };
 
+  const systemScheme = useColorScheme();
+  const isDark = systemScheme === 'dark';
+  const screenBg = isDark ? '#000000' : Colors.PalBackground;
+  const iconColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
+  const mainTextColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
+  const subtextColor = isDark ? '#8E8E93' : Colors.PalTextMuted;
+  const cardBg = isDark ? '#161616' : '#FFFFFF';
+  const pillBg = isDark ? '#262626' : '#E5E3DD';
+  const pillBorder = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)';
+  const logoTextColor = isDark
+    ? Colors.LogoTextAccent.dark[selectedThemeColor as keyof typeof Colors.LogoTextAccent.dark] || '#11D5F3'
+    : Colors.LogoTextAccent.light[selectedThemeColor as keyof typeof Colors.LogoTextAccent.light] || '#9E3E64';
+
   if (showGroupsView) {
     return (
       <PalGroupGridScreen
@@ -249,11 +346,6 @@ export default function HomeScreen({
   if (showCamera) {
     return <CameraScreen onCapture={() => setShowCamera(false)} onClose={() => setShowCamera(false)} />;
   }
-
-  const systemScheme = useColorScheme();
-  const isDark = systemScheme === 'dark';
-  const screenBg = isDark ? '#000000' : Colors.PalBackground;
-  const iconColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
 
   return (
     <DynamicGlowContainer selectedThemeColor={selectedThemeColor || 'cyan'} showBorder={true}>
@@ -273,9 +365,7 @@ export default function HomeScreen({
             style={[
               styles.palzeeLogoText,
               {
-                color:
-                  Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
-                  '#11D5F3',
+                color: logoTextColor,
               },
             ]}
           >
@@ -287,36 +377,45 @@ export default function HomeScreen({
             <TouchableOpacity
               style={[
                 styles.circleIconBtn,
-                { backgroundColor: isDark ? '#161616' : '#EAE8E3' },
+                {
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
+                },
               ]}
               activeOpacity={0.7}
               onPress={() => setShowCreateModal(true)}
             >
-              <LucidePlus size={30} color={iconColor} strokeWidth={2} />
+              <LucidePlus size={28} color={iconColor} strokeWidth={1.8} />
             </TouchableOpacity>
 
             {/* 2. NOTIFICATION BELL ICON */}
             <TouchableOpacity
               style={[
                 styles.circleIconBtn,
-                { backgroundColor: isDark ? '#161616' : '#EAE8E3' },
+                {
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
+                },
               ]}
               activeOpacity={0.7}
               onPress={() => setShowChatDrawer(true)}
             >
-              <LucideBell size={27} color={iconColor} strokeWidth={2} />
+              <LucideBell size={26} color={iconColor} strokeWidth={1.8} />
             </TouchableOpacity>
 
             {/* 3. USER PROFILE PERSON ICON */}
             <TouchableOpacity
               style={[
                 styles.circleIconBtn,
-                { backgroundColor: isDark ? '#161616' : '#EAE8E3' },
+                {
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'transparent',
+                },
               ]}
               activeOpacity={0.7}
               onPress={() => setShowProfileMenu(true)}
             >
-              <MaterialPersonIcon size={27} color={iconColor} />
+              <MaterialPersonIcon size={26} color={iconColor} />
             </TouchableOpacity>
           </View>
         </View>
@@ -329,13 +428,15 @@ export default function HomeScreen({
               {userPalRooms.map((room) => (
                 <TouchableOpacity
                   key={room.id}
-                  style={styles.vlogCard}
+                  style={[styles.vlogCard, { backgroundColor: cardBg }]}
                   activeOpacity={0.9}
                   onPress={() => setShowExportSheet(true)}
                 >
                   <View style={styles.vlogTextSection}>
-                    <Text style={styles.vlogTitle}>{room.name.toLowerCase()}</Text>
-                    <Text style={styles.vlogSubtext}>
+                    <Text style={[styles.vlogTitle, { color: mainTextColor }]}>
+                      {room.name.toLowerCase()}
+                    </Text>
+                    <Text style={[styles.vlogSubtext, { color: subtextColor }]}>
                       your space. Each day runs 4am{'\n'}to 4am. max {room.maxCount} pals.
                     </Text>
                   </View>
@@ -353,65 +454,117 @@ export default function HomeScreen({
             <View style={styles.emptyFeedContainer}>
               {/* INSTRUCTION STEPS */}
               <View style={styles.instructionsContainer}>
-                <Text style={styles.sideBySideHeader}>your day, side by side.</Text>
+                <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
+                  your day, side by side.
+                </Text>
 
                 {/* STEP 1 */}
                 <View style={styles.stepRow}>
-                  <View style={styles.stepBadge}>
-                    <Text style={styles.stepBadgeText}>1</Text>
+                  <View
+                    style={[
+                      styles.stepBadge,
+                      { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.stepBadgeText,
+                        { color: isDark ? '#000000' : '#FFFFFF' },
+                      ]}
+                    >
+                      1
+                    </Text>
                   </View>
                   <View style={styles.stepContent}>
-                    <Text style={styles.stepTitle}>
+                    <Text style={[styles.stepTitle, { color: mainTextColor }]}>
                       tap <Text style={styles.plusSymbolText}>⊕</Text> to start
                     </Text>
 
                     <View style={styles.pillActionRow}>
                       <TouchableOpacity
-                        style={styles.actionPill}
+                        style={[
+                          styles.actionPill,
+                          { backgroundColor: pillBg, borderColor: pillBorder },
+                        ]}
                         onPress={() => setShowCreateModal(true)}
                       >
-                        <Text style={styles.actionPillText}>create pal</Text>
+                        <Text style={[styles.actionPillText, { color: mainTextColor }]}>
+                          create pal
+                        </Text>
                       </TouchableOpacity>
-                      <Text style={styles.actionHintText}>(new group)</Text>
+                      <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                        (new group)
+                      </Text>
                     </View>
 
                     <View style={[styles.pillActionRow, { marginTop: 8 }]}>
                       <TouchableOpacity
-                        style={styles.actionPill}
+                        style={[
+                          styles.actionPill,
+                          { backgroundColor: pillBg, borderColor: pillBorder },
+                        ]}
                         onPress={() => setShowCreateModal(true)}
                       >
-                        <Text style={styles.actionPillText}>join pal</Text>
+                        <Text style={[styles.actionPillText, { color: mainTextColor }]}>
+                          join pal
+                        </Text>
                       </TouchableOpacity>
-                      <Text style={styles.actionHintText}>(with a code)</Text>
+                      <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                        (with a code)
+                      </Text>
                     </View>
                   </View>
                 </View>
 
                 {/* STEP 2 */}
                 <View style={[styles.stepRow, { marginTop: 24 }]}>
-                  <View style={styles.stepBadge}>
-                    <Text style={styles.stepBadgeText}>2</Text>
+                  <View
+                    style={[
+                      styles.stepBadge,
+                      { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.stepBadgeText,
+                        { color: isDark ? '#000000' : '#FFFFFF' },
+                      ]}
+                    >
+                      2
+                    </Text>
                   </View>
                   <View style={styles.stepContent}>
-                    <Text style={styles.stepTitle}>add a 2s clip every hour.</Text>
-                    <Text style={styles.stepSubtext}>see everyone's day come together.</Text>
-                    <Text style={styles.stepSubtext}>solo pals don't have limits.</Text>
+                    <Text style={[styles.stepTitle, { color: mainTextColor }]}>
+                      add a 2s clip every hour.
+                    </Text>
+                    <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                      see everyone's day come together.
+                    </Text>
+                    <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                      solo pals don't have limits.
+                    </Text>
                   </View>
                 </View>
               </View>
 
               {/* DAY RESET PAINTED BLOB CONTAINER */}
               <ImageBackground
-                source={require('../../assets/images/blob_dark.png')}
+                source={
+                  isDark
+                    ? require('../../assets/images/blob_dark.png')
+                    : require('../../assets/images/blob_light.png')
+                }
                 style={styles.blobContainer}
                 resizeMode="contain"
               >
-                <Text style={styles.resetTitle}>
+                <Text style={[styles.resetTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
                   day resets at{' '}
                   <Text style={{ fontFamily: Fonts.DelaGothicOne, fontSize: 20 }}>4</Text>
                   AM.
                 </Text>
-                <Text style={styles.resetSubtext}>find past days in history.</Text>
+                <Text style={[styles.resetSubtext, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                  find past days in history.
+                </Text>
               </ImageBackground>
 
               {/* BOTTOM UFO & TURTLE DOODLE */}
@@ -434,6 +587,7 @@ export default function HomeScreen({
             setActiveTab(t);
             if (t === 'camera') setShowCamera(true);
           }}
+          isDark={isDark}
         />
 
         {/* PROFILE / SIGN OUT MENU MODAL */}

@@ -189,7 +189,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
           {step === 'FORM' && (
             <View style={styles.body}>
               {/* Section Title: → create a pal room */}
-              <Text style={styles.sectionTitle}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>
                 {tab === 'create' ? '→ create a pal room' : '→ join pal room'}
               </Text>
 
@@ -212,7 +212,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <Text style={styles.typedText}>{inputVal}</Text>
+                      <Text style={[styles.typedText, { color: textColor }]}>
+                        {inputVal}
+                      </Text>
                       <Text
                         style={[
                           styles.cursorBlock,
@@ -236,7 +238,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
 
               {tab === 'create' && (
                 <View style={styles.sizeSection}>
-                  <Text style={styles.sizeLabel}>room size</Text>
+                  <Text style={[styles.sizeLabel, { color: textColor }]}>
+                    room size
+                  </Text>
 
                   {/* Size Row 1: vlog, 2, 3, 4, 5 */}
                   <View style={styles.sizeRow1}>
@@ -247,6 +251,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           key={key}
                           style={[
                             styles.sizePill,
+                            { borderColor: isDark ? '#444448' : '#C7C6C0' },
                             isActive && { backgroundColor: accentColor, borderColor: accentColor },
                           ]}
                           activeOpacity={0.8}
@@ -255,6 +260,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           <Text
                             style={[
                               styles.sizePillText,
+                              { color: textColor },
                               isActive && styles.activeSizePillText,
                             ]}
                           >
@@ -274,6 +280,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           key={key}
                           style={[
                             styles.sizePillWide,
+                            { borderColor: isDark ? '#444448' : '#C7C6C0' },
                             isActive && { backgroundColor: accentColor, borderColor: accentColor },
                           ]}
                           activeOpacity={0.8}
@@ -282,6 +289,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           <Text
                             style={[
                               styles.sizePillText,
+                              { color: textColor },
                               isActive && styles.activeSizePillText,
                             ]}
                           >
@@ -293,7 +301,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                   </View>
 
                   {/* Subtext description (e.g. 3 friends) */}
-                  <Text style={styles.subtextDescription}>{getSubtext()}</Text>
+                  <Text style={[styles.subtextDescription, { color: textColor }]}>
+                    {getSubtext()}
+                  </Text>
                 </View>
               )}
 
@@ -306,7 +316,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                   setInputVal('');
                 }}
               >
-                <Text style={styles.modeToggleText}>
+                <Text style={[styles.modeToggleText, { color: textColor }]}>
                   {tab === 'create' ? 'join with code →' : 'create room →'}
                 </Text>
               </TouchableOpacity>
@@ -315,7 +325,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
 
           {step === 'CREATING' && (
             <View style={styles.creatingContainer}>
-              <Text style={styles.creatingText}>creating log{dots}</Text>
+              <Text style={[styles.creatingText, { color: textColor }]}>
+                creating log{dots}
+              </Text>
             </View>
           )}
 
