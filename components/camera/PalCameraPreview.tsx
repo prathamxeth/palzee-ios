@@ -74,7 +74,7 @@ export default function PalCameraPreview({
     return () => clearInterval(interval);
   }, []);
 
-  // Smooth continuous free rotation of smiley button with zero lag or stopping
+  // Smooth continuous free rotation of smiley button with zero lag, stopping, or interruption
   useEffect(() => {
     idleRotateAnim.setValue(0);
     const loopAnim = Animated.loop(
@@ -86,7 +86,6 @@ export default function PalCameraPreview({
       })
     );
     loopAnim.start();
-    return () => loopAnim.stop();
   }, []);
 
   // Floating mode pill auto-hide state (fades out after 2.5s when mode changes)
