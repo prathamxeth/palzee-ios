@@ -147,8 +147,8 @@ export default function PalCameraPreview({
     }
   }, [isRecording]);
 
-  const sideMargin = 9;
-  let cameraWidth = screenWidth - sideMargin * 2;
+  const sideMargin = 8.875;
+  let cameraWidth = screenWidth - sideMargin * 2; // Increased width by 0.25dp
   let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
 
   const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
@@ -163,6 +163,18 @@ export default function PalCameraPreview({
     '#11D5F3';
   const logoTextColor =
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
+
+  // Helper to reduce color brightness by 50%
+  const dimColorBrightness = (hex: string) => {
+    const cleanHex = hex.replace('#', '');
+    const num = parseInt(cleanHex, 16);
+    const r = Math.floor(((num >> 16) & 255) * 0.5);
+    const g = Math.floor(((num >> 8) & 255) * 0.5);
+    const b = Math.floor((num & 255) * 0.5);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  const dimmedBorderColor = dimColorBrightness(baseAccentColor);
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -264,28 +276,27 @@ export default function PalCameraPreview({
 
   return (
     <View style={styles.container}>
-      {/* 1. EXACT CAMERA VIEWPORT CARD WITH OVERFLOW VISIBLE FOR UNCLIPPED SIDE PROGRESS BAR */}
+      {/* 1. EXACT CAMERA VIEWPORT CARD WITH 50% REDUCED BORDER BRIGHTNESS */}
       <View
         style={[
           styles.viewportCardContainer,
           {
             width: cameraWidth,
             height: cameraHeight,
-            borderColor: baseAccentColor,
-            opacity: 0.98,
+            borderColor: dimmedBorderColor,
             borderWidth: 1.5,
             marginTop: 20,
           },
         ]}
       >
-        {/* Border Overlay with 75% Brightness/Opacity */}
+        {/* Border Overlay with 50% Reduced Color Brightness */}
         <View
           style={[
             StyleSheet.absoluteFill,
             {
               borderRadius: 32,
               borderWidth: 1.5,
-              borderColor: baseAccentColor,
+              borderColor: dimmedBorderColor,
               opacity: 0.75,
             },
           ]}
