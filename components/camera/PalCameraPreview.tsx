@@ -92,8 +92,17 @@ export default function PalCameraPreview({
   // Floating mode pill auto-hide state (fades out after 2.5s when mode changes)
   const [showPill, setShowPill] = useState(false);
   const pillOpacity = useRef(new Animated.Value(0)).current;
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Skip showing 'off' pill on initial camera screen mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (timerMode === 'off') {
+        return;
+      }
+    }
+
     setShowPill(true);
     Animated.timing(pillOpacity, {
       toValue: 1,
