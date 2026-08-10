@@ -216,7 +216,7 @@ const LiquidGlassNavPillBar = ({
 }) => (
   <View style={styles.bottomSwitcherContainer}>
     <View style={styles.liquidOuterCapsule}>
-      <Svg width={204} height={52} style={StyleSheet.absoluteFill}>
+      <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="capsuleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
@@ -251,9 +251,9 @@ const LiquidGlassNavPillBar = ({
         <Rect
           x="1"
           y="1"
-          width="202"
-          height="50"
-          rx="25"
+          width="165.5"
+          height="48"
+          rx="24"
           fill="url(#capsuleGrad)"
           stroke="url(#capsuleBorder)"
           strokeWidth="1.5"
@@ -268,7 +268,7 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('camera')}
         >
           {activeTab === 'camera' && (
-            <Svg width={100.5} height={49} style={StyleSheet.absoluteFill}>
+            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
@@ -298,12 +298,12 @@ const LiquidGlassNavPillBar = ({
               <Rect
                 x="0.5"
                 y="0.5"
-                width="99.5"
-                height="48"
-                rx="24"
+                width="81.25"
+                height="47"
+                rx="23.5"
                 fill="url(#actGrad1)"
                 stroke="url(#actBdr1)"
-                strokeWidth="1.2"
+                strokeWidth="1"
               />
             </Svg>
           )}
@@ -325,7 +325,7 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('pals')}
         >
           {activeTab === 'pals' && (
-            <Svg width={100.5} height={49} style={StyleSheet.absoluteFill}>
+            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
@@ -355,12 +355,12 @@ const LiquidGlassNavPillBar = ({
               <Rect
                 x="0.5"
                 y="0.5"
-                width="99.5"
-                height="48"
-                rx="24"
+                width="81.25"
+                height="47"
+                rx="23.5"
                 fill="url(#actGrad2)"
                 stroke="url(#actBdr2)"
-                strokeWidth="1.2"
+                strokeWidth="1"
               />
             </Svg>
           )}
@@ -976,10 +976,10 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   liquidOuterCapsule: {
-    width: 204,
-    height: 52,
+    width: 167.5,
+    height: 50,
     position: 'relative',
-    borderRadius: 26,
+    borderRadius: 25,
     justifyContent: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
@@ -991,13 +991,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 1.5,
-    height: 52,
+    padding: 1,
+    height: 50,
   },
   liquidTabButton: {
-    width: 100.5,
-    height: 49,
-    borderRadius: 24.5,
+    width: 82.25,
+    height: 48,
+    borderRadius: 24,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
