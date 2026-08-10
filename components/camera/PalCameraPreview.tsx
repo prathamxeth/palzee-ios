@@ -156,7 +156,7 @@ export default function PalCameraPreview({
   }, [isRecording]);
 
   const sideMargin = 8.875;
-  let cameraWidth = screenWidth - sideMargin * 2; // Increased width by 0.25dp
+  let cameraWidth = screenWidth - sideMargin * 2;
   let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
 
   const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
@@ -200,7 +200,12 @@ export default function PalCameraPreview({
   }
 
   const toggleFlash = () => {
-    setFlash((current) => (current === 'off' ? 'on' : current === 'on' ? 'auto' : 'off'));
+    setFlash((current) => (current === 'off' ? 'on' : 'off'));
+  };
+
+  const handleFlashPress = () => {
+    toggleFlash();
+    startRecordSequence();
   };
 
   const startRecordSequence = () => {
@@ -231,41 +236,46 @@ export default function PalCameraPreview({
   };
 
   const executeRecording = async () => {
+    if (!cameraRef.current || isRecording) return;
     setIsRecording(true);
     progressAnim.setValue(0);
 
-    let duration = 2000; // Default 'off' state records exact 2s clip
+    let durationMs = 2000; // Default 'off' state records 2s video clip
 
     if (timerMode === '3s') {
-      duration = 3000; // 3s clip after 3s countdown
+      durationMs = 3000; // 3s clip
     } else if (timerMode === '5s') {
-      duration = 5000; // 5s clip after 5s countdown
+      durationMs = 5000; // 5s clip
     } else if (timerMode === 'timelapse') {
-      duration = 10000; // 10s timelapse clip
+      durationMs = 10000; // 10s timelapse clip
     } else if (timerMode === 'jump_cut') {
-      duration = 3300; // 3.3s jump cut burst sequence
+      durationMs = 3300; // 3.3s jump cut sequence
     }
 
     Animated.timing(progressAnim, {
       toValue: 1,
-      duration,
+      duration: durationMs,
       easing: Easing.linear,
       useNativeDriver: false,
-    }).start(async () => {
+    }).start();
+
+    try {
+      const videoPromise = cameraRef.current.recordAsync({
+        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
+      });
+
+      const video = await videoPromise;
       setIsRecording(false);
       progressAnim.setValue(0);
 
-      if (cameraRef.current) {
-        try {
-          const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-          if (photo?.uri && onCaptureSuccess) {
-            onCaptureSuccess(photo.uri);
-          }
-        } catch (e) {
-          console.error('Camera capture error:', e);
-        }
+      if (video?.uri && onCaptureSuccess) {
+        onCaptureSuccess(video.uri);
       }
-    });
+    } catch (e) {
+      console.error('Video recording error:', e);
+      setIsRecording(false);
+      progressAnim.setValue(0);
+    }
   };
 
   const fastSpin = rotationAnim.interpolate({
@@ -295,18 +305,20 @@ export default function PalCameraPreview({
           },
         ]}
       >
-        {/* Border Overlay - Clean, Vibrant, 100% Visible Camera Frame Edge Boundary */}
+        {/* Border Overlay - Dead-Centered (50% Inside, 50% Outside Camera Frame Edge) */}
         <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              borderRadius: 32,
-              borderWidth: 1.25,
-              borderColor: dimmedBorderColor,
-              opacity: 0.95,
-              zIndex: 100,
-            },
-          ]}
+          style={{
+            position: 'absolute',
+            top: -0.625,
+            bottom: -0.625,
+            left: -0.625,
+            right: -0.625,
+            borderRadius: 32,
+            borderWidth: 1.25,
+            borderColor: dimmedBorderColor,
+            opacity: 0.95,
+            zIndex: 100,
+          }}
           pointerEvents="none"
         />
 
@@ -316,7 +328,9 @@ export default function PalCameraPreview({
             ref={cameraRef}
             style={StyleSheet.absoluteFill}
             facing={facing}
+            mode="video"
             flash={flash}
+            enableTorch={flash === 'on'}
             zoom={zoomLevel}
           />
         </View>
@@ -383,11 +397,11 @@ export default function PalCameraPreview({
             })}
           </View>
 
-          {/* EXACT UNMODIFIED PNG FLASH ICON */}
+          {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
           <TouchableOpacity
-            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 63 }]}
+            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
             activeOpacity={0.8}
-            onPress={toggleFlash}
+            onPress={handleFlashPress}
           >
             <Image
               source={require('../../assets/images/custom_flash_icon.png')}
@@ -395,6 +409,7 @@ export default function PalCameraPreview({
                 width: 35.5,
                 height: 35.5,
                 transform: [{ rotate: '90deg' }],
+                tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
               }}
               resizeMode="contain"
             />

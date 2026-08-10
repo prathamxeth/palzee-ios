@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, useColorScheme } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, Filter, FeGaussianBlur, Rect } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 
 interface DynamicGlowContainerProps {
@@ -33,12 +33,12 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           { backgroundColor: containerBg },
           showBorder && {
             borderColor: accentColor,
-            borderWidth: 2.5,
+            borderWidth: 3.5,
             shadowColor: accentColor,
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.82,
-            shadowRadius: 8.25,
-            elevation: 11,
+            shadowOpacity: 0.72,
+            shadowRadius: 10.0,
+            elevation: 10,
           },
           style,
         ]}
@@ -48,40 +48,29 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           {children}
         </View>
 
-        {/* SOFT VIBRANT INWARD GLOW OVERLAY ON TOP OF CONTENT (POINTER-EVENTS: NONE) */}
+        {/* 360-DEGREE ISOTROPIC GAUSSIAN BLURRED CORNER & EDGE GLOW OVERLAY */}
         {showBorder && (
           <View style={styles.inwardGlowOverlay} pointerEvents="none">
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
               <Defs>
-                <LinearGradient id="softInwardTop" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
-                  <Stop offset="0.5%" stopColor={accentColor} stopOpacity="0.05" />
-                  <Stop offset="1.2%" stopColor={accentColor} stopOpacity="0" />
-                </LinearGradient>
-
-                <LinearGradient id="softInwardBottom" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
-                  <Stop offset="0.5%" stopColor={accentColor} stopOpacity="0.05" />
-                  <Stop offset="1.2%" stopColor={accentColor} stopOpacity="0" />
-                </LinearGradient>
-
-                <LinearGradient id="softInwardLeft" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
-                  <Stop offset="0.8%" stopColor={accentColor} stopOpacity="0.05" />
-                  <Stop offset="2.0%" stopColor={accentColor} stopOpacity="0" />
-                </LinearGradient>
-
-                <LinearGradient id="softInwardRight" x1="100%" y1="0%" x2="0%" y2="0%">
-                  <Stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
-                  <Stop offset="0.8%" stopColor={accentColor} stopOpacity="0.05" />
-                  <Stop offset="2.0%" stopColor={accentColor} stopOpacity="0" />
-                </LinearGradient>
+                <Filter id="cornerGlowBlur" x="-20%" y="-20%" width="140%" height="140%">
+                  <FeGaussianBlur stdDeviation="6" />
+                </Filter>
               </Defs>
 
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardTop)" />
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardBottom)" />
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardLeft)" />
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#softInwardRight)" />
+              <Rect
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                rx={48}
+                ry={48}
+                stroke={accentColor}
+                strokeWidth={14}
+                strokeOpacity={0.25}
+                fill="none"
+                filter="url(#cornerGlowBlur)"
+              />
             </Svg>
           </View>
         )}
