@@ -22,6 +22,7 @@ import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { EditExportSheet } from '../../components/home/EditExportSheet';
 import CameraScreen from './camera';
+import PalCameraPreview from '../../components/camera/PalCameraPreview';
 import PalGroupGridScreen from './groups';
 import { User } from '../../types';
 
@@ -513,164 +514,167 @@ export default function HomeScreen({
           </View>
         </View>
 
-        {/* 2. MAIN FEED SECTION */}
-        <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
-          {userPalRooms.length > 0 ? (
-            /* HAS PAL ROOMS: SHOW VIDEO VLOG FEED CARD */
-            <View style={styles.vlogFeedSection}>
-              {userPalRooms.map((room) => (
-                <TouchableOpacity
-                  key={room.id}
-                  style={[styles.vlogCard, { backgroundColor: cardBg }]}
-                  activeOpacity={0.9}
-                  onPress={() => setShowExportSheet(true)}
-                >
-                  <View style={styles.vlogTextSection}>
-                    <Text style={[styles.vlogTitle, { color: mainTextColor }]}>
-                      {room.name.toLowerCase()}
-                    </Text>
-                    <Text style={[styles.vlogSubtext, { color: subtextColor }]}>
-                      your space. Each day runs 4am{'\n'}to 4am. max {room.maxCount} pals.
-                    </Text>
+        {/* 2. MAIN FEED OR CAMERA PREVIEW SECTION */}
+        {activeTab === 'camera' ? (
+          <PalCameraPreview selectedThemeColor={selectedThemeColor} />
+        ) : (
+          <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
+            {userPalRooms.length > 0 ? (
+              /* HAS PAL ROOMS: SHOW VIDEO VLOG FEED CARD */
+              <View style={styles.vlogFeedSection}>
+                {userPalRooms.map((room) => (
+                  <TouchableOpacity
+                    key={room.id}
+                    style={[styles.vlogCard, { backgroundColor: cardBg }]}
+                    activeOpacity={0.9}
+                    onPress={() => setShowExportSheet(true)}
+                  >
+                    <View style={styles.vlogTextSection}>
+                      <Text style={[styles.vlogTitle, { color: mainTextColor }]}>
+                        {room.name.toLowerCase()}
+                      </Text>
+                      <Text style={[styles.vlogSubtext, { color: subtextColor }]}>
+                        your space. Each day runs 4am{'\n'}to 4am. max {room.maxCount} pals.
+                      </Text>
+                    </View>
+
+                    <Image
+                      source={require('../../assets/images/dm_star_2.png')}
+                      style={styles.starDoodleImage}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              /* EMPTY FEED SCREEN */
+              <View style={styles.emptyFeedContainer}>
+                {/* INSTRUCTION STEPS */}
+                <View style={styles.instructionsContainer}>
+                  <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
+                    your day, side by side.
+                  </Text>
+
+                  {/* STEP 1 */}
+                  <View style={styles.stepRow}>
+                    <View
+                      style={[
+                        styles.stepBadge,
+                        { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.stepBadgeText,
+                          { color: isDark ? '#000000' : '#FFFFFF' },
+                        ]}
+                      >
+                        1
+                      </Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={[styles.stepTitle, { color: mainTextColor }]}>
+                        tap <Text style={styles.plusSymbolText}>⊕</Text> to start
+                      </Text>
+
+                      <View style={styles.pillActionRow}>
+                        <LiquidGlassPillButton
+                          idPrefix="pillCreate"
+                          text="create pal"
+                          isDark={isDark}
+                          textColor={mainTextColor}
+                          onPress={() => setShowCreateModal(true)}
+                        />
+                        <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                          (new group)
+                        </Text>
+                      </View>
+
+                      <View style={[styles.pillActionRow, { marginTop: 8 }]}>
+                        <LiquidGlassPillButton
+                          idPrefix="pillJoin"
+                          text="join pal"
+                          isDark={isDark}
+                          textColor={mainTextColor}
+                          onPress={() => setShowCreateModal(true)}
+                        />
+                        <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                          (with a code)
+                        </Text>
+                      </View>
+                    </View>
                   </View>
 
+                  {/* STEP 2 */}
+                  <View style={[styles.stepRow, { marginTop: 24 }]}>
+                    <View
+                      style={[
+                        styles.stepBadge,
+                        { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.stepBadgeText,
+                          { color: isDark ? '#000000' : '#FFFFFF' },
+                        ]}
+                      >
+                        2
+                      </Text>
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text style={[styles.stepTitle, { color: mainTextColor }]}>
+                        add a 2s clip every hour.
+                      </Text>
+                      <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                        see everyone's day come together.
+                      </Text>
+                      <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                        solo pals don't have limits.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* DAY RESET PAINTED BLOB CONTAINER */}
+                <ImageBackground
+                  source={
+                    isDark
+                      ? require('../../assets/images/blob_dark.png')
+                      : require('../../assets/images/blob_light.png')
+                  }
+                  style={styles.blobContainer}
+                  resizeMode="contain"
+                >
+                  <Text style={[styles.resetTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                    day resets at{' '}
+                    <Text style={{ fontFamily: Fonts.DelaGothicOne, fontSize: 20 }}>4</Text>
+                    AM.
+                  </Text>
+                  <Text style={[styles.resetSubtext, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                    find past days in history.
+                  </Text>
+                </ImageBackground>
+
+                {/* BOTTOM UFO & TURTLE DOODLE */}
+                <View style={styles.doodleFooter}>
                   <Image
-                    source={require('../../assets/images/dm_star_2.png')}
-                    style={styles.starDoodleImage}
+                    source={require('../../assets/images/ufo_turtle.png')}
+                    style={styles.ufoTurtleImage}
                     resizeMode="contain"
                   />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            /* EMPTY FEED SCREEN */
-            <View style={styles.emptyFeedContainer}>
-              {/* INSTRUCTION STEPS */}
-              <View style={styles.instructionsContainer}>
-                <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
-                  your day, side by side.
-                </Text>
-
-                {/* STEP 1 */}
-                <View style={styles.stepRow}>
-                  <View
-                    style={[
-                      styles.stepBadge,
-                      { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.stepBadgeText,
-                        { color: isDark ? '#000000' : '#FFFFFF' },
-                      ]}
-                    >
-                      1
-                    </Text>
-                  </View>
-                  <View style={styles.stepContent}>
-                    <Text style={[styles.stepTitle, { color: mainTextColor }]}>
-                      tap <Text style={styles.plusSymbolText}>⊕</Text> to start
-                    </Text>
-
-                    <View style={styles.pillActionRow}>
-                      <LiquidGlassPillButton
-                        idPrefix="pillCreate"
-                        text="create pal"
-                        isDark={isDark}
-                        textColor={mainTextColor}
-                        onPress={() => setShowCreateModal(true)}
-                      />
-                      <Text style={[styles.actionHintText, { color: mainTextColor }]}>
-                        (new group)
-                      </Text>
-                    </View>
-
-                    <View style={[styles.pillActionRow, { marginTop: 8 }]}>
-                      <LiquidGlassPillButton
-                        idPrefix="pillJoin"
-                        text="join pal"
-                        isDark={isDark}
-                        textColor={mainTextColor}
-                        onPress={() => setShowCreateModal(true)}
-                      />
-                      <Text style={[styles.actionHintText, { color: mainTextColor }]}>
-                        (with a code)
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* STEP 2 */}
-                <View style={[styles.stepRow, { marginTop: 24 }]}>
-                  <View
-                    style={[
-                      styles.stepBadge,
-                      { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.stepBadgeText,
-                        { color: isDark ? '#000000' : '#FFFFFF' },
-                      ]}
-                    >
-                      2
-                    </Text>
-                  </View>
-                  <View style={styles.stepContent}>
-                    <Text style={[styles.stepTitle, { color: mainTextColor }]}>
-                      add a 2s clip every hour.
-                    </Text>
-                    <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
-                      see everyone's day come together.
-                    </Text>
-                    <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
-                      solo pals don't have limits.
-                    </Text>
-                  </View>
+                  <View style={styles.groundLine} />
                 </View>
               </View>
-
-              {/* DAY RESET PAINTED BLOB CONTAINER */}
-              <ImageBackground
-                source={
-                  isDark
-                    ? require('../../assets/images/blob_dark.png')
-                    : require('../../assets/images/blob_light.png')
-                }
-                style={styles.blobContainer}
-                resizeMode="contain"
-              >
-                <Text style={[styles.resetTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                  day resets at{' '}
-                  <Text style={{ fontFamily: Fonts.DelaGothicOne, fontSize: 20 }}>4</Text>
-                  AM.
-                </Text>
-                <Text style={[styles.resetSubtext, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                  find past days in history.
-                </Text>
-              </ImageBackground>
-
-              {/* BOTTOM UFO & TURTLE DOODLE */}
-              <View style={styles.doodleFooter}>
-                <Image
-                  source={require('../../assets/images/ufo_turtle.png')}
-                  style={styles.ufoTurtleImage}
-                  resizeMode="contain"
-                />
-                <View style={styles.groundLine} />
-              </View>
-            </View>
-          )}
-        </ScrollView>
+            )}
+          </ScrollView>
+        )}
 
         {/* 3. BOTTOM LIQUID GLASS TAB SWITCHER (CAMERA / PALS) */}
         <LiquidGlassNavPillBar
           activeTab={activeTab}
           onSelectTab={(t) => {
             setActiveTab(t);
-            if (t === 'camera') setShowCamera(true);
           }}
           isDark={isDark}
         />
