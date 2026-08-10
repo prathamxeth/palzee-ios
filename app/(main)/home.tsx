@@ -1100,8 +1100,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingTop: 2,
-    paddingBottom: 4,
+    paddingTop: 12,
+    paddingBottom: 0,
+    marginTop: 10,
+    marginBottom: -10,
   },
   extControlBtn: {
     width: 44,
