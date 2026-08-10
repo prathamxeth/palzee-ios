@@ -46,7 +46,6 @@ export default function PalCameraPreview({
   const [permission, requestPermission] = useCameraPermissions();
   const [flash, setFlash] = useState<FlashMode>('off');
   const [zoomLevel, setZoomLevel] = useState<number>(0.05); // Native 1x optical zoom default
-  const [zoomSlot, setZoomSlot] = useState<number>(2); // Default '1' selected
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -184,6 +183,9 @@ export default function PalCameraPreview({
 
   const dimmedBorderColor = dimColorBrightness(baseAccentColor);
 
+  const now = new Date();
+  const currentTimeStr = `${now.getHours() % 12 || 12}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+
   if (!permission) {
     return <View style={styles.container} />;
   }
@@ -257,25 +259,21 @@ export default function PalCameraPreview({
       duration: durationMs,
       easing: Easing.linear,
       useNativeDriver: false,
-    }).start();
-
-    try {
-      const videoPromise = cameraRef.current.recordAsync({
-        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
-      });
-
-      const video = await videoPromise;
+    }).start(async () => {
       setIsRecording(false);
       progressAnim.setValue(0);
 
-      if (video?.uri && onCaptureSuccess) {
-        onCaptureSuccess(video.uri);
+      if (cameraRef.current) {
+        try {
+          const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
+          if (photo?.uri && onCaptureSuccess) {
+            onCaptureSuccess(photo.uri);
+          }
+        } catch (e) {
+          console.error('Camera capture error:', e);
+        }
       }
-    } catch (e) {
-      console.error('Video recording error:', e);
-      setIsRecording(false);
-      progressAnim.setValue(0);
-    }
+    });
   };
 
   const fastSpin = rotationAnim.interpolate({
@@ -335,7 +333,7 @@ export default function PalCameraPreview({
           />
         </View>
 
-        {/* ABSOLUTE OVERLAY CONTAINER */}
+        {/* ABSOLUTE OVERLAY CONTAINER FOR CAMERA CONTROLS */}
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           {/* VERTICAL CENTER TIME OVERLAY (HIDDEN DURING COUNTDOWN) */}
           {countdown === null && (
@@ -377,19 +375,16 @@ export default function PalCameraPreview({
           {/* ZOOM OPTIONS (.5, 1) ROTATED 90 DEG CLOCKWISE */}
           <View style={styles.zoomRowCentered}>
             {[
-              { slot: 1, label: '.5', zoom: 0 },
-              { slot: 2, label: '1', zoom: 0.05 },
+              { label: '.5', val: 0.02 },
+              { label: '1', val: 0.05 },
             ].map((item) => {
-              const isSelected = zoomSlot === item.slot;
+              const isSelected = zoomLevel === item.val;
               return (
                 <TouchableOpacity
-                  key={item.slot}
+                  key={item.label}
                   activeOpacity={0.8}
-                  style={styles.zoomDot}
-                  onPress={() => {
-                    setZoomSlot(item.slot);
-                    setZoomLevel(item.zoom);
-                  }}
+                  onPress={() => setZoomLevel(item.val)}
+                  style={[styles.zoomPillItem, isSelected && styles.activeZoomPillItem]}
                 >
                   <Text style={[styles.zoomText, isSelected && styles.activeZoomText]}>
                     {item.label}
@@ -434,49 +429,56 @@ export default function PalCameraPreview({
                 { backgroundColor: smileyColor },
                 {
                   transform: [
-                    { rotate: isRecording ? fastSpin : idleSpin },
+                    {
+                      rotate: isRecording ? fastSpin : idleSpin,
+                    },
                   ],
                 },
               ]}
             >
-              {/* CAPTURE_SMILE.PNG ASSET */}
-              <Image
-                source={require('../../assets/images/capture_smile.png')}
-                style={styles.captureSmileAsset}
-                resizeMode="contain"
-              />
+              <Svg width={46} height={46} viewBox="0 0 24 24">
+                <Circle cx="8.5" cy="10" r="1.5" fill="#000000" />
+                <Circle cx="15.5" cy="10" r="1.5" fill="#000000" />
+                <Path
+                  d="M 7.5 14.5 C 9.5 18, 14.5 18, 16.5 14.5"
+                  stroke="#000000"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </Svg>
             </Animated.View>
           </TouchableOpacity>
-        </View>
 
-        {/* CYLINDRICAL PROGRESS BAR PERFECTLY CENTERED IN THE GAP BETWEEN CAMERA BORDER AND SCREEN EDGE */}
-        {isRecording && (
-          <View
-            style={[
-              styles.progressBarGapCentered,
-              {
-                width: 5,
-                top: 32, // straight boundary top offset
-                height: cameraHeight - 64, // straight boundary height
-                right: -5.5, // moved left by 0.1dp
-              },
-            ]}
-            pointerEvents="none"
-          >
-            <Animated.View
+          {/* RIGHT SIDE VERTICAL UNCLIPPED RECORDING PROGRESS BAR */}
+          {isRecording && (
+            <View
               style={[
-                styles.progressBarFill,
+                styles.progressBarGapCentered,
                 {
-                  backgroundColor: logoTextColor,
-                  height: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
+                  width: 5,
+                  top: 32, // straight boundary top offset
+                  height: cameraHeight - 64, // straight boundary height
+                  right: -5.5, // moved left by 0.1dp
                 },
               ]}
-            />
-          </View>
-        )}
+              pointerEvents="none"
+            >
+              <Animated.View
+                style={[
+                  styles.progressBarFill,
+                  {
+                    backgroundColor: logoTextColor,
+                    height: progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                    }),
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -485,10 +487,8 @@ export default function PalCameraPreview({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 0,
+    backgroundColor: 'transparent',
   },
   permissionContainer: {
     flex: 1,
@@ -504,31 +504,51 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   grantBtn: {
-    backgroundColor: Colors.PalFireRed,
+    backgroundColor: '#11D5F3',
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   grantBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: '#000000',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   viewportCardContainer: {
-    alignSelf: 'center',
     borderRadius: 32,
-    position: 'relative',
     backgroundColor: '#000000',
     overflow: 'visible',
+    position: 'relative',
   },
   innerCameraViewClip: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 31,
+    borderRadius: 32,
     overflow: 'hidden',
   },
-  centerTimeContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
+  statusBarRow: {
+    position: 'absolute',
+    top: 14,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    zIndex: 10,
+  },
+  clockText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  centerTimeContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    marginTop: -20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   verticalTimeText: {
     color: '#FFFFFF',
@@ -584,64 +604,63 @@ const styles = StyleSheet.create({
   },
   modePillText: {
     color: '#000000',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-    textAlign: 'center',
+    letterSpacing: 0.2,
   },
   zoomRowCentered: {
     position: 'absolute',
-    bottom: 132,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-    backgroundColor: 'transparent',
+    left: 20,
+    top: '50%',
+    marginTop: -25,
+    flexDirection: 'column',
+    gap: 8,
+    zIndex: 15,
   },
-  zoomDot: {
-    paddingHorizontal: 4,
+  zoomPillItem: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  activeZoomPillItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
   zoomText: {
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 16.5,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
     transform: [{ rotate: '90deg' }],
   },
   activeZoomText: {
-    color: '#FFD600',
-    fontWeight: '500',
+    color: '#000000',
+    fontWeight: '700',
   },
   flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 54,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    bottom: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
   shutterWrapperAbsolute: {
     position: 'absolute',
-    bottom: 34,
+    bottom: 6,
     width: 82,
     height: 82,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 68.5,
-    height: 68.5,
-    borderRadius: 34.25,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  captureSmileAsset: {
-    width: 63,
-    height: 63,
-    transform: [{ scale: 1.12 }],
   },
   progressBarGapCentered: {
     position: 'absolute',
