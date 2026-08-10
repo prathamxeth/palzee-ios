@@ -704,11 +704,49 @@ export default function HomeScreen({
               isDark={isDark}
               onPress={toggleTimerMode}
             >
-              <Image
-                source={require('../../assets/images/custom_timer_icon.png')}
-                style={{ width: 28, height: 28, tintColor: iconColor }}
-                resizeMode="contain"
-              />
+              {cameraTimerMode === '3s' ? (
+                <Svg width={30} height={30} viewBox="0 0 24 24">
+                  <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
+                  <SvgText
+                    x="12"
+                    y="15.8"
+                    fontSize="11"
+                    fontWeight="bold"
+                    fill={iconColor}
+                    textAnchor="middle"
+                    fontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif'}
+                  >
+                    3
+                  </SvgText>
+                </Svg>
+              ) : cameraTimerMode === '5s' ? (
+                <Svg width={30} height={30} viewBox="0 0 24 24">
+                  <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
+                  <SvgText
+                    x="12"
+                    y="15.8"
+                    fontSize="11"
+                    fontWeight="bold"
+                    fill={iconColor}
+                    textAnchor="middle"
+                    fontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif'}
+                  >
+                    5
+                  </SvgText>
+                </Svg>
+              ) : cameraTimerMode === 'timelapse' ? (
+                <Svg width={30} height={30} viewBox="0 0 24 24">
+                  <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" strokeDasharray="2, 2" fill="none" />
+                </Svg>
+              ) : cameraTimerMode === 'jump_cut' ? (
+                <Ionicons name="scissors-outline" size={22} color={iconColor} />
+              ) : (
+                <Image
+                  source={require('../../assets/images/custom_timer_icon.png')}
+                  style={{ width: 28, height: 28, tintColor: iconColor }}
+                  resizeMode="contain"
+                />
+              )}
             </LiquidGlassIconButton>
           ) : (
             <View style={{ width: 44 }} />
