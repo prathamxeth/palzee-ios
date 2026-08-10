@@ -12,7 +12,8 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop, Text as SvgText } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import { Fonts } from '../../constants/typography';
@@ -739,7 +740,7 @@ export default function HomeScreen({
                   <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" strokeDasharray="2, 2" fill="none" />
                 </Svg>
               ) : cameraTimerMode === 'jump_cut' ? (
-                <Ionicons name="scissors-outline" size={22} color={iconColor} />
+                <Ionicons name="cut-outline" size={22} color={iconColor} />
               ) : (
                 <Image
                   source={require('../../assets/images/custom_timer_icon.png')}
