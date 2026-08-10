@@ -550,12 +550,12 @@ const styles = StyleSheet.create({
   },
   progressBarGapCentered: {
     position: 'absolute',
-    borderRadius: 4.5,
+    borderRadius: 2.5,
     backgroundColor: 'transparent',
     overflow: 'hidden',
   },
   progressBarFill: {
     width: '100%',
-    borderRadius: 4.5,
+    borderRadius: 2.5,
   },
 });
