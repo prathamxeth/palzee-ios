@@ -88,6 +88,31 @@ export default function PalCameraPreview({
     return () => loopAnim.stop();
   }, []);
 
+  // Floating mode pill auto-hide state (fades out after 2.5s when mode changes)
+  const [showPill, setShowPill] = useState(false);
+  const pillOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setShowPill(true);
+    Animated.timing(pillOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+
+    const timer = setTimeout(() => {
+      Animated.timing(pillOpacity, {
+        toValue: 0,
+        duration: 350,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowPill(false);
+      });
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [timerMode]);
+
   // Dancing colors during recording
   useEffect(() => {
     let danceInterval: any = null;
@@ -291,20 +316,22 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR MATCHING SCREENSHOTS */}
-          <View style={styles.modePillContainer} pointerEvents="none">
-            <Text style={styles.modePillText}>
-              {timerMode === 'off'
-                ? 'off'
-                : timerMode === '3s'
-                ? '3 second timer'
-                : timerMode === '5s'
-                ? '5 second timer'
-                : timerMode === 'timelapse'
-                ? 'timelapse'
-                : 'jump cut'}
-            </Text>
-          </View>
+          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR (AUTOHIDES AFTER 2.5s) */}
+          {showPill && (
+            <Animated.View style={[styles.modePillContainer, { opacity: pillOpacity }]} pointerEvents="none">
+              <Text style={styles.modePillText}>
+                {timerMode === 'off'
+                  ? 'off'
+                  : timerMode === '3s'
+                  ? '3 second timer'
+                  : timerMode === '5s'
+                  ? '5 second timer'
+                  : timerMode === 'timelapse'
+                  ? 'timelapse'
+                  : 'jump cut'}
+              </Text>
+            </Animated.View>
+          )}
 
           {/* ZOOM OPTIONS (.5, 1) ROTATED 90 DEG CLOCKWISE */}
           <View style={styles.zoomRowCentered}>
@@ -485,11 +512,14 @@ const styles = StyleSheet.create({
   },
   modePillContainer: {
     position: 'absolute',
-    right: 8,
-    top: '44%',
+    right: 12,
+    top: '40%',
+    width: 140,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 20,
     transform: [{ rotate: '90deg' }],
     shadowColor: '#000000',
@@ -503,6 +533,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    textAlign: 'center',
   },
   zoomRowCentered: {
     position: 'absolute',

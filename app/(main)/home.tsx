@@ -706,7 +706,7 @@ export default function HomeScreen({
               onPress={toggleTimerMode}
             >
               {cameraTimerMode === '3s' ? (
-                <Svg width={30} height={30} viewBox="0 0 24 24">
+                <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
                   <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
                   <SvgText
                     x="12"
@@ -721,7 +721,7 @@ export default function HomeScreen({
                   </SvgText>
                 </Svg>
               ) : cameraTimerMode === '5s' ? (
-                <Svg width={30} height={30} viewBox="0 0 24 24">
+                <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
                   <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
                   <SvgText
                     x="12"
@@ -736,15 +736,30 @@ export default function HomeScreen({
                   </SvgText>
                 </Svg>
               ) : cameraTimerMode === 'timelapse' ? (
-                <Svg width={30} height={30} viewBox="0 0 24 24">
-                  <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" strokeDasharray="2, 2" fill="none" />
+                <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => {
+                    const rad = (deg * Math.PI) / 180;
+                    const x1 = 12 + 5.5 * Math.cos(rad);
+                    const y1 = 12 + 5.5 * Math.sin(rad);
+                    const x2 = 12 + 9 * Math.cos(rad);
+                    const y2 = 12 + 9 * Math.sin(rad);
+                    return (
+                      <Path
+                        key={i}
+                        d={`M${x1},${y1} L${x2},${y2}`}
+                        stroke={iconColor}
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    );
+                  })}
                 </Svg>
               ) : cameraTimerMode === 'jump_cut' ? (
-                <Ionicons name="cut-outline" size={22} color={iconColor} />
+                <Ionicons name="cut-outline" size={22} color={iconColor} style={{ transform: [{ rotate: '90deg' }] }} />
               ) : (
                 <Image
                   source={require('../../assets/images/custom_timer_icon.png')}
-                  style={{ width: 28, height: 28, tintColor: iconColor }}
+                  style={{ width: 28, height: 28, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
                   resizeMode="contain"
                 />
               )}
