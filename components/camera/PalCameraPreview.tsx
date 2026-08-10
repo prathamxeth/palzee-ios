@@ -296,15 +296,16 @@ export default function PalCameraPreview({
           },
         ]}
       >
-        {/* Border Overlay with 50% Reduced Color Brightness */}
+        {/* Border Overlay - Clean, Vibrant, 100% Visible Camera Frame Edge Boundary */}
         <View
           style={[
             StyleSheet.absoluteFill,
             {
               borderRadius: 32,
               borderWidth: 1.5,
-              borderColor: dimmedBorderColor,
-              opacity: 0.75,
+              borderColor: baseAccentColor,
+              opacity: 0.95,
+              zIndex: 100,
             },
           ]}
           pointerEvents="none"
