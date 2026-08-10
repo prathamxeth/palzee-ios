@@ -73,16 +73,19 @@ export default function PalCameraPreview({
     return () => clearInterval(interval);
   }, []);
 
-  // Smooth free rotation of smiley button when idle at medium pace
+  // Smooth continuous free rotation of smiley button with zero lag or stopping
   useEffect(() => {
-    Animated.loop(
+    idleRotateAnim.setValue(0);
+    const loopAnim = Animated.loop(
       Animated.timing(idleRotateAnim, {
         toValue: 1,
-        duration: 5500,
+        duration: 3666,
         easing: Easing.linear,
         useNativeDriver: true,
       })
-    ).start();
+    );
+    loopAnim.start();
+    return () => loopAnim.stop();
   }, []);
 
   // Dancing colors during recording
@@ -217,7 +220,7 @@ export default function PalCameraPreview({
 
   const idleSpin = idleRotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['180deg', '540deg'],
+    outputRange: ['0deg', '360deg'],
   });
 
   const smileyColor = isRecording ? DANCING_COLORS[colorIndex] : '#00F0FF';
@@ -226,10 +229,10 @@ export default function PalCameraPreview({
 
   return (
     <View style={styles.container}>
-      {/* 1. EXACT CAMERA VIEWPORT CARD WITH 25% REDUCED BORDER BRIGHTNESS */}
+      {/* 1. EXACT CAMERA VIEWPORT CARD WITH OVERFLOW VISIBLE FOR UNCLIPPED SIDE PROGRESS BAR */}
       <View
         style={[
-          styles.viewportCard,
+          styles.viewportCardContainer,
           {
             width: cameraWidth,
             height: cameraHeight,
@@ -254,14 +257,16 @@ export default function PalCameraPreview({
           pointerEvents="none"
         />
 
-        {/* Self-closing CameraView */}
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing={facing}
-          flash={flash}
-          zoom={zoomLevel}
-        />
+        {/* Rounded Inner Clip View for Camera Feed */}
+        <View style={styles.innerCameraViewClip}>
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing={facing}
+            flash={flash}
+            zoom={zoomLevel}
+          />
+        </View>
 
         {/* ABSOLUTE OVERLAY CONTAINER */}
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -292,7 +297,7 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* ZOOM OPTIONS (.5, 1) ROTATED -90 DEG ANCHORED ABOVE CENTERED SMILEY */}
+          {/* ZOOM OPTIONS (.5, 1) ROTATED 90 DEG CLOCKWISE */}
           <View style={styles.zoomRowCentered}>
             {[
               { slot: 1, label: '.5', zoom: 0 },
@@ -317,25 +322,24 @@ export default function PalCameraPreview({
             })}
           </View>
 
-          {/* NEW SOLID WHITE PNG FLASH ICON WITH 90DEG ROTATION */}
+          {/* EXACT UNMODIFIED PNG FLASH ICON */}
           <TouchableOpacity
-            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 48 }]}
+            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 63 }]}
             activeOpacity={0.8}
             onPress={toggleFlash}
           >
             <Image
               source={require('../../assets/images/custom_flash_icon.png')}
               style={{
-                width: 30.5,
-                height: 30.5,
-                tintColor: flash === 'on' || flash === 'auto' ? '#FFD600' : undefined,
+                width: 35.5,
+                height: 35.5,
                 transform: [{ rotate: '90deg' }],
               }}
               resizeMode="contain"
             />
           </TouchableOpacity>
 
-          {/* SMILEY CAPTURE SHUTTER BUTTON MATCHING SETLOG AESTHETICS & EXTENDING WIDE TO CIRCULAR ENDS */}
+          {/* SMILEY CAPTURE SHUTTER BUTTON */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={startRecordSequence}
@@ -357,7 +361,7 @@ export default function PalCameraPreview({
                 },
               ]}
             >
-              {/* SCALED CAPTURE_SMILE.PNG ASSET EXTENDING WIDE TO THE CIRCULAR ENDS WITH ZERO WASTED SPACING */}
+              {/* CAPTURE_SMILE.PNG ASSET */}
               <Image
                 source={require('../../assets/images/capture_smile.png')}
                 style={styles.captureSmileAsset}
@@ -365,25 +369,36 @@ export default function PalCameraPreview({
               />
             </Animated.View>
           </TouchableOpacity>
-
-          {/* SCREEN-EDGE ANCHORED VERTICAL PROGRESS BAR */}
-          {isRecording && (
-            <View style={styles.progressBarWrapper} pointerEvents="none">
-              <Animated.View
-                style={[
-                  styles.progressBarFill,
-                  {
-                    backgroundColor: logoTextColor,
-                    height: progressAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0%', '100%'],
-                    }),
-                  },
-                ]}
-              />
-            </View>
-          )}
         </View>
+
+        {/* CYLINDRICAL PROGRESS BAR PERFECTLY CENTERED IN THE GAP BETWEEN CAMERA BORDER AND SCREEN EDGE */}
+        {isRecording && (
+          <View
+            style={[
+              styles.progressBarGapCentered,
+              {
+                width: 5,
+                top: 32, // straight boundary top offset
+                height: cameraHeight - 64, // straight boundary height
+                right: -7, // dead-centered in the 9dp gap between camera border (0) and screen edge!
+              },
+            ]}
+            pointerEvents="none"
+          >
+            <Animated.View
+              style={[
+                styles.progressBarFill,
+                {
+                  backgroundColor: logoTextColor,
+                  height: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                },
+              ]}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -420,11 +435,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  viewportCard: {
+  viewportCardContainer: {
     alignSelf: 'center',
     borderRadius: 32,
     position: 'relative',
     backgroundColor: '#000000',
+    overflow: 'visible',
+  },
+  innerCameraViewClip: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 31,
     overflow: 'hidden',
   },
   centerTimeContainer: {
@@ -476,7 +496,7 @@ const styles = StyleSheet.create({
   },
   zoomRowCentered: {
     position: 'absolute',
-    bottom: 142,
+    bottom: 132,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
@@ -491,17 +511,17 @@ const styles = StyleSheet.create({
   zoomText: {
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 15.5,
-    fontWeight: '700',
-    transform: [{ rotate: '-90deg' }],
+    fontSize: 16.5,
+    fontWeight: '500',
+    transform: [{ rotate: '90deg' }],
   },
   activeZoomText: {
     color: '#FFD600',
-    fontWeight: '800',
+    fontWeight: '500',
   },
   flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 64,
+    bottom: 54,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -510,36 +530,32 @@ const styles = StyleSheet.create({
   },
   shutterWrapperAbsolute: {
     position: 'absolute',
-    bottom: 44,
+    bottom: 34,
     width: 82,
     height: 82,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
+    width: 68.5,
+    height: 68.5,
+    borderRadius: 34.25,
     justifyContent: 'center',
     alignItems: 'center',
   },
   captureSmileAsset: {
-    width: 66,
-    height: 66,
+    width: 63,
+    height: 63,
     transform: [{ scale: 1.12 }],
   },
-  progressBarWrapper: {
+  progressBarGapCentered: {
     position: 'absolute',
-    right: 2,
-    top: 24,
-    bottom: 24,
-    width: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 4.5,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
   progressBarFill: {
     width: '100%',
-    borderRadius: 2,
+    borderRadius: 4.5,
   },
 });
