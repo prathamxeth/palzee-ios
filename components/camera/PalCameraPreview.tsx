@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import Svg, { Circle, Path } from 'react-native-svg';
+import { BlurView } from 'expo-blur';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 
@@ -316,9 +317,15 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR (AUTOHIDES AFTER 2.5s) */}
+          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR WITH LIQUID GLASS BLUR & SPECULAR HIGHLIGHT */}
           {showPill && (
             <Animated.View style={[styles.modePillContainer, { opacity: pillOpacity }]} pointerEvents="none">
+              <BlurView
+                intensity={Platform.OS === 'ios' ? 55 : 80}
+                tint="light"
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.specularBorderHighlight} pointerEvents="none" />
               <Text style={styles.modePillText}>
                 {timerMode === 'off'
                   ? 'off'
@@ -512,15 +519,17 @@ const styles = StyleSheet.create({
   },
   modePillContainer: {
     position: 'absolute',
-    right: 12,
-    top: '40%',
+    right: -41,
+    top: '45%',
+    marginTop: 5,
     width: 140,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
     transform: [{ rotate: '90deg' }],
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
@@ -528,10 +537,16 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  specularBorderHighlight: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
+  },
   modePillText: {
     color: '#000000',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     textAlign: 'center',
   },
