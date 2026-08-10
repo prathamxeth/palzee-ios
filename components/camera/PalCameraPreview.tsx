@@ -337,10 +337,12 @@ export default function PalCameraPreview({
 
         {/* ABSOLUTE OVERLAY CONTAINER */}
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          {/* VERTICAL CENTER TIME OVERLAY */}
-          <View style={styles.centerTimeContainer} pointerEvents="none">
-            <Text style={styles.verticalTimeText}>{timeText}</Text>
-          </View>
+          {/* VERTICAL CENTER TIME OVERLAY (HIDDEN DURING COUNTDOWN) */}
+          {countdown === null && (
+            <View style={styles.centerTimeContainer} pointerEvents="none">
+              <Text style={styles.verticalTimeText}>{timeText}</Text>
+            </View>
+          )}
 
           {/* COUNTDOWN OVERLAY */}
           {countdown !== null && (
@@ -542,13 +544,17 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: 'transparent',
   },
   countdownText: {
     color: '#FFFFFF',
-    fontFamily: Fonts.DelaGothicOne,
-    fontSize: 72,
-    fontWeight: 'bold',
+    fontFamily: Platform.OS === 'ios' ? 'System' : undefined,
+    fontSize: 44,
+    fontWeight: '700',
+    transform: [{ rotate: '90deg' }],
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   modePillContainer: {
     position: 'absolute',
