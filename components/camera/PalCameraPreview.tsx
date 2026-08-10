@@ -2,11 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Image,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
@@ -20,25 +24,35 @@ interface PalCameraPreviewProps {
   selectedThemeColor?: string;
   onCaptureSuccess?: (uri: string) => void;
   onClose?: () => void;
+  timerMode?: TimerMode;
+  onToggleTimerMode?: () => void;
+  facing?: CameraType;
+  onToggleFacing?: () => void;
 }
 
 export default function PalCameraPreview({
   selectedThemeColor = 'cyan',
   onCaptureSuccess,
   onClose,
+  timerMode = 'off',
+  onToggleTimerMode,
+  facing = 'back',
+  onToggleFacing,
 }: PalCameraPreviewProps) {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
   const [permission, requestPermission] = useCameraPermissions();
-  const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
-  const [timerMode, setTimerMode] = useState<TimerMode>('off');
-  const [zoomLevel, setZoomLevel] = useState<number>(0);
-  const [zoomSlot, setZoomSlot] = useState<number>(1);
+  const [zoomLevel, setZoomLevel] = useState<number>(0.05); // Native 1x optical zoom default
+  const [zoomSlot, setZoomSlot] = useState<number>(2); // Default '1' selected
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const cameraRef = useRef<any>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const rotationAnim = useRef(new Animated.Value(0)).current;
+  const idleRotateAnim = useRef(new Animated.Value(0)).current;
   const [colorIndex, setColorIndex] = useState(0);
 
   // Live time state
@@ -59,13 +73,17 @@ export default function PalCameraPreview({
     return () => clearInterval(interval);
   }, []);
 
-  // Theme accent color matching selected theme (default cyan #00F0FF)
-  const accentColor =
-    selectedThemeColor === 'cyan'
-      ? '#00F0FF'
-      : Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#00F0FF';
-  const logoTextColor =
-    Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
+  // Smooth free rotation of smiley button when idle
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(idleRotateAnim, {
+        toValue: 1,
+        duration: 12000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
 
   // Dancing colors during recording
   useEffect(() => {
@@ -82,14 +100,14 @@ export default function PalCameraPreview({
     };
   }, [isRecording]);
 
-  // Continuous rotation during recording
+  // Fast rotation during recording
   useEffect(() => {
     if (isRecording) {
       rotationAnim.setValue(0);
       Animated.loop(
         Animated.timing(rotationAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 1500,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -99,6 +117,23 @@ export default function PalCameraPreview({
       rotationAnim.setValue(0);
     }
   }, [isRecording]);
+
+  const sideMargin = 9;
+  let cameraWidth = screenWidth - sideMargin * 2;
+  let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
+
+  const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
+
+  if (cameraHeight > maxCameraHeight) {
+    cameraHeight = maxCameraHeight;
+  }
+
+  // Theme accent color matching exact screen outer edge color
+  const accentColor =
+    Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
+    '#11D5F3';
+  const logoTextColor =
+    Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -115,22 +150,8 @@ export default function PalCameraPreview({
     );
   }
 
-  const toggleFacing = () => {
-    setFacing((current) => (current === 'back' ? 'front' : 'back'));
-  };
-
   const toggleFlash = () => {
     setFlash((current) => (current === 'off' ? 'on' : current === 'on' ? 'auto' : 'off'));
-  };
-
-  const toggleTimerMode = () => {
-    setTimerMode((current) => {
-      if (current === 'off') return '3s';
-      if (current === '3s') return '5s';
-      if (current === '5s') return 'timelapse';
-      if (current === 'timelapse') return 'jump_cut';
-      return 'off';
-    });
   };
 
   const startRecordSequence = () => {
@@ -189,27 +210,43 @@ export default function PalCameraPreview({
     });
   };
 
-  const spin = rotationAnim.interpolate({
+  const fastSpin = rotationAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
-  // Default mode: upside-down smile (mouth arc top, eyes bottom)
-  // 3s timer mode: flipped right-side up smile (mouth arc bottom, eyes top)
-  const baseRotateDeg = timerMode === '3s' ? 180 : 0;
-  const smileyColor = isRecording ? DANCING_COLORS[colorIndex] : accentColor;
+  const idleSpin = idleRotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '540deg'],
+  });
+
+  const smileyColor = isRecording ? DANCING_COLORS[colorIndex] : '#00F0FF';
 
   return (
     <View style={styles.container}>
-      {/* 1. EXACT 9:16 CAMERA VIEWPORT CARD WITH THICK BOUNDARY BORDER */}
-      <View style={[styles.viewportCard, { borderColor: accentColor }]}>
+      {/* 1. EXACT CAMERA VIEWPORT CARD */}
+      <View
+        style={[
+          styles.viewportCard,
+          {
+            width: cameraWidth,
+            height: cameraHeight,
+            borderColor: accentColor,
+            marginTop: 20,
+          },
+        ]}
+      >
+        {/* Self-closing CameraView with native lens zoom scaling */}
         <CameraView
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
           facing={facing}
           flash={flash}
           zoom={zoomLevel}
-        >
+        />
+
+        {/* ABSOLUTE OVERLAY CONTAINER */}
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           {/* VERTICAL CENTER TIME OVERLAY */}
           <View style={styles.centerTimeContainer} pointerEvents="none">
             <Text style={styles.verticalTimeText}>{timeText}</Text>
@@ -237,11 +274,11 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* COMPLETELY TRANSPARENT ZOOM OPTIONS (.5, 1) */}
-          <View style={styles.zoomRow}>
+          {/* ZOOM OPTIONS (.5, 1) ROTATED -90 DEG */}
+          <View style={styles.zoomRowCentered}>
             {[
               { slot: 1, label: '.5', zoom: 0 },
-              { slot: 2, label: '1', zoom: 0.2 },
+              { slot: 2, label: '1', zoom: 0.05 },
             ].map((item) => {
               const isSelected = zoomSlot === item.slot;
               return (
@@ -262,27 +299,31 @@ export default function PalCameraPreview({
             })}
           </View>
 
-          {/* FLASH & CAPTURE SMILEY BUTTON OVERLAY AT BOTTOM OF VIEWPORT */}
-          <View style={styles.shutterOverlayRow}>
-            {/* WHITE LIGHTNING BOLT FLASHLIGHT BUTTON */}
+          {/* SHUTTER & FLASH ROW CENTERED HORIZONTALLY */}
+          <View style={styles.shutterOverlayRowCentered}>
+            {/* FLASH ICON ROTATED 90 DEGREES CLOCKWISE, WHITE FILLED, INCREASED BY 2.5DP */}
             <TouchableOpacity style={styles.flashBtn} activeOpacity={0.8} onPress={toggleFlash}>
-              <Svg width={24} height={24} viewBox="0 0 24 24">
-                <Path
-                  d="M7 2v11h3v9l7-12h-4l4-8z"
-                  fill={flash === 'on' || flash === 'auto' ? '#FFD600' : '#FFFFFF'}
-                />
-              </Svg>
+              <Image
+                source={require('../../assets/images/custom_flash_icon.png')}
+                style={{
+                  width: 30.5,
+                  height: 30.5,
+                  tintColor: flash === 'on' || flash === 'auto' ? '#FFD600' : '#FFFFFF',
+                  transform: [{ rotate: '90deg' }],
+                }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
 
-            {/* CAPTURE SMILEY BUTTON WITH EXACT SMILEY VECTOR (2dp GAP FROM BOUNDARY) */}
+            {/* FREELY ROTATING SMILEY CAPTURE SHUTTER BUTTON EXACTLY CENTERED */}
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={startRecordSequence}
               style={styles.shutterWrapper}
             >
               {/* Concentric Outer Deep Blue Ring (#1B00E2) */}
-              <Svg width={67} height={67} style={StyleSheet.absoluteFill}>
-                <Circle cx="33.5" cy="33.5" r="31.5" stroke="#1B00E2" strokeWidth="3.5" fill="none" />
+              <Svg width={80} height={80} style={StyleSheet.absoluteFill}>
+                <Circle cx="40" cy="40" r="37.5" stroke="#1B00E2" strokeWidth="4.5" fill="none" />
               </Svg>
 
               <Animated.View
@@ -291,106 +332,39 @@ export default function PalCameraPreview({
                   { backgroundColor: smileyColor },
                   {
                     transform: [
-                      { rotate: isRecording ? spin : `${baseRotateDeg}deg` },
+                      { rotate: isRecording ? fastSpin : idleSpin },
                     ],
                   },
                 ]}
               >
-                {/* SVG SMILEY FACE WITH 2dp MARGIN GAP FROM INNER CIRCLE BOUNDARY */}
-                <Svg width={51} height={51} viewBox="0 0 51 51">
-                  {/* Top Mouth Arc with 2dp distance from top boundary */}
-                  <Path
-                    d="M 10 17 Q 25.5 3 41 17"
-                    stroke="#000000"
-                    strokeWidth="4.2"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-                  {/* Eye Dots with 2dp distance from bottom/side boundary */}
-                  <Circle cx="18" cy="32" r="3.2" fill="#000000" />
-                  <Circle cx="33" cy="32" r="3.2" fill="#000000" />
-                </Svg>
+                {/* EXACT capture_smile.png IMAGE ASSET */}
+                <Image
+                  source={require('../../assets/images/capture_smile.png')}
+                  style={styles.captureSmileAsset}
+                  resizeMode="contain"
+                />
               </Animated.View>
             </TouchableOpacity>
-
-            <View style={{ width: 44 }} />
           </View>
-        </CameraView>
 
-        {/* SCREEN-EDGE ANCHORED VERTICAL PROGRESS BAR */}
-        {isRecording && (
-          <View style={styles.progressBarWrapper} pointerEvents="none">
-            <Animated.View
-              style={[
-                styles.progressBarFill,
-                {
-                  backgroundColor: logoTextColor,
-                  height: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ]}
-            />
-          </View>
-        )}
-      </View>
-
-      {/* 2. EXTERNAL BOTTOM CONTROLS (TIMER SWITCH, TAB SWITCHER, CAMERA ROTATE) */}
-      <View style={styles.externalControlsRow}>
-        {/* LEFT TIMER MODE SWITCH BUTTON */}
-        <TouchableOpacity style={styles.extControlBtn} activeOpacity={0.8} onPress={toggleTimerMode}>
-          {timerMode === 'off' && (
-            <Svg width={24} height={24} viewBox="0 -960 960 960">
-              <Path
-                d="M360-840v-80h240v80H360Zm80 440h80v-240h-80v240Zm-99.5 291.5Q275-137 226-186t-77.5-114.5Q120-366 120-440t28.5-139.5Q177-645 226-694t114.5-77.5Q406-800 480-800q62 0 119 20t107 58l56-56 56 56-56 56q38 50 58 107t20 119q0 74-28.5 139.5T734-186q-49 49-114.5 77.5T480-80q-74 0-139.5-28.5ZM678-242q82-82 82-198t-82-198q-82-82-198-82t-198 82q-82 82-82 198t82 198q82 82 198 82t198-82ZM480-440Z"
-                fill="#1F1F1F"
+          {/* SCREEN-EDGE ANCHORED VERTICAL PROGRESS BAR */}
+          {isRecording && (
+            <View style={styles.progressBarWrapper} pointerEvents="none">
+              <Animated.View
+                style={[
+                  styles.progressBarFill,
+                  {
+                    backgroundColor: logoTextColor,
+                    height: progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                    }),
+                  },
+                ]}
               />
-            </Svg>
+            </View>
           )}
-          {timerMode === '3s' && (
-            <Svg width={24} height={24} viewBox="0 -960 960 960">
-              <Path
-                d="M360-270h160q35 0 57.5-25t22.5-55v-30q0-23-17-41.5T540-440q26 0 43-18.5t17-41.5v-30q0-30-22.5-55T520-610H360v80h160v50H400v80h120v50H360v80Zm0-570v-80h240v80H360Zm-19.5 731.5Q275-137 226-186t-77.5-114.5Q120-366 120-440t28.5-139.5Q177-645 226-694t114.5-77.5Q406-800 480-800q62 0 119 20t107 58l56-56 56 56-56 56q38 50 58 107t20 119q0 74-28.5 139.5T734-186q-49 49-114.5 77.5T480-80q-74 0-139.5-28.5ZM678-242q82-82 82-198t-82-198q-82-82-198-82t-198 82q-82 82-82 198t82 198q82 82 198 82t198-82ZM480-440Z"
-                fill="#1F1F1F"
-              />
-            </Svg>
-          )}
-          {timerMode === '5s' && (
-            <Svg width={24} height={24} viewBox="0 -960 960 960">
-              <Path
-                d="M360-270h160q33 0 56.5-23.5T600-350v-50q0-33-23.5-56.5T520-480h-80v-50h160v-80H360v210h160v50H360v80Zm0-570v-80h240v80H360Zm-19.5 731.5Q275-137 226-186t-77.5-114.5Q120-366 120-440t28.5-139.5Q177-645 226-694t114.5-77.5Q406-800 480-800q62 0 119 20t107 58l56-56 56 56-56 56q38 50 58 107t20 119q0 74-28.5 139.5T734-186q-49 49-114.5 77.5T480-80q-74 0-139.5-28.5ZM678-242q82-82 82-198t-82-198q-82-82-198-82t-198 82q-82 82-82 198t82 198q82 82 198 82t198-82ZM480-440Z"
-                fill="#1F1F1F"
-              />
-            </Svg>
-          )}
-          {timerMode === 'timelapse' && (
-            <Svg width={24} height={24} viewBox="0 -960 960 960">
-              <Path
-                d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
-                fill="#1F1F1F"
-              />
-            </Svg>
-          )}
-          {timerMode === 'jump_cut' && (
-            <Svg width={24} height={24} viewBox="0 -960 960 960">
-              <Path
-                d="m560-200 160-160-56-56-64 62v-166h-80v166l-64-62-56 56 160 160ZM360-440h80v-166l64 62 56-56-160-160-160 160 56 56 64-62v166ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
-                fill="#1F1F1F"
-              />
-            </Svg>
-          )}
-        </TouchableOpacity>
-
-        {/* RIGHT CAMERA ROTATE BUTTON (SWAP VERTICAL CIRCLE) */}
-        <TouchableOpacity style={styles.extControlBtn} activeOpacity={0.8} onPress={toggleFacing}>
-          <Svg width={24} height={24} viewBox="0 -960 960 960">
-            <Path
-              d="m560-200 160-160-56-56-64 62v-166h-80v166l-64-62-56 56 160 160ZM360-440h80v-166l64 62 56-56-160-160-160 160 56 56 64-62v166ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
-              fill="#1F1F1F"
-            />
-          </Svg>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -400,8 +374,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
-    justifyContent: 'space-between',
-    paddingBottom: 16,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 0,
   },
   permissionContainer: {
     flex: 1,
@@ -427,21 +402,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   viewportCard: {
-    flex: 1,
-    aspectRatio: 9 / 16,
     alignSelf: 'center',
-    marginHorizontal: 12,
-    marginTop: 4,
-    marginBottom: 10,
     borderRadius: 32,
-    borderWidth: 3,
-    overflow: 'hidden',
+    borderWidth: 1.5,
     position: 'relative',
     backgroundColor: '#000000',
+    overflow: 'hidden',
   },
   centerTimeContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
+    justify.content: 'center',
     alignItems: 'center',
   },
   verticalTimeText: {
@@ -486,59 +456,62 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  zoomRow: {
+  zoomRowCentered: {
     position: 'absolute',
-    bottom: 74,
+    bottom: 142,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
     backgroundColor: 'transparent',
   },
   zoomDot: {
-    width: 28,
-    height: 28,
+    paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
   zoomText: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 15.5,
+    fontWeight: '700',
     transform: [{ rotate: '-90deg' }],
   },
   activeZoomText: {
     color: '#FFD600',
+    fontWeight: '800',
   },
-  shutterOverlayRow: {
+  shutterOverlayRowCentered: {
     position: 'absolute',
-    bottom: -18,
-    left: 0,
-    right: 0,
+    bottom: 44,
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    gap: 22,
   },
   flashBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justify.content: 'center',
     alignItems: 'center',
-    transform: [{ rotate: '-90deg' }],
   },
   shutterWrapper: {
-    width: 67,
-    height: 67,
+    width: 80,
+    height: 80,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 55,
-    height: 55,
-    borderRadius: 27.5,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  captureSmileAsset: {
+    width: 44,
+    height: 44,
   },
   progressBarWrapper: {
     position: 'absolute',
@@ -553,28 +526,5 @@ const styles = StyleSheet.create({
   progressBarFill: {
     width: '100%',
     borderRadius: 2,
-  },
-  externalControlsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 18,
-  },
-  extControlBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
   },
 });

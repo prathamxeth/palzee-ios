@@ -456,6 +456,23 @@ export default function HomeScreen({
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] ||
     '#310BED';
 
+  const [cameraTimerMode, setCameraTimerMode] = useState<'off' | '3s' | '5s' | 'timelapse' | 'jump_cut'>('off');
+  const [cameraFacing, setCameraFacing] = useState<'back' | 'front'>('back');
+
+  const toggleTimerMode = () => {
+    setCameraTimerMode((current) => {
+      if (current === 'off') return '3s';
+      if (current === '3s') return '5s';
+      if (current === '5s') return 'timelapse';
+      if (current === 'timelapse') return 'jump_cut';
+      return 'off';
+    });
+  };
+
+  const toggleFacing = () => {
+    setCameraFacing((current) => (current === 'back' ? 'front' : 'back'));
+  };
+
   if (showGroupsView) {
     return (
       <PalGroupGridScreen
@@ -478,8 +495,8 @@ export default function HomeScreen({
           styles.container,
           {
             backgroundColor: screenBg,
-            paddingTop: Math.max(insets.top, 20) + 8,
-            paddingBottom: Math.max(insets.bottom, 16) + 8,
+            paddingTop: activeTab === 'camera' ? Math.max(insets.top, 8) : Math.max(insets.top, 20) + 8,
+            paddingBottom: Math.max(insets.bottom, 8) + 4,
           },
         ]}
       >
@@ -518,7 +535,13 @@ export default function HomeScreen({
 
         {/* 2. MAIN FEED OR CAMERA PREVIEW SECTION */}
         {activeTab === 'camera' ? (
-          <PalCameraPreview selectedThemeColor={selectedThemeColor} />
+          <PalCameraPreview
+            selectedThemeColor={selectedThemeColor}
+            timerMode={cameraTimerMode}
+            onToggleTimerMode={toggleTimerMode}
+            facing={cameraFacing}
+            onToggleFacing={toggleFacing}
+          />
         ) : (
           <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
             {userPalRooms.length > 0 ? (
@@ -672,14 +695,51 @@ export default function HomeScreen({
           </ScrollView>
         )}
 
-        {/* 3. BOTTOM LIQUID GLASS TAB SWITCHER (CAMERA / PALS) */}
-        <LiquidGlassNavPillBar
-          activeTab={activeTab}
-          onSelectTab={(t) => {
-            setActiveTab(t);
-          }}
-          isDark={isDark}
-        />
+        {/* 3. UNIFIED BOTTOM LIQUID GLASS NAVIGATION BAR */}
+        <View style={styles.unifiedBottomRow}>
+          {/* LEFT TIMER BUTTON (CAMERA TAB ONLY) */}
+          {activeTab === 'camera' ? (
+            <LiquidGlassIconButton
+              idPrefix="btnCameraTimer"
+              isDark={isDark}
+              onPress={toggleTimerMode}
+            >
+              <Image
+                source={require('../../assets/images/custom_timer_icon.png')}
+                style={{ width: 28, height: 28, tintColor: iconColor }}
+                resizeMode="contain"
+              />
+            </LiquidGlassIconButton>
+          ) : (
+            <View style={{ width: 44 }} />
+          )}
+
+          {/* CENTER TAB SWITCHER (CAMERA / PALS) */}
+          <LiquidGlassNavPillBar
+            activeTab={activeTab}
+            onSelectTab={(t) => {
+              setActiveTab(t);
+            }}
+            isDark={isDark}
+          />
+
+          {/* RIGHT CAMERA ROTATE BUTTON (CAMERA TAB ONLY) */}
+          {activeTab === 'camera' ? (
+            <LiquidGlassIconButton
+              idPrefix="btnCameraFlip"
+              isDark={isDark}
+              onPress={toggleFacing}
+            >
+              <Image
+                source={require('../../assets/images/custom_flip_icon.png')}
+                style={{ width: 30, height: 30, tintColor: iconColor }}
+                resizeMode="contain"
+              />
+            </LiquidGlassIconButton>
+          ) : (
+            <View style={{ width: 44 }} />
+          )}
+        </View>
 
         {/* PROFILE / SIGN OUT MENU MODAL */}
         <Modal
@@ -981,10 +1041,29 @@ const styles = StyleSheet.create({
     marginTop: -6,
   },
   /* 3. BOTTOM LIQUID GLASS TAB SWITCHER */
+  unifiedBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingTop: 2,
+    paddingBottom: 4,
+  },
+  extControlBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   bottomSwitcherContainer: {
     alignItems: 'center',
-    paddingTop: 6,
-    paddingBottom: 16,
   },
   liquidOuterCapsule: {
     width: 167.5,
