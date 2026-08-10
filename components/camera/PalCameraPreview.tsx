@@ -45,7 +45,7 @@ export default function PalCameraPreview({
 
   const [permission, requestPermission] = useCameraPermissions();
   const [flash, setFlash] = useState<FlashMode>('off');
-  const [zoomLevel, setZoomLevel] = useState<number>(0.05); // Native 1x optical zoom default
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0); // Default 1x selected
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
@@ -154,8 +154,8 @@ export default function PalCameraPreview({
     }
   }, [isRecording]);
 
-  const sideMargin = 8.75;
-  let cameraWidth = screenWidth - sideMargin * 2; // Increased camera width by 0.25dp
+  const sideMargin = 8.5;
+  let cameraWidth = screenWidth - sideMargin * 2; // Increased camera width by another 0.25dp
   let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
 
   const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
@@ -164,24 +164,14 @@ export default function PalCameraPreview({
     cameraHeight = maxCameraHeight;
   }
 
-  // Theme accent color
+  // Theme accent color (Full 100% vibrant brightness)
   const baseAccentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
     '#11D5F3';
   const logoTextColor =
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
-  // Helper to adjust color brightness (0.75 = 25% increased brightness over 50% dimmed)
-  const dimColorBrightness = (hex: string) => {
-    const cleanHex = hex.replace('#', '');
-    const num = parseInt(cleanHex, 16);
-    const r = Math.floor(((num >> 16) & 255) * 0.75);
-    const g = Math.floor(((num >> 8) & 255) * 0.75);
-    const b = Math.floor((num & 255) * 0.75);
-    return `rgb(${r}, ${g}, ${b})`;
-  };
-
-  const dimmedBorderColor = dimColorBrightness(baseAccentColor);
+  const dimmedBorderColor = baseAccentColor;
 
   const now = new Date();
   const currentTimeStr = `${now.getHours() % 12 || 12}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
@@ -303,18 +293,18 @@ export default function PalCameraPreview({
           },
         ]}
       >
-        {/* Border Overlay - Dead-Centered (50% Inside, 50% Outside Camera Frame Edge) */}
+        {/* Border Overlay - Dead-Centered 100% Bright Crisp Camera Frame Edge Boundary */}
         <View
           style={{
             position: 'absolute',
-            top: -0.625,
-            bottom: -0.625,
-            left: -0.625,
-            right: -0.625,
+            top: -0.75,
+            bottom: -0.75,
+            left: -0.75,
+            right: -0.75,
             borderRadius: 32,
-            borderWidth: 1.25,
-            borderColor: dimmedBorderColor,
-            opacity: 0.95,
+            borderWidth: 1.5,
+            borderColor: baseAccentColor,
+            opacity: 1.0,
             zIndex: 100,
           }}
           pointerEvents="none"
@@ -329,7 +319,7 @@ export default function PalCameraPreview({
             mode="video"
             flash={flash}
             enableTorch={flash === 'on'}
-            zoom={zoomLevel}
+            zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
           />
         </View>
 
@@ -372,83 +362,99 @@ export default function PalCameraPreview({
             </Animated.View>
           )}
 
-          {/* ZOOM OPTIONS (.5, 1) ROTATED 90 DEG CLOCKWISE */}
-          <View style={styles.zoomRowCentered}>
-            {[
-              { label: '.5', val: 0.02 },
-              { label: '1', val: 0.05 },
-            ].map((item) => {
-              const isSelected = zoomLevel === item.val;
-              return (
-                <TouchableOpacity
-                  key={item.label}
-                  activeOpacity={0.8}
-                  onPress={() => setZoomLevel(item.val)}
-                  style={[styles.zoomPillItem, isSelected && styles.activeZoomPillItem]}
-                >
-                  <Text style={[styles.zoomText, isSelected && styles.activeZoomText]}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
-          <TouchableOpacity
-            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
-            activeOpacity={0.8}
-            onPress={handleFlashPress}
-          >
-            <Image
-              source={require('../../assets/images/custom_flash_icon.png')}
+            {/* ZOOM NUMBERS (.5, 1) - EXACT MATCH TO USER SCREENSHOT: BARE TEXT ROTATED 90° WITH YELLOW ACTIVE COLOR */}
+            <View
               style={{
-                width: 35.5,
-                height: 35.5,
-                transform: [{ rotate: '90deg' }],
-                tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
+                position: 'absolute',
+                bottom: 104,
+                left: (cameraWidth - 70) / 2,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 20,
+                zIndex: 15,
               }}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-
-          {/* SMILEY CAPTURE SHUTTER BUTTON */}
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={startRecordSequence}
-            style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
-          >
-            {/* Concentric Outer Deep Blue Ring (#1B00E2) */}
-            <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
-              <Circle cx="41" cy="41" r="38.5" stroke="#1B00E2" strokeWidth="4" fill="none" />
-            </Svg>
-
-            <Animated.View
-              style={[
-                styles.smileyInnerCircle,
-                { backgroundColor: smileyColor },
-                {
-                  transform: [
-                    {
-                      rotate: isRecording ? fastSpin : idleSpin,
-                    },
-                  ],
-                },
-              ]}
             >
-              <Svg width={46} height={46} viewBox="0 0 24 24">
-                <Circle cx="8.5" cy="10" r="1.5" fill="#000000" />
-                <Circle cx="15.5" cy="10" r="1.5" fill="#000000" />
-                <Path
-                  d="M 7.5 14.5 C 9.5 18, 14.5 18, 16.5 14.5"
-                  stroke="#000000"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  fill="none"
-                />
+              {[
+                { label: '.5', val: 0.5 },
+                { label: '1', val: 1.0 },
+              ].map((item) => {
+                const isSelected = zoomLevel === item.val;
+                return (
+                  <TouchableOpacity
+                    key={item.label}
+                    activeOpacity={0.8}
+                    onPress={() => setZoomLevel(item.val)}
+                    style={{ padding: 4 }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: isSelected ? '800' : '600',
+                        color: isSelected ? '#FFCC00' : 'rgba(255, 255, 255, 0.75)',
+                        transform: [{ rotate: '90deg' }],
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
+            <TouchableOpacity
+              style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
+              activeOpacity={0.8}
+              onPress={handleFlashPress}
+            >
+              <Image
+                source={require('../../assets/images/custom_flash_icon.png')}
+                style={{
+                  width: 35.5,
+                  height: 35.5,
+                  transform: [{ rotate: '90deg' }],
+                  tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
+                }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+
+            {/* SMILEY CAPTURE SHUTTER BUTTON - EXACT MATCH TO USER SCREENSHOT */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={startRecordSequence}
+              style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
+            >
+              {/* Outer Concentric Deep Blue Border Ring */}
+              <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
+                <Circle cx="41" cy="41" r="39" stroke="#1000E5" strokeWidth="3.5" fill="none" />
               </Svg>
-            </Animated.View>
-          </TouchableOpacity>
+
+              <Animated.View
+                style={[
+                  styles.smileyInnerCircle,
+                  { backgroundColor: smileyColor },
+                  {
+                    transform: [
+                      {
+                        rotate: isRecording ? fastSpin : idleSpin,
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <Image
+                  source={require('../../assets/images/capture_smile.png')}
+                  style={{
+                    width: 71.7,
+                    height: 71.7,
+                    transform: [{ rotate: '90deg' }],
+                  }}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+            </TouchableOpacity>
 
           {/* RIGHT SIDE VERTICAL UNCLIPPED RECORDING PROGRESS BAR */}
           {isRecording && (
@@ -459,7 +465,7 @@ export default function PalCameraPreview({
                   width: 5,
                   top: 32, // straight boundary top offset
                   height: cameraHeight - 64, // straight boundary height
-                  right: -5.5, // moved left by 0.1dp
+                  right: -5.0, // moved left by 0.2dp
                 },
               ]}
               pointerEvents="none"
@@ -628,15 +634,27 @@ const styles = StyleSheet.create({
   activeZoomPillItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
+  activeYellowZoomPill: {
+    backgroundColor: '#FFCC00',
+    shadowColor: '#FFCC00',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   zoomText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     transform: [{ rotate: '90deg' }],
   },
   activeZoomText: {
     color: '#000000',
     fontWeight: '700',
+  },
+  activeYellowZoomText: {
+    color: '#000000',
+    fontWeight: '800',
   },
   flashBtnAbsolute: {
     position: 'absolute',
@@ -656,9 +674,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
