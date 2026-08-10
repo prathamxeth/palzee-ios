@@ -73,12 +73,12 @@ export default function PalCameraPreview({
     return () => clearInterval(interval);
   }, []);
 
-  // Smooth free rotation of smiley button when idle
+  // Smooth free rotation of smiley button when idle at medium pace
   useEffect(() => {
     Animated.loop(
       Animated.timing(idleRotateAnim, {
         toValue: 1,
-        duration: 12000,
+        duration: 5500,
         easing: Easing.linear,
         useNativeDriver: true,
       })
@@ -128,8 +128,8 @@ export default function PalCameraPreview({
     cameraHeight = maxCameraHeight;
   }
 
-  // Theme accent color matching exact screen outer edge color
-  const accentColor =
+  // Theme accent color with brightness reduced by 25%
+  const baseAccentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
     '#11D5F3';
   const logoTextColor =
@@ -221,22 +221,40 @@ export default function PalCameraPreview({
   });
 
   const smileyColor = isRecording ? DANCING_COLORS[colorIndex] : '#00F0FF';
+  const shutterSize = 82;
+  const centerShutterLeft = (cameraWidth - shutterSize) / 2;
 
   return (
     <View style={styles.container}>
-      {/* 1. EXACT CAMERA VIEWPORT CARD */}
+      {/* 1. EXACT CAMERA VIEWPORT CARD WITH 25% REDUCED BORDER BRIGHTNESS */}
       <View
         style={[
           styles.viewportCard,
           {
             width: cameraWidth,
             height: cameraHeight,
-            borderColor: accentColor,
+            borderColor: baseAccentColor,
+            opacity: 0.98,
+            borderWidth: 1.5,
             marginTop: 20,
           },
         ]}
       >
-        {/* Self-closing CameraView with native lens zoom scaling */}
+        {/* Border Overlay with 75% Brightness/Opacity */}
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              borderRadius: 32,
+              borderWidth: 1.5,
+              borderColor: baseAccentColor,
+              opacity: 0.75,
+            },
+          ]}
+          pointerEvents="none"
+        />
+
+        {/* Self-closing CameraView */}
         <CameraView
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
@@ -274,7 +292,7 @@ export default function PalCameraPreview({
             </View>
           )}
 
-          {/* ZOOM OPTIONS (.5, 1) ROTATED -90 DEG */}
+          {/* ZOOM OPTIONS (.5, 1) ROTATED -90 DEG ANCHORED ABOVE CENTERED SMILEY */}
           <View style={styles.zoomRowCentered}>
             {[
               { slot: 1, label: '.5', zoom: 0 },
@@ -299,53 +317,54 @@ export default function PalCameraPreview({
             })}
           </View>
 
-          {/* SHUTTER & FLASH ROW CENTERED HORIZONTALLY */}
-          <View style={styles.shutterOverlayRowCentered}>
-            {/* FLASH ICON ROTATED 90 DEGREES CLOCKWISE, WHITE FILLED, INCREASED BY 2.5DP */}
-            <TouchableOpacity style={styles.flashBtn} activeOpacity={0.8} onPress={toggleFlash}>
+          {/* NEW SOLID WHITE PNG FLASH ICON WITH 90DEG ROTATION */}
+          <TouchableOpacity
+            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 48 }]}
+            activeOpacity={0.8}
+            onPress={toggleFlash}
+          >
+            <Image
+              source={require('../../assets/images/custom_flash_icon.png')}
+              style={{
+                width: 30.5,
+                height: 30.5,
+                tintColor: flash === 'on' || flash === 'auto' ? '#FFD600' : undefined,
+                transform: [{ rotate: '90deg' }],
+              }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {/* SMILEY CAPTURE SHUTTER BUTTON MATCHING SETLOG AESTHETICS & EXTENDING WIDE TO CIRCULAR ENDS */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={startRecordSequence}
+            style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
+          >
+            {/* Concentric Outer Deep Blue Ring (#1B00E2) */}
+            <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
+              <Circle cx="41" cy="41" r="38.5" stroke="#1B00E2" strokeWidth="4" fill="none" />
+            </Svg>
+
+            <Animated.View
+              style={[
+                styles.smileyInnerCircle,
+                { backgroundColor: smileyColor },
+                {
+                  transform: [
+                    { rotate: isRecording ? fastSpin : idleSpin },
+                  ],
+                },
+              ]}
+            >
+              {/* SCALED CAPTURE_SMILE.PNG ASSET EXTENDING WIDE TO THE CIRCULAR ENDS WITH ZERO WASTED SPACING */}
               <Image
-                source={require('../../assets/images/custom_flash_icon.png')}
-                style={{
-                  width: 30.5,
-                  height: 30.5,
-                  tintColor: flash === 'on' || flash === 'auto' ? '#FFD600' : '#FFFFFF',
-                  transform: [{ rotate: '90deg' }],
-                }}
+                source={require('../../assets/images/capture_smile.png')}
+                style={styles.captureSmileAsset}
                 resizeMode="contain"
               />
-            </TouchableOpacity>
-
-            {/* FREELY ROTATING SMILEY CAPTURE SHUTTER BUTTON EXACTLY CENTERED */}
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={startRecordSequence}
-              style={styles.shutterWrapper}
-            >
-              {/* Concentric Outer Deep Blue Ring (#1B00E2) */}
-              <Svg width={80} height={80} style={StyleSheet.absoluteFill}>
-                <Circle cx="40" cy="40" r="37.5" stroke="#1B00E2" strokeWidth="4.5" fill="none" />
-              </Svg>
-
-              <Animated.View
-                style={[
-                  styles.smileyInnerCircle,
-                  { backgroundColor: smileyColor },
-                  {
-                    transform: [
-                      { rotate: isRecording ? fastSpin : idleSpin },
-                    ],
-                  },
-                ]}
-              >
-                {/* EXACT capture_smile.png IMAGE ASSET */}
-                <Image
-                  source={require('../../assets/images/capture_smile.png')}
-                  style={styles.captureSmileAsset}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </TouchableOpacity>
-          </View>
+            </Animated.View>
+          </TouchableOpacity>
 
           {/* SCREEN-EDGE ANCHORED VERTICAL PROGRESS BAR */}
           {isRecording && (
@@ -404,14 +423,13 @@ const styles = StyleSheet.create({
   viewportCard: {
     alignSelf: 'center',
     borderRadius: 32,
-    borderWidth: 1.5,
     position: 'relative',
     backgroundColor: '#000000',
     overflow: 'hidden',
   },
   centerTimeContainer: {
     ...StyleSheet.absoluteFillObject,
-    justify.content: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   verticalTimeText: {
@@ -419,7 +437,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.DelaGothicOne,
     fontSize: 24,
     fontWeight: 'bold',
-    transform: [{ rotate: '-90deg' }],
+    transform: [{ rotate: '90deg' }],
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
@@ -481,37 +499,34 @@ const styles = StyleSheet.create({
     color: '#FFD600',
     fontWeight: '800',
   },
-  shutterOverlayRowCentered: {
+  flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 44,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 22,
-  },
-  flashBtn: {
+    bottom: 64,
     width: 40,
     height: 40,
     borderRadius: 20,
-    justify.content: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  shutterWrapper: {
-    width: 80,
-    height: 80,
+  shutterWrapperAbsolute: {
+    position: 'absolute',
+    bottom: 44,
+    width: 82,
+    height: 82,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
     justifyContent: 'center',
     alignItems: 'center',
   },
   captureSmileAsset: {
-    width: 44,
-    height: 44,
+    width: 66,
+    height: 66,
+    transform: [{ scale: 1.12 }],
   },
   progressBarWrapper: {
     position: 'absolute',
