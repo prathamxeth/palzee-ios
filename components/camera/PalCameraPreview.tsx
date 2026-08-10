@@ -155,8 +155,8 @@ export default function PalCameraPreview({
     }
   }, [isRecording]);
 
-  const sideMargin = 8.875;
-  let cameraWidth = screenWidth - sideMargin * 2;
+  const sideMargin = 8.75;
+  let cameraWidth = screenWidth - sideMargin * 2; // Increased camera width by 0.25dp
   let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
 
   const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
@@ -165,20 +165,20 @@ export default function PalCameraPreview({
     cameraHeight = maxCameraHeight;
   }
 
-  // Theme accent color with brightness reduced by 25%
+  // Theme accent color
   const baseAccentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
     '#11D5F3';
   const logoTextColor =
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
-  // Helper to reduce color brightness by 50%
+  // Helper to adjust color brightness (0.75 = 25% increased brightness over 50% dimmed)
   const dimColorBrightness = (hex: string) => {
     const cleanHex = hex.replace('#', '');
     const num = parseInt(cleanHex, 16);
-    const r = Math.floor(((num >> 16) & 255) * 0.5);
-    const g = Math.floor(((num >> 8) & 255) * 0.5);
-    const b = Math.floor((num & 255) * 0.5);
+    const r = Math.floor(((num >> 16) & 255) * 0.75);
+    const g = Math.floor(((num >> 8) & 255) * 0.75);
+    const b = Math.floor((num & 255) * 0.75);
     return `rgb(${r}, ${g}, ${b})`;
   };
 
