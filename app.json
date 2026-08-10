@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "Palzee",
+    "slug": "palzee-ios",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/pal_logo.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#F7F6F3"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pratham.palzee",
+      "associatedDomains": ["webcredentials:palzee.app"],
+      "infoPlist": {
+        "NSCameraUsageDescription": "Palzee needs access to your camera to capture photos and videos for your daily pal feed.",
+        "NSMicrophoneUsageDescription": "Palzee needs access to your microphone to record audio for videos.",
+        "NSPhotoLibraryUsageDescription": "Palzee needs access to your photo library to pick images and videos.",
+        "NSPhotoLibraryAddUsageDescription": "Palzee needs access to save captured media to your photo library."
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/pal_logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Palzee needs camera permission to capture daily pal moments."
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/bricolage_grotesque_variable.ttf",
+            "./assets/fonts/courier_prime.ttf",
+            "./assets/fonts/dela_gothic_one_regular.ttf",
+            "./assets/fonts/google_sans_regular.ttf",
+            "./assets/fonts/ibm_plex_mono.ttf",
+            "./assets/fonts/jetbrains_mono_regular.ttf",
+            "./assets/fonts/ownglyph.ttf",
+            "./assets/fonts/roboto_medium_numbers.ttf",
+            "./assets/fonts/roboto_mono_regular.ttf",
+            "./assets/fonts/roboto_slab_regular.ttf",
+            "./assets/fonts/space_mono_regular.ttf",
+            "./assets/fonts/unpack.otf"
+          ]
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "scheme": "io.supabase.pals"
+  }
+}
