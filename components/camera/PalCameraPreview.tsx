@@ -16,8 +16,9 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
+import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
 
-const DANCING_COLORS = ['#11D5F3', '#65EA7B', '#FE9068', '#FE75F5', '#AA6DFE', '#5D96FF'];
+const DANCING_COLORS = ['#00F0FF', '#FF007F', '#7F00FF', '#00FF66', '#FFCC00', '#FF3366', '#00E5FF', '#A800FF'];
 
 type TimerMode = 'off' | '3s' | '5s' | 'timelapse' | 'jump_cut';
 
@@ -49,6 +50,9 @@ export default function PalCameraPreview({
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  // Video send preview window state
+  const [previewVideoUri, setPreviewVideoUri] = useState<string | null>(null);
+
   const cameraRef = useRef<any>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const rotationAnim = useRef(new Animated.Value(0)).current;
@@ -61,12 +65,11 @@ export default function PalCameraPreview({
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      let hours = now.getHours();
+      const hours = now.getHours();
       const minutes = now.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      const formattedMin = minutes < 10 ? `0${minutes}` : minutes;
-      setTimeText(`${hours}:${formattedMin} ${ampm}`);
+      const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+      const formattedMin = minutes < 10 ? `0${minutes}` : `${minutes}`;
+      setTimeText(`${formattedHours}:${formattedMin}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -121,29 +124,29 @@ export default function PalCameraPreview({
     return () => clearTimeout(timer);
   }, [timerMode]);
 
-  // Dancing colors during recording
+  // Dancing hex colors animation during recording & countdown
   useEffect(() => {
     let danceInterval: any = null;
-    if (isRecording) {
+    if (isRecording || countdown !== null) {
       danceInterval = setInterval(() => {
         setColorIndex((prev) => (prev + 1) % DANCING_COLORS.length);
-      }, 150);
+      }, 100);
     } else {
       setColorIndex(0);
     }
     return () => {
       if (danceInterval) clearInterval(danceInterval);
     };
-  }, [isRecording]);
+  }, [isRecording, countdown]);
 
-  // Fast rotation during recording
+  // Slow rotation during recording & countdown to match setlog aesthetics
   useEffect(() => {
-    if (isRecording) {
+    if (isRecording || countdown !== null) {
       rotationAnim.setValue(0);
       Animated.loop(
         Animated.timing(rotationAnim, {
           toValue: 1,
-          duration: 1500,
+          duration: 4000,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -152,7 +155,7 @@ export default function PalCameraPreview({
       rotationAnim.stopAnimation();
       rotationAnim.setValue(0);
     }
-  }, [isRecording]);
+  }, [isRecording, countdown]);
 
   const sideMargin = 8.5;
   let cameraWidth = screenWidth - sideMargin * 2; // Increased camera width by another 0.25dp
@@ -170,11 +173,6 @@ export default function PalCameraPreview({
     '#11D5F3';
   const logoTextColor =
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
-
-  const dimmedBorderColor = baseAccentColor;
-
-  const now = new Date();
-  const currentTimeStr = `${now.getHours() % 12 || 12}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -196,8 +194,12 @@ export default function PalCameraPreview({
   };
 
   const handleFlashPress = () => {
-    toggleFlash();
-    startRecordSequence();
+    if (flash === 'off') {
+      setFlash('on');
+      startRecordSequence();
+    } else {
+      setFlash('off');
+    }
   };
 
   const startRecordSequence = () => {
@@ -249,21 +251,25 @@ export default function PalCameraPreview({
       duration: durationMs,
       easing: Easing.linear,
       useNativeDriver: false,
-    }).start(async () => {
+    }).start();
+
+    try {
+      const videoPromise = cameraRef.current.recordAsync({
+        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
+      });
+
+      const video = await videoPromise;
       setIsRecording(false);
       progressAnim.setValue(0);
 
-      if (cameraRef.current) {
-        try {
-          const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-          if (photo?.uri && onCaptureSuccess) {
-            onCaptureSuccess(photo.uri);
-          }
-        } catch (e) {
-          console.error('Camera capture error:', e);
-        }
+      if (video?.uri) {
+        setPreviewVideoUri(video.uri);
       }
-    });
+    } catch (e) {
+      console.error('Video recording error:', e);
+      setIsRecording(false);
+      progressAnim.setValue(0);
+    }
   };
 
   const fastSpin = rotationAnim.interpolate({
@@ -276,7 +282,7 @@ export default function PalCameraPreview({
     outputRange: ['0deg', '360deg'],
   });
 
-  const smileyColor = isRecording ? DANCING_COLORS[colorIndex] : '#00F0FF';
+  const smileyColor = isRecording || countdown !== null ? DANCING_COLORS[colorIndex] : '#00F0FF';
   const shutterSize = 82;
   const centerShutterLeft = (cameraWidth - shutterSize) / 2;
 
@@ -362,99 +368,102 @@ export default function PalCameraPreview({
             </Animated.View>
           )}
 
-            {/* ZOOM NUMBERS (.5, 1) - EXACT MATCH TO USER SCREENSHOT: BARE TEXT ROTATED 90° WITH YELLOW ACTIVE COLOR */}
-            <View
-              style={{
-                position: 'absolute',
-                bottom: 104,
-                left: (cameraWidth - 70) / 2,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 20,
-                zIndex: 15,
-              }}
-            >
-              {[
-                { label: '.5', val: 0.5 },
-                { label: '1', val: 1.0 },
-              ].map((item) => {
-                const isSelected = zoomLevel === item.val;
-                return (
-                  <TouchableOpacity
-                    key={item.label}
-                    activeOpacity={0.8}
-                    onPress={() => setZoomLevel(item.val)}
-                    style={{ padding: 4 }}
+          {/* ZOOM NUMBERS (.5, 1) - EXACT MATCH TO USER SCREENSHOT: BARE TEXT ROTATED 90° WITH YELLOW ACTIVE COLOR */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 124,
+              left: (cameraWidth - 70) / 2,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 20,
+              zIndex: 15,
+            }}
+          >
+            {[
+              { label: '.5', val: 0.5 },
+              { label: '1', val: 1.0 },
+            ].map((item) => {
+              const isSelected = zoomLevel === item.val;
+              return (
+                <TouchableOpacity
+                  key={item.label}
+                  activeOpacity={0.8}
+                  onPress={() => setZoomLevel(item.val)}
+                  style={{ padding: 4 }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      fontWeight: isSelected ? '800' : '600',
+                      color: isSelected ? '#FFCC00' : '#FFFFFF',
+                      transform: [{ rotate: '90deg' }],
+                    }}
                   >
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: isSelected ? '800' : '600',
-                        color: isSelected ? '#FFCC00' : 'rgba(255, 255, 255, 0.75)',
-                        transform: [{ rotate: '90deg' }],
-                      }}
-                    >
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-            {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
-            <TouchableOpacity
-              style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
-              activeOpacity={0.8}
-              onPress={handleFlashPress}
+          {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
+          <TouchableOpacity
+            style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
+            activeOpacity={0.8}
+            onPress={handleFlashPress}
+          >
+            <Image
+              source={require('../../assets/images/custom_flash_icon.png')}
+              style={{
+                width: 35.5,
+                height: 35.5,
+                transform: [{ rotate: '90deg' }],
+                tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
+              }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {/* SMILEY CAPTURE SHUTTER BUTTON - EXACT MATCH TO USER SCREENSHOT */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={startRecordSequence}
+            style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
+          >
+            {/* Outer Concentric Deep Blue Border Ring */}
+            <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
+              <Circle cx="41" cy="41" r="39" stroke="#1000E5" strokeWidth="3.5" fill="none" />
+            </Svg>
+
+            <Animated.View
+              style={[
+                styles.smileyInnerCircle,
+                { backgroundColor: smileyColor },
+                {
+                  transform: [
+                    {
+                      rotate: isRecording || countdown !== null ? rotationAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      }) : idleSpin,
+                    },
+                  ],
+                },
+              ]}
             >
               <Image
-                source={require('../../assets/images/custom_flash_icon.png')}
+                source={require('../../assets/images/capture_smile.png')}
                 style={{
-                  width: 35.5,
-                  height: 35.5,
+                  width: 71.7,
+                  height: 71.7,
                   transform: [{ rotate: '90deg' }],
-                  tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
                 }}
                 resizeMode="contain"
               />
-            </TouchableOpacity>
-
-            {/* SMILEY CAPTURE SHUTTER BUTTON - EXACT MATCH TO USER SCREENSHOT */}
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={startRecordSequence}
-              style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
-            >
-              {/* Outer Concentric Deep Blue Border Ring */}
-              <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
-                <Circle cx="41" cy="41" r="39" stroke="#1000E5" strokeWidth="3.5" fill="none" />
-              </Svg>
-
-              <Animated.View
-                style={[
-                  styles.smileyInnerCircle,
-                  { backgroundColor: smileyColor },
-                  {
-                    transform: [
-                      {
-                        rotate: isRecording ? fastSpin : idleSpin,
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Image
-                  source={require('../../assets/images/capture_smile.png')}
-                  style={{
-                    width: 71.7,
-                    height: 71.7,
-                    transform: [{ rotate: '90deg' }],
-                  }}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </TouchableOpacity>
+            </Animated.View>
+          </TouchableOpacity>
 
           {/* RIGHT SIDE VERTICAL UNCLIPPED RECORDING PROGRESS BAR */}
           {isRecording && (
@@ -465,7 +474,7 @@ export default function PalCameraPreview({
                   width: 5,
                   top: 32, // straight boundary top offset
                   height: cameraHeight - 64, // straight boundary height
-                  right: -5.0, // moved left by 0.2dp
+                  right: -5.25, // moved left by 0.25dp
                 },
               ]}
               pointerEvents="none"
@@ -486,6 +495,21 @@ export default function PalCameraPreview({
           )}
         </View>
       </View>
+
+      {/* STANDALONE DEDICATED 16:9 VIDEO SEND PREVIEW WINDOW MODAL */}
+      <PalVideoSendPreviewModal
+        visible={!!previewVideoUri}
+        videoUri={previewVideoUri}
+        timeText={timeText}
+        selectedThemeColor={selectedThemeColor}
+        onRetake={() => setPreviewVideoUri(null)}
+        onSend={(uri) => {
+          setPreviewVideoUri(null);
+          if (onCaptureSuccess) {
+            onCaptureSuccess(uri);
+          }
+        }}
+      />
     </View>
   );
 }
@@ -555,6 +579,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+  },
+  previewCenterTimeContainer: {
+    position: 'absolute',
+    top: '40%', // Slightly above exact center (50%)
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
   },
   verticalTimeText: {
     color: '#FFFFFF',
@@ -658,7 +691,7 @@ const styles = StyleSheet.create({
   },
   flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 25,
+    bottom: 45,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -667,7 +700,7 @@ const styles = StyleSheet.create({
   },
   shutterWrapperAbsolute: {
     position: 'absolute',
-    bottom: 6,
+    bottom: 26,
     width: 82,
     height: 82,
     justifyContent: 'center',

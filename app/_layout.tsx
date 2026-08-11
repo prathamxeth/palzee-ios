@@ -1,7 +1,14 @@
 import React, { useEffect } from 'react';
+import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+
+LogBox.ignoreLogs([
+  '[expo-av]',
+  'Expo AV has been deprecated',
+  'Video component from `expo-av` is deprecated',
+]);
 
 SplashScreen.preventAutoHideAsync();
 
