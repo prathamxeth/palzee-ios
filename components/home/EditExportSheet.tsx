@@ -56,8 +56,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
           </LiquidGlassIconButton>
 
-          {/* CENTER: VLOG DROPDOWN PILL */}
-          <View style={styles.centerHeaderGroup}>
+          {/* CENTER: VLOG DROPDOWN PILL & CAMERA DOT (ABSOLUTELY CENTERED) */}
+          <View style={styles.centerHeaderGroup} pointerEvents="box-none">
             <TouchableOpacity
               style={[
                 styles.vlogPillBtn,
@@ -83,10 +83,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
-          {/* RIGHT: SHARE & CHAT BUTTONS */}
+          {/* RIGHT: SHARE & CHAT BUTTONS (+2.5dp ICON SIZE) */}
           <View style={styles.headerRightIcons}>
             <LiquidGlassIconButton idPrefix="btnVlogShare" isDark={isDark} onPress={() => {}}>
-              <Ionicons name="share-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+              <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
             </LiquidGlassIconButton>
 
             <LiquidGlassIconButton
@@ -97,27 +97,29 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 if (onOpenChat) onOpenChat();
               }}
             >
-              <Ionicons name="chatbubble-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+              <Ionicons name="chatbubble-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
             </LiquidGlassIconButton>
           </View>
         </View>
 
-        {/* 2. CENTER CONTENT SECTION */}
+        {/* 2. CENTER CONTENT SECTION (PERFECTLY CENTERED VERTICALLY) */}
         <View style={styles.centerContent}>
           {/* TV GLITCH / NOISE PREVIEW CARD */}
           <View
             style={[
               styles.glitchCard,
-              { backgroundColor: isDark ? '#1C1C1E' : '#DCDCDC' },
+              { backgroundColor: isDark ? '#1C1C1E' : '#D6D6D6' },
             ]}
           >
             {/* TV STATIC NOISE OVERLAY PATTERN */}
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="tvNoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.15} />
-                  <Stop offset="50%" stopColor="#000000" stopOpacity={0.08} />
-                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.12} />
+                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.18} />
+                  <Stop offset="25%" stopColor="#000000" stopOpacity={0.10} />
+                  <Stop offset="50%" stopColor="#FFFFFF" stopOpacity={0.15} />
+                  <Stop offset="75%" stopColor="#000000" stopOpacity={0.08} />
+                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.14} />
                 </LinearGradient>
               </Defs>
               <Rect width="100%" height="100%" fill="url(#tvNoiseGrad)" />
@@ -174,9 +176,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
     marginBottom: 20,
+    position: 'relative',
+    zIndex: 10,
   },
   centerHeaderGroup: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    zIndex: -1,
   },
   vlogPillBtn: {
     flexDirection: 'row',
@@ -196,19 +204,19 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   cameraDotRing: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#1C1C1E',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#2C2C2E',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 6,
   },
   cameraDotInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#8E8E93',
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
   },
   headerRightIcons: {
     flexDirection: 'row',
@@ -218,12 +226,13 @@ const styles = StyleSheet.create({
   centerContent: {
     flex: 1,
     justifyContent: 'center',
-    paddingBottom: 60,
+    alignItems: 'center',
+    paddingBottom: 20,
   },
   glitchCard: {
     width: '100%',
-    height: 250,
-    borderRadius: 28,
+    height: 240,
+    borderRadius: 24,
     padding: 20,
     justifyContent: 'space-between',
     overflow: 'hidden',
