@@ -19,6 +19,7 @@ interface CreatePalModalProps {
   onCreate: (groupName: string, maxCount: number) => Promise<void>;
   onJoin: (code: string) => Promise<void>;
   themeColor?: string;
+  initialTab?: 'create' | 'join';
 }
 
 type Step = 'FORM' | 'CREATING' | 'SUCCESS';
@@ -29,9 +30,10 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
   onCreate,
   onJoin,
   themeColor = 'blue',
+  initialTab = 'create',
 }) => {
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<'create' | 'join'>('create');
+  const [tab, setTab] = useState<'create' | 'join'>(initialTab);
   const [inputVal, setInputVal] = useState('');
   const [sizeKey, setSizeKey] = useState<'vlog' | '2' | '3' | '4' | '5' | '6-10'>('3');
   const [step, setStep] = useState<Step>('FORM');
@@ -59,9 +61,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
       setStep('FORM');
       setInputVal('');
       setSizeKey('3');
-      setTab('create');
+      setTab(initialTab);
     }
-  }, [visible]);
+  }, [visible, initialTab]);
 
   // Animated dots for CREATING step
   useEffect(() => {

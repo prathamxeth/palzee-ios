@@ -1,206 +1,163 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
-  FlatList,
   Modal,
+  Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/colors';
-import { Fonts } from '../../constants/typography';
-import { chatService } from '../../services/chatService';
-import { MessageDbItem, User } from '../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
+import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { User } from '../../types';
 
 interface ChatDrawerProps {
   visible: boolean;
   onClose: () => void;
-  palCode: string;
-  user: User;
+  palCode?: string;
+  user?: User;
+  isDark?: boolean;
+  selectedThemeColor?: string;
 }
 
 export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   visible,
   onClose,
-  palCode,
-  user,
+  isDark: isDarkProp,
+  selectedThemeColor = 'cyan',
 }) => {
-  const [messages, setMessages] = useState<MessageDbItem[]>([]);
-  const [text, setText] = useState('');
+  const insets = useSafeAreaInsets();
+  const systemScheme = useColorScheme();
+  const isDark = isDarkProp !== undefined ? isDarkProp : systemScheme === 'dark';
 
-  useEffect(() => {
-    if (!visible || !palCode) return;
-
-    chatService.getMessages(palCode).then(setMessages);
-
-    const subscription = chatService.subscribeToMessages(palCode, (newMsg) => {
-      setMessages((prev) => [...prev, newMsg]);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [visible, palCode]);
-
-  const handleSend = async () => {
-    if (!text.trim()) return;
-    const content = text.trim();
-    setText('');
-    await chatService.postMessage(palCode, user.id, user.displayName, content);
-  };
+  const screenBg = isDark ? '#121212' : '#FFFFFF';
+  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
+  const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <SafeAreaView style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Group Chat ({palCode})</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.closeIcon}>✕</Text>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: screenBg,
+              paddingTop: Math.max(insets.top, 16),
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
+          {/* TOP HEADER BAR: CENTERED "activity" TITLE + RIGHT CIRCULAR GLASS PILL CLOSE CROSS ICON */}
+          <View style={styles.headerRow}>
+            {/* Centered Title */}
+            <Text style={[styles.headerTitle, { color: textColor }]}>
+              activity
+            </Text>
+
+            {/* Right Circular Glass Pill Close Cross Icon Button */}
+            <TouchableOpacity
+              style={styles.closeButtonPill}
+              activeOpacity={0.8}
+              onPress={onClose}
+            >
+              <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+              <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="closeBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop
+                      offset="0%"
+                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                      stopOpacity={isDark ? 0.75 : 0.92}
+                    />
+                    <Stop
+                      offset="50%"
+                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                      stopOpacity={isDark ? 0.6 : 0.80}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                      stopOpacity={isDark ? 0.85 : 0.70}
+                    />
+                  </LinearGradient>
+                  <LinearGradient id="closeBtnBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop
+                      offset="0%"
+                      stopColor="#FFFFFF"
+                      stopOpacity={isDark ? 0.35 : 0.95}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={isDark ? '#FFFFFF' : '#000000'}
+                      stopOpacity={isDark ? 0.08 : 0.08}
+                    />
+                  </LinearGradient>
+                </Defs>
+                <Rect
+                  x="0.75"
+                  y="0.75"
+                  width="42.5"
+                  height="42.5"
+                  rx="21.25"
+                  fill="url(#closeBtnGrad)"
+                  stroke="url(#closeBtnBdr)"
+                  strokeWidth="1.5"
+                />
+              </Svg>
+
+              <Ionicons name="close" size={24} color={iconColor} />
             </TouchableOpacity>
           </View>
 
-          {/* Messages */}
-          <FlatList
-            data={messages}
-            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => {
-              const isMine = item.senderId === user.id;
-              return (
-                <View style={[styles.msgRow, isMine ? styles.myMsgRow : styles.theirMsgRow]}>
-                  {!isMine && <Text style={styles.senderName}>{item.senderDisplayName}</Text>}
-                  <View style={[styles.bubble, isMine ? styles.myBubble : styles.theirBubble]}>
-                    <Text style={[styles.msgText, isMine ? styles.myMsgText : styles.theirMsgText]}>
-                      {item.content}
-                    </Text>
-                  </View>
-                </View>
-              );
-            }}
-          />
-
-          {/* Input Bar */}
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              placeholder="Send a message..."
-              placeholderTextColor="#999"
-              value={text}
-              onChangeText={setText}
-            />
-            <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
-              <Text style={styles.sendBtnText}>Send</Text>
-            </TouchableOpacity>
+          {/* CONTENT BODY AREA */}
+          <View style={styles.bodyContainer}>
+            {/* Empty activity log surface */}
           </View>
-        </SafeAreaView>
-      </View>
+        </View>
+      </DynamicGlowContainer>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    marginTop: 60,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
   },
-  header: {
+  headerRow: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: '#EEE',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    position: 'relative',
   },
-  title: {
-    fontFamily: Fonts.Bricolage,
-    fontSize: 18,
+  headerTitle: {
+    fontSize: 22,
     fontWeight: '700',
-    color: '#1A1A1A',
+    letterSpacing: -0.3,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    textAlign: 'center',
   },
-  closeIcon: {
-    fontSize: 20,
-    color: '#666',
-  },
-  listContent: {
-    padding: 20,
-    gap: 12,
-  },
-  msgRow: {
-    maxWidth: '80%',
-  },
-  myMsgRow: {
-    alignSelf: 'flex-end',
-  },
-  theirMsgRow: {
-    alignSelf: 'flex-start',
-  },
-  senderName: {
-    fontSize: 11,
-    color: '#888',
-    marginBottom: 4,
-    marginLeft: 4,
-  },
-  bubble: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
-  },
-  myBubble: {
-    backgroundColor: Colors.PalFireRed,
-    borderBottomRightRadius: 4,
-  },
-  theirBubble: {
-    backgroundColor: '#F0F0F0',
-    borderBottomLeftRadius: 4,
-  },
-  msgText: {
-    fontSize: 15,
-  },
-  myMsgText: {
-    color: '#FFFFFF',
-  },
-  theirMsgText: {
-    color: '#1A1A1A',
-  },
-  inputRow: {
-    flexDirection: 'row',
+  closeButtonPill: {
+    position: 'absolute',
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderColor: '#EEE',
-    gap: 10,
+    overflow: 'hidden',
   },
-  input: {
+  bodyContainer: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#1A1A1A',
-  },
-  sendBtn: {
-    backgroundColor: Colors.PalFireRed,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-  },
-  sendBtnText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 14,
   },
 });

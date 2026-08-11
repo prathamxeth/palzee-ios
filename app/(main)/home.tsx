@@ -878,9 +878,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
-                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
+                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -988,7 +988,14 @@ export default function HomeScreen({
                   </TouchableOpacity>
 
                   {/* Option 2: log notifications */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                  <TouchableOpacity
+                    style={styles.dropdownMenuItem}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setShowProfileMenu(false);
+                      setShowChatDrawer(true);
+                    }}
+                  >
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="notifications-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -1045,9 +1052,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
@@ -1159,9 +1166,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
@@ -1445,6 +1452,8 @@ export default function HomeScreen({
           onClose={() => setShowChatDrawer(false)}
           palCode="palzee_space"
           user={user}
+          isDark={isDark}
+          selectedThemeColor={selectedThemeColor}
         />
 
         <EditExportSheet
