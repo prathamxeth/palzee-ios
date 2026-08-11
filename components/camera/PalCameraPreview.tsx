@@ -273,7 +273,10 @@ export default function PalCameraPreview({
       progressAnim.setValue(0);
 
       if (video?.uri) {
-        setPreviewVideoUri(video.uri);
+        // Allow iOS native camera 250ms to finalize and flush recorded file to disk
+        setTimeout(() => {
+          setPreviewVideoUri(video.uri);
+        }, 250);
       }
     } catch (e) {
       console.error('Video recording error:', e);

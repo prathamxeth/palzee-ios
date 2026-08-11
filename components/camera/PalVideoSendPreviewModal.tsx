@@ -178,9 +178,7 @@ export default function PalVideoSendPreviewModal({
 
   useEffect(() => {
     if (visible && videoUri && videoPlayerRef.current) {
-      videoPlayerRef.current.setPositionAsync(0).then(() => {
-        videoPlayerRef.current?.playAsync().catch(() => {});
-      }).catch(() => {});
+      videoPlayerRef.current.playFromPositionAsync(0).catch(() => {});
     }
   }, [visible, videoUri]);
 
@@ -193,24 +191,27 @@ export default function PalVideoSendPreviewModal({
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 320,
+          duration: 400,
           easing: Easing.bezier(0.16, 1, 0.3, 1), // Apple native iOS bezier curve
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 320,
+          duration: 400,
           easing: Easing.bezier(0.16, 1, 0.3, 1),
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 240,
+          duration: 320,
           easing: Easing.linear,
           useNativeDriver: true,
         }),
       ]).start(() => {
         textInputRef.current?.focus();
+        if (videoPlayerRef.current) {
+          videoPlayerRef.current.playFromPositionAsync(0).catch(() => {});
+        }
       });
     } else {
       setCaptionText('');
@@ -342,20 +343,40 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player */}
+                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
-                        ref={videoPlayerRef}
+                        ref={(ref) => {
+                          videoPlayerRef.current = ref;
+                          if (ref) {
+                            ref.playFromPositionAsync(0).catch(() => {});
+                          }
+                        }}
                         source={{ uri: videoUri }}
-                        style={StyleSheet.absoluteFillObject}
+                        style={isVertical ? rotatedStyle : horizontalStyle}
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
+                        rate={1.0}
+                        volume={1.0}
+                        progressUpdateIntervalMillis={100}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
                         onLoad={() => {
+                          videoPlayerRef.current?.playFromPositionAsync(0).catch(() => {});
+                        }}
+                        onPlaybackStatusUpdate={(status) => {
+                          if (status.isLoaded && !status.isPlaying && status.shouldPlay) {
+                            videoPlayerRef.current?.playAsync().catch(() => {});
+                          }
+                        }}
+                        onReadyForDisplay={(event) => {
                           videoPlayerRef.current?.playAsync().catch(() => {});
+                          if (event?.naturalSize) {
+                            const { width, height } = event.naturalSize;
+                            setIsVertical(height > width);
+                          }
                         }}
                       />
                     )}
@@ -480,7 +501,7 @@ const styles = StyleSheet.create({
   timeTextHorizontal: {
     color: '#FFFFFF',
     fontFamily: Fonts.DelaGothicOne,
-    fontSize: 18.5,
+    fontSize: 20,
     fontWeight: '800',
     letterSpacing: 0.8,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
