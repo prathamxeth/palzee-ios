@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   useColorScheme,
 } from 'react-native';
@@ -407,6 +408,10 @@ export default function HomeScreen({
   autoOpenCreateModal = false,
 }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
+  const systemScheme = useColorScheme();
+  const isDark = systemScheme === 'dark';
+  const accentColor =
+    Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#11D5F3';
   const [showGroupsView, setShowGroupsView] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(autoOpenCreateModal);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
@@ -795,7 +800,7 @@ export default function HomeScreen({
           )}
         </View>
 
-        {/* PROFILE / SIGN OUT MENU MODAL */}
+        {/* EXACT LIQUID GLASS PROFILE DROPDOWN MENU */}
         <Modal
           visible={showProfileMenu}
           transparent
@@ -803,63 +808,135 @@ export default function HomeScreen({
           onRequestClose={() => setShowProfileMenu(false)}
         >
           <TouchableOpacity
-            style={styles.modalOverlay}
+            style={styles.dropdownModalOverlay}
             activeOpacity={1}
             onPress={() => setShowProfileMenu(false)}
           >
-            <View
-              style={[
-                styles.profileCard,
-                { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
-              ]}
-            >
-              <Text style={[styles.profileNameText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                {user.displayName}
-              </Text>
-              <Text style={[styles.profileEmailText, { color: isDark ? '#8E8E93' : '#666666' }]}>
-                {user.email}
-              </Text>
-
-              {/* BORDER GLOW THEME COLOR SELECTOR */}
-              <Text
+            <TouchableWithoutFeedback>
+              <View
                 style={[
-                  styles.themeSectionLabel,
-                  { color: isDark ? '#8E8E93' : '#666666' },
+                  styles.profileDropdownCard,
+                  {
+                    backgroundColor: isDark ? 'rgba(22, 19, 36, 0.88)' : 'rgba(250, 245, 250, 0.92)',
+                    borderColor: accentColor,
+                    shadowColor: accentColor,
+                  },
                 ]}
               >
-                theme accent
-              </Text>
+                <BlurView
+                  intensity={Platform.OS === 'ios' ? 65 : 90}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
 
-              <View style={styles.themeGridRow}>
-                {Object.keys(Colors.BorderGlow).map((colorKey) => {
-                  const isSelected = selectedThemeColor === colorKey;
-                  const swatchColor =
-                    Colors.BorderGlow[colorKey as keyof typeof Colors.BorderGlow];
-                  return (
-                    <TouchableOpacity
-                      key={colorKey}
-                      activeOpacity={0.8}
-                      style={[
-                        styles.profileThemeSwatch,
-                        { backgroundColor: swatchColor },
-                        isSelected && styles.activeProfileThemeSwatch,
-                      ]}
-                      onPress={() => onSelectedThemeColorChange(colorKey)}
+                {/* 1. HEADER ROW: SMILEY AVATAR + USERNAME */}
+                <View style={styles.dropdownHeaderRow}>
+                  {/* Circle Avatar with accentColor background & capture_smile.png */}
+                  <View style={[styles.avatarCircle, { backgroundColor: accentColor }]}>
+                    <Image
+                      source={require('../../assets/images/capture_smile.png')}
+                      style={styles.avatarSmileyImage}
+                      resizeMode="contain"
                     />
-                  );
-                })}
-              </View>
+                  </View>
 
-              <TouchableOpacity
-                style={styles.signOutBtn}
-                onPress={() => {
-                  setShowProfileMenu(false);
-                  onSignOut();
-                }}
-              >
-                <Text style={styles.signOutBtnText}>Sign Out</Text>
-              </TouchableOpacity>
-            </View>
+                  {/* Username (Onboarding name or apple_user) */}
+                  <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                    {user?.authProvider === 'apple' || user?.displayName === 'apple_user'
+                      ? 'apple_user'
+                      : user?.displayName || 'apple_user'}
+                  </Text>
+                </View>
+
+                {/* 2. MENU OPTIONS LIST */}
+                <View style={styles.dropdownMenuList}>
+                  {/* Option 1: edit profile */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="person-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        edit profile
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                  </TouchableOpacity>
+
+                  {/* Option 2: log notifications */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="notifications-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        log notifications
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                  </TouchableOpacity>
+
+                  {/* Option 3: account */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="person-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        account
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                  </TouchableOpacity>
+
+                  {/* Option 4: feedback */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="add-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        feedback
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Option 5: guide */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="help-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        guide
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* THEME COLOR SELECTOR & SIGN OUT */}
+                <View style={styles.dropdownThemeSection}>
+                  <View style={styles.themeGridRow}>
+                    {Object.keys(Colors.BorderGlow).map((colorKey) => {
+                      const isSelected = selectedThemeColor === colorKey;
+                      const swatchColor = Colors.BorderGlow[colorKey as keyof typeof Colors.BorderGlow];
+                      return (
+                        <TouchableOpacity
+                          key={colorKey}
+                          activeOpacity={0.8}
+                          style={[
+                            styles.profileThemeSwatch,
+                            { backgroundColor: swatchColor },
+                            isSelected && styles.activeProfileThemeSwatch,
+                          ]}
+                          onPress={() => onSelectedThemeColorChange(colorKey)}
+                        />
+                      );
+                    })}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.dropdownSignOutBtn}
+                    onPress={() => {
+                      setShowProfileMenu(false);
+                      onSignOut();
+                    }}
+                  >
+                    <Text style={styles.dropdownSignOutText}>Sign Out</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
           </TouchableOpacity>
         </Modal>
 
@@ -1272,5 +1349,87 @@ const styles = StyleSheet.create({
   activeThemeSwatch: {
     borderColor: '#FFFFFF',
     transform: [{ scale: 1.1 }],
+  },
+  dropdownModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+  },
+  profileDropdownCard: {
+    position: 'absolute',
+    top: 60,
+    right: 16,
+    width: 280,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  dropdownHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
+  },
+  avatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarSmileyImage: {
+    width: 26,
+    height: 26,
+    transform: [{ rotate: '90deg' }],
+  },
+  dropdownUsernameText: {
+    marginLeft: 14,
+    fontSize: 16.5,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  dropdownMenuList: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+  },
+  dropdownMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  dropdownMenuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dropdownMenuText: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 12,
+    letterSpacing: 0.1,
+  },
+  dropdownThemeSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(150, 150, 150, 0.25)',
+  },
+  dropdownSignOutBtn: {
+    marginTop: 10,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  dropdownSignOutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF3B30',
   },
 });
