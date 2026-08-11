@@ -172,7 +172,6 @@ export default function PalVideoSendPreviewModal({
       slideAnim.setValue(screenWidth * 0.85);
       scaleAnim.setValue(0.96);
       fadeAnim.setValue(0);
-      videoPlayerRef.current?.playAsync();
 
       Animated.parallel([
         Animated.timing(slideAnim, {
