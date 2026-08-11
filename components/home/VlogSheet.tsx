@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
   useColorScheme,
   Platform,
 } from 'react-native';
@@ -12,12 +13,13 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LiquidGlassIconButton } from '../ui';
+import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 
 export interface VlogSheetProps {
   visible: boolean;
   onClose: () => void;
   user?: any;
+  selectedThemeColor?: string;
   onOpenCamera?: () => void;
   onOpenChat?: () => void;
 }
@@ -26,6 +28,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   visible,
   onClose,
   user,
+  selectedThemeColor = 'orange',
   onOpenCamera,
   onOpenChat,
 }) => {
@@ -43,190 +46,196 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: isDark ? '#000000' : '#F5F5F7', paddingTop: Math.max(insets.top, 12) },
-        ]}
-      >
-        {/* 1. TOP NAVIGATION HEADER BAR */}
-        <View style={styles.headerBar}>
-          {/* LEFT: BACK BUTTON */}
-          <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
-            <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
-          </LiquidGlassIconButton>
-
-          {/* CENTER: VLOG DROPDOWN PILL (EXACT HORIZONTAL CENTER & INLINE WITH ICONS) */}
-          <View style={styles.centerHeaderGroup} pointerEvents="box-none">
-            <TouchableOpacity
-              style={styles.vlogLiquidPillBtn}
-              activeOpacity={0.8}
-              onPress={() => setShowVlogDropdown(!showVlogDropdown)}
-            >
-              <BlurView
-                intensity={35}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-              />
-              <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                      stopOpacity={isDark ? 0.75 : 0.88}
-                    />
-                    <Stop
-                      offset="50%"
-                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                      stopOpacity={isDark ? 0.6 : 0.75}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                      stopOpacity={isDark ? 0.85 : 0.65}
-                    />
-                  </LinearGradient>
-                  <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                    <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
-                  </LinearGradient>
-                </Defs>
-                <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="94.5"
-                  height="42.5"
-                  rx="21.25"
-                  fill="url(#vlogPillGrad)"
-                  stroke="url(#vlogPillBdr)"
-                  strokeWidth="1.5"
-                />
-              </Svg>
-              <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                Vlog
-              </Text>
-              <Ionicons
-                name="chevron-down"
-                size={16}
-                color={isDark ? '#FFFFFF' : '#000000'}
-                style={{ marginLeft: 4 }}
-              />
-            </TouchableOpacity>
-
-            {/* CAMERA LENS INDICATOR DOT BELOW VLOG PILL */}
-            <View style={styles.cameraDotRing}>
-              <View style={styles.cameraDotInner} />
-            </View>
-          </View>
-
-          {/* RIGHT: SHARE & CHAT BUTTONS */}
-          <View style={styles.headerRightIcons}>
-            <LiquidGlassIconButton idPrefix="btnVlogShare" isDark={isDark} onPress={() => {}}>
-              <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: isDark ? '#000000' : '#F5F5F7', paddingTop: Math.max(insets.top, 12) },
+          ]}
+        >
+          {/* 1. TOP NAVIGATION HEADER BAR */}
+          <View style={styles.headerBar}>
+            {/* LEFT: BACK BUTTON */}
+            <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
+              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
             </LiquidGlassIconButton>
 
-            <LiquidGlassIconButton
-              idPrefix="btnVlogChat"
-              isDark={isDark}
-              onPress={() => {
-                onClose();
-                if (onOpenChat) onOpenChat();
-              }}
-            >
-              <Ionicons name="chatbubble-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
-            </LiquidGlassIconButton>
-          </View>
-        </View>
-
-        {/* 2. CENTER CONTENT SECTION (PERFECTLY CENTERED FROM ALL SIDES) */}
-        <View style={styles.centerContent}>
-          {/* TV GLITCH / NOISE PREVIEW CARD (EXACT 16:9 DIMENSIONS) */}
-          <View
-            style={[
-              styles.glitchCard,
-              { backgroundColor: isDark ? '#1C1C1E' : '#D6D6D6' },
-            ]}
-          >
-            {/* TV STATIC NOISE OVERLAY PATTERN */}
-            <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id="tvNoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.18} />
-                  <Stop offset="25%" stopColor="#000000" stopOpacity={0.10} />
-                  <Stop offset="50%" stopColor="#FFFFFF" stopOpacity={0.15} />
-                  <Stop offset="75%" stopColor="#000000" stopOpacity={0.08} />
-                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.14} />
-                </LinearGradient>
-              </Defs>
-              <Rect width="100%" height="100%" fill="url(#tvNoiseGrad)" />
-            </Svg>
-
-            {/* TOP LEFT USER ROW INSIDE CARD */}
-            <View style={styles.cardUserRow}>
-              <View style={styles.avatarCircle}>
-                <Ionicons name="happy" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={styles.usernameText}>{username}</Text>
-            </View>
-
-            {/* MIDDLE ROW: VLOG BOLD TEXT | LIQUID GLASS TAP TO CAPTURE PILL | 0:00 */}
-            <View style={styles.cardMiddleRow}>
-              <Text style={styles.cardVlogTitle}>Vlog</Text>
-
+            {/* CENTER: VLOG DROPDOWN PILL (EXACT HORIZONTAL CENTER & INLINE WITH ICONS) */}
+            <View style={styles.centerHeaderGroup} pointerEvents="box-none">
               <TouchableOpacity
-                style={styles.tapToCaptureBtn}
-                activeOpacity={0.85}
-                onPress={() => {
-                  onClose();
-                  if (onOpenCamera) onOpenCamera();
-                }}
+                style={styles.vlogLiquidPillBtn}
+                activeOpacity={0.8}
+                onPress={() => setShowVlogDropdown(!showVlogDropdown)}
               >
                 <BlurView
                   intensity={35}
                   tint={isDark ? 'dark' : 'light'}
                   style={StyleSheet.absoluteFill}
                 />
-                <Svg width="100%" height={40} style={StyleSheet.absoluteFill}>
+                <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
                   <Defs>
-                    <LinearGradient id="tapPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                       <Stop
                         offset="0%"
                         stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                        stopOpacity={isDark ? 0.85 : 0.95}
+                        stopOpacity={isDark ? 0.75 : 0.88}
+                      />
+                      <Stop
+                        offset="50%"
+                        stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                        stopOpacity={isDark ? 0.6 : 0.75}
                       />
                       <Stop
                         offset="100%"
-                        stopColor={isDark ? '#141416' : '#F2EFF4'}
-                        stopOpacity={isDark ? 0.75 : 0.90}
+                        stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                        stopOpacity={isDark ? 0.85 : 0.65}
                       />
                     </LinearGradient>
-                    <LinearGradient id="tapPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                    <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
                     </LinearGradient>
                   </Defs>
                   <Rect
                     x="0.75"
                     y="0.75"
-                    width="100%"
-                    height="38.5"
-                    rx="19.25"
-                    fill="url(#tapPillGrad)"
-                    stroke="url(#tapPillBdr)"
+                    width="94.5"
+                    height="42.5"
+                    rx="21.25"
+                    fill="url(#vlogPillGrad)"
+                    stroke="url(#vlogPillBdr)"
                     strokeWidth="1.5"
                   />
                 </Svg>
-                <Text style={[styles.tapToCaptureText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                  tap to capture
+                <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                  Vlog
                 </Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={16}
+                  color={isDark ? '#FFFFFF' : '#000000'}
+                  style={{ marginLeft: 4 }}
+                />
               </TouchableOpacity>
 
-              <Text style={styles.timestampText}>0:00</Text>
+              {/* CAMERA LENS INDICATOR DOT BELOW VLOG PILL */}
+              <View style={styles.cameraDotRing}>
+                <View style={styles.cameraDotInner} />
+              </View>
+            </View>
+
+            {/* RIGHT: SHARE & CHAT BUTTONS */}
+            <View style={styles.headerRightIcons}>
+              <LiquidGlassIconButton idPrefix="btnVlogShare" isDark={isDark} onPress={() => {}}>
+                <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
+              </LiquidGlassIconButton>
+
+              <LiquidGlassIconButton
+                idPrefix="btnVlogChat"
+                isDark={isDark}
+                onPress={() => {
+                  onClose();
+                  if (onOpenChat) onOpenChat();
+                }}
+              >
+                <Ionicons name="chatbubble-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
+              </LiquidGlassIconButton>
+            </View>
+          </View>
+
+          {/* 2. CENTER CONTENT SECTION (EXACT GEOMETRIC CENTER OF SCREEN) */}
+          <View style={styles.centerContent}>
+            {/* TV GLITCH / NOISE PREVIEW CARD (EXACT 16:9 DIMENSIONS) */}
+            <View
+              style={[
+                styles.glitchCard,
+                { backgroundColor: isDark ? '#1C1C1E' : '#D6D6D6' },
+              ]}
+            >
+              {/* TV STATIC NOISE OVERLAY PATTERN */}
+              <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="tvNoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.18} />
+                    <Stop offset="25%" stopColor="#000000" stopOpacity={0.10} />
+                    <Stop offset="50%" stopColor="#FFFFFF" stopOpacity={0.15} />
+                    <Stop offset="75%" stopColor="#000000" stopOpacity={0.08} />
+                    <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.14} />
+                  </LinearGradient>
+                </Defs>
+                <Rect width="100%" height="100%" fill="url(#tvNoiseGrad)" />
+              </Svg>
+
+              {/* TOP LEFT USER ROW INSIDE CARD */}
+              <View style={styles.cardUserRow}>
+                <View style={styles.avatarCircleFilled}>
+                  <Image
+                    source={require('../../assets/images/capture_smile.png')}
+                    style={styles.avatarSmileImage}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.usernameText}>{username}</Text>
+              </View>
+
+              {/* MIDDLE ROW: VLOG TEXT (LEFT) | TAP TO CAPTURE (CENTER) | 0:00 (RIGHT) */}
+              <View style={styles.cardMiddleRow} pointerEvents="box-none">
+                <Text style={styles.cardVlogTitle}>Vlog</Text>
+
+                <TouchableOpacity
+                  style={styles.tapToCaptureBtnCenter}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    onClose();
+                    if (onOpenCamera) onOpenCamera();
+                  }}
+                >
+                  <BlurView
+                    intensity={35}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Svg width="100%" height={40} style={StyleSheet.absoluteFill}>
+                    <Defs>
+                      <LinearGradient id="tapPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop
+                          offset="0%"
+                          stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                          stopOpacity={isDark ? 0.85 : 0.95}
+                        />
+                        <Stop
+                          offset="100%"
+                          stopColor={isDark ? '#141416' : '#F2EFF4'}
+                          stopOpacity={isDark ? 0.75 : 0.90}
+                        />
+                      </LinearGradient>
+                      <LinearGradient id="tapPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width="100%"
+                      height="38.5"
+                      rx="19.25"
+                      fill="url(#tapPillGrad)"
+                      stroke="url(#tapPillBdr)"
+                      strokeWidth="1.5"
+                    />
+                  </Svg>
+                  <Text style={[styles.tapToCaptureText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    tap to capture
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.timestampText}>0:00</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </DynamicGlowContainer>
     </Modal>
   );
 };
@@ -298,13 +307,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    paddingBottom: 20,
   },
   glitchCard: {
     width: '100%',
     aspectRatio: 16 / 9,
     borderRadius: 24,
-    padding: 20,
+    padding: 18,
     justifyContent: 'space-between',
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -312,30 +320,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 6,
+    position: 'relative',
   },
   cardUserRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginTop: -2,
+    marginLeft: -2,
   },
-  avatarCircle: {
+  avatarCircleFilled: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#FF6B4A',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarSmileImage: {
+    width: 24,
+    height: 24,
+    tintColor: '#FFFFFF',
   },
   usernameText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#555555',
+    color: '#636366',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   cardMiddleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    position: 'relative',
+    width: '100%',
+    marginVertical: 'auto',
   },
   cardVlogTitle: {
     fontSize: 22,
@@ -343,14 +363,16 @@ const styles = StyleSheet.create({
     color: '#4A4A4A',
     fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
   },
-  tapToCaptureBtn: {
+  tapToCaptureBtnCenter: {
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -70 }],
+    width: 140,
     height: 40,
-    paddingHorizontal: 20,
     borderRadius: 20,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
