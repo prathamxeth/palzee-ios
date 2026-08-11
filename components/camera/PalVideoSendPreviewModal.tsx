@@ -343,16 +343,24 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Standard Expo AV Motion Video Player */}
+                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Native Unrotated for Horizontal Captures */}
                     {visible && !!videoUri && (
                       <Video
+                        key={videoUri}
+                        ref={videoPlayerRef}
                         source={{ uri: videoUri }}
-                        style={StyleSheet.absoluteFill}
+                        style={isVertical ? rotatedStyle : horizontalStyle}
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
+                        onReadyForDisplay={(event) => {
+                          if (event?.naturalSize) {
+                            const { width, height } = event.naturalSize;
+                            setIsVertical(height > width);
+                          }
+                        }}
                       />
                     )}
 
@@ -372,14 +380,14 @@ export default function PalVideoSendPreviewModal({
                       />
                     </View>
 
-                    {/* Bottom Left HOLLOW / OUTLINE Volume Icon */}
+                    {/* Bottom Left SOLID BOLD Volume Icon */}
                     <TouchableOpacity
                       style={styles.videoOverlayIconLeft}
                       activeOpacity={0.8}
                       onPress={() => setIsMuted(!isMuted)}
                     >
                       <Ionicons
-                        name={isMuted ? 'volume-mute-outline' : 'volume-high-outline'}
+                        name={isMuted ? 'volume-mute' : 'volume-high'}
                         size={24}
                         color="#FFFFFF"
                       />
@@ -484,7 +492,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   captionInputBelowTime: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
