@@ -423,8 +423,14 @@ export default function HomeScreen({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color'>('main');
   const [showEditNameModal, setShowEditNameModal] = useState(false);
-  const [editFirstName, setEditFirstName] = useState(user?.displayName || 'apple_user');
-  const [editLastName, setEditLastName] = useState('');
+  const [editFirstName, setEditFirstName] = useState(() => {
+    const name = user?.displayName || 'apple_user';
+    return name.includes('_') ? name.split('_')[0] : name.split(' ')[0] || 'apple';
+  });
+  const [editLastName, setEditLastName] = useState(() => {
+    const name = user?.displayName || 'apple_user';
+    return name.includes('_') ? name.split('_').slice(1).join(' ') : name.split(' ').slice(1).join(' ') || 'user';
+  });
   const [activeTab, setActiveTab] = useState<'camera' | 'pals'>('pals');
   const [userPalRooms, setUserPalRooms] = useState<PalRoom[]>([]);
 
@@ -1033,11 +1039,24 @@ export default function HomeScreen({
 
                   {/* Edit Profile Sub-Menu Items List (Box expanded to fit pushed down text) */}
                   <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
-                    {/* Sub-Option 1: display name -> OPENS EDIT NAME MODAL */}
+                    {/* Sub-Option 1: display name -> OPENS EDIT NAME MODAL WITH SEPARATE FIRST/LAST NAME */}
                     <TouchableOpacity
                       style={styles.dropdownMenuItem}
                       activeOpacity={0.7}
                       onPress={() => {
+                        const currentName = user?.displayName || 'apple_user';
+                        if (currentName.includes('_')) {
+                          const parts = currentName.split('_');
+                          setEditFirstName(parts[0] || 'apple');
+                          setEditLastName(parts.slice(1).join('_') || 'user');
+                        } else if (currentName.includes(' ')) {
+                          const parts = currentName.split(' ');
+                          setEditFirstName(parts[0] || 'apple');
+                          setEditLastName(parts.slice(1).join(' ') || 'user');
+                        } else {
+                          setEditFirstName(currentName);
+                          setEditLastName('');
+                        }
                         setShowProfileMenu(false);
                         setShowEditNameModal(true);
                       }}
@@ -1189,36 +1208,41 @@ export default function HomeScreen({
                     width: '86%',
                     maxWidth: 340,
                     borderRadius: 28,
-                    backgroundColor: isDark ? 'rgba(20, 16, 36, 0.96)' : 'rgba(250, 244, 252, 0.98)',
+                    backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
                     padding: 22,
-                    shadowColor: isDark ? accentColor : '#000000',
+                    shadowColor: '#000000',
                     shadowOffset: { width: 0, height: 12 },
-                    shadowOpacity: 0.35,
+                    shadowOpacity: isDark ? 0.35 : 0.15,
                     shadowRadius: 20,
                     elevation: 16,
                     borderWidth: 0,
                     overflow: 'hidden',
                   }}
                 >
-                  {/* SMOOTH DIAGONAL GRADIENT GLOW FILL */}
-                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                    <Defs>
-                      <LinearGradient id="editNameDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.40} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.18 : 0.15} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.02} />
-                      </LinearGradient>
-                    </Defs>
-                    <Rect width="100%" height="100%" fill="url(#editNameDiagonalGlow)" />
-                  </Svg>
-
-                  <BlurView intensity={Platform.OS === 'ios' ? 80 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   {/* Header Title */}
-                  <Text style={{ fontSize: 20, fontWeight: '700', color: isDark ? '#FFFFFF' : '#1C1C1E', marginBottom: 4, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      fontWeight: '700',
+                      color: isDark ? '#FFFFFF' : '#1C1C1E',
+                      marginBottom: 4,
+                      letterSpacing: -0.2,
+                      fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                    }}
+                  >
                     edit name
                   </Text>
-                  <Text style={{ fontSize: 14, fontWeight: '400', color: isDark ? 'rgba(255, 255, 255, 0.60)' : 'rgba(0, 0, 0, 0.55)', marginBottom: 18, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '400',
+                      color: isDark ? 'rgba(255, 255, 255, 0.60)' : 'rgba(0, 0, 0, 0.55)',
+                      marginBottom: 16,
+                      letterSpacing: -0.1,
+                      fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                    }}
+                  >
                     enter your name
                   </Text>
 
@@ -1228,16 +1252,17 @@ export default function HomeScreen({
                       borderRadius: 20,
                       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
                       paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      marginBottom: 20,
+                      paddingVertical: 8,
+                      marginBottom: 18,
                     }}
                   >
                     <TextInput
                       style={{
-                        fontSize: 17,
-                        fontWeight: '500',
+                        fontSize: 15,
+                        fontWeight: '600',
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
-                        paddingVertical: 8,
+                        paddingVertical: 7,
+                        letterSpacing: -0.1,
                         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
                       }}
                       value={editFirstName}
@@ -1252,10 +1277,11 @@ export default function HomeScreen({
 
                     <TextInput
                       style={{
-                        fontSize: 17,
-                        fontWeight: '400',
+                        fontSize: 15,
+                        fontWeight: '500',
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
-                        paddingVertical: 8,
+                        paddingVertical: 7,
+                        letterSpacing: -0.1,
                         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
                       }}
                       value={editLastName}
@@ -1271,8 +1297,8 @@ export default function HomeScreen({
                     <TouchableOpacity
                       style={{
                         flex: 1,
-                        height: 48,
-                        borderRadius: 24,
+                        height: 46,
+                        borderRadius: 23,
                         backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -1280,7 +1306,15 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => setShowEditNameModal(false)}
                     >
-                      <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#FFFFFF' : '#1C1C1E', fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: '600',
+                          color: isDark ? '#FFFFFF' : '#1C1C1E',
+                          letterSpacing: -0.1,
+                          fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                        }}
+                      >
                         cancel
                       </Text>
                     </TouchableOpacity>
@@ -1288,18 +1322,32 @@ export default function HomeScreen({
                     <TouchableOpacity
                       style={{
                         flex: 1,
-                        height: 48,
-                        borderRadius: 24,
+                        height: 46,
+                        borderRadius: 23,
                         backgroundColor: accentColor,
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}
                       activeOpacity={0.8}
                       onPress={() => {
+                        const updatedDisplayName = editLastName.trim()
+                          ? `${editFirstName.trim()} ${editLastName.trim()}`
+                          : editFirstName.trim();
+                        if (user) {
+                          user.displayName = updatedDisplayName;
+                        }
                         setShowEditNameModal(false);
                       }}
                     >
-                      <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: '600',
+                          color: '#FFFFFF',
+                          letterSpacing: -0.1,
+                          fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                        }}
+                      >
                         save
                       </Text>
                     </TouchableOpacity>
