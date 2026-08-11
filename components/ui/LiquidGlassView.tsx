@@ -10,11 +10,6 @@ interface LiquidGlassProps {
   accentColor?: string;
   borderRadius?: number;
   variant?: 'regular' | 'clear';
-  renderer?: 'auto' | 'native' | 'metal';
-  cornerStyle?: 'continuous' | 'circular';
-  tint?: string;
-  interactive?: boolean;
-  enableBackgroundExtension?: boolean;
 }
 
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
@@ -23,10 +18,9 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   isDark = false,
   borderRadius = 26,
   variant = 'clear',
-  enableBackgroundExtension = true,
 }) => {
   const isClear = variant === 'clear';
-  const surfaceAlpha = isClear ? (isDark ? 0.70 : 0.72) : (isDark ? 0.88 : 0.90);
+  const surfaceAlpha = isClear ? (isDark ? 0.65 : 0.65) : (isDark ? 0.90 : 0.90);
   const blurIntensity = isClear ? 65 : 85;
 
   return (
@@ -40,46 +34,32 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         },
       ]}
     >
-      {/* 1. APPLE LIQUID GLASS BACKGROUND EXTENSION EFFECT LAYER */}
-      {enableBackgroundExtension && (
-        <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-          <Defs>
-            <LinearGradient id="backgroundExtensionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor="#00E5FF" stopOpacity={isDark ? 0.45 : 0.55} />
-              <Stop offset="30%" stopColor="#FF77E9" stopOpacity={isDark ? 0.22 : 0.30} />
-              <Stop offset="70%" stopColor="#A4C6FF" stopOpacity={isDark ? 0.12 : 0.18} />
-              <Stop offset="100%" stopColor={isDark ? '#1C1C1E' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
-            </LinearGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill="url(#backgroundExtensionGrad)" />
-        </Svg>
-      )}
+      {/* 1. TOP-LEFT LIQUID CYAN-PINK COLOR SPLASH MIXING BEHIND FIRST TEXT OPTION */}
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+        <Defs>
+          <LinearGradient id="auroraTopLeftGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <Stop offset="0%" stopColor="#00E5FF" stopOpacity={isDark ? 0.55 : 0.65} />
+            <Stop offset="22%" stopColor="#FF77E9" stopOpacity={isDark ? 0.28 : 0.35} />
+            <Stop offset="55%" stopColor={isDark ? '#1C1C1E' : '#FFFFFF'} stopOpacity={0.0} />
+          </LinearGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#auroraTopLeftGlow)" />
+      </Svg>
 
-      {/* 2. FROSTED MATERIAL BACKDROP BLUR */}
+      {/* 2. FROSTED BACKDROP BLUR (EXPO-BLUR) */}
       <BlurView
         intensity={Platform.OS === 'ios' ? blurIntensity : 90}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 3. GLOSSY TOP HIGHLIGHT REFLECTION */}
+      {/* 3. SPECULAR WHITE BORDER HIGHLIGHT STROKE */}
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
         <Defs>
-          <LinearGradient id="topGlossReflection" x1="0%" y1="0%" x2="0%" y2="40%">
-            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.25 : 0.50} />
-            <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.0} />
-          </LinearGradient>
-        </Defs>
-        <Rect width="100%" height="40%" fill="url(#topGlossReflection)" />
-      </Svg>
-
-      {/* 4. APPLE SPECULAR HIGHLIGHT BORDER RING (Continuous Curve) */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <Defs>
-          <LinearGradient id="appleSpecularRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.60 : 0.98} />
-            <Stop offset="45%" stopColor={isDark ? '#A4C6FF' : '#D8C2FF'} stopOpacity={isDark ? 0.30 : 0.50} />
-            <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.12 : 0.22} />
+          <LinearGradient id="liquidPillBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.50 : 0.95} />
+            <Stop offset="45%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.20 : 0.40} />
+            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
           </LinearGradient>
         </Defs>
         <Rect
@@ -90,7 +70,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           rx={borderRadius - 1}
           ry={borderRadius - 1}
           fill="none"
-          stroke="url(#appleSpecularRing)"
+          stroke="url(#liquidPillBorder)"
           strokeWidth="1.2"
         />
       </Svg>
