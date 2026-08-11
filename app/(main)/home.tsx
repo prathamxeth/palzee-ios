@@ -28,7 +28,7 @@ import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
-import { VlogSheet } from '../../components/home/EditExportSheet';
+import { VlogSheet } from '../../components/home/VlogSheet';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';

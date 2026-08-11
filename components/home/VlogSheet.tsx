@@ -8,10 +8,10 @@ import {
   useColorScheme,
   Platform,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui';
 
 export interface VlogSheetProps {
@@ -194,6 +194,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   );
 };
 
+export const EditExportSheet = VlogSheet;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -324,35 +326,4 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
-  cardBottomRow: {
-    alignItems: 'flex-end',
-  },
-  editCaptionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EBEBEF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 22,
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  captionIconText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3A3A3C',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-  },
-  editCaptionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1C1C1E',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-  },
 });
-
-export const EditExportSheet = VlogSheet;
