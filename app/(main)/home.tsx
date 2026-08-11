@@ -865,33 +865,20 @@ export default function HomeScreen({
                   style={[
                     styles.addDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
-                      shadowColor: isDark ? accentColor : '#000000',
+                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.80)',
+                      shadowColor: '#000000',
                     },
                   ]}
                 >
-                  {/* INNER DIAGONAL AMBIENT THEME GLOW FILL */}
-                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                    <Defs>
-                      <LinearGradient id="addMenuDiagonalGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
-                      </LinearGradient>
-                    </Defs>
-                    <Rect width="100%" height="100%" fill="url(#addMenuDiagonalGlow)" />
-                  </Svg>
-
-                  {/* FROSTED GLASS BACKDROP */}
+                  {/* FROSTED LIQUID GLASS BACKDROP (ZERO COLOR TINT) */}
                   <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   {/* SOFT SPECULAR HIGHLIGHT BORDER STROKE */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
-                      <LinearGradient id="addCardBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
+                      <LinearGradient id="addCardBorderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.30 : 0.85} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
                       </LinearGradient>
                     </Defs>
                     <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#addCardBorderGradient)" strokeWidth="0.8" />
@@ -899,7 +886,7 @@ export default function HomeScreen({
 
                   {/* ADD MENU ITEMS LIST */}
                   <View style={{ paddingVertical: 10, paddingHorizontal: 6 }}>
-                    {/* Option 1: create a log */}
+                    {/* Option 1: create a pal */}
                     <TouchableOpacity
                       style={styles.addMenuItem}
                       activeOpacity={0.7}
@@ -910,11 +897,11 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        create a log
+                        create a pal
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Option 2: join a log */}
+                    {/* Option 2: join a pal */}
                     <TouchableOpacity
                       style={styles.addMenuItem}
                       activeOpacity={0.7}
@@ -925,7 +912,7 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        join a log
+                        join a pal
                       </Text>
                     </TouchableOpacity>
                   </View>
