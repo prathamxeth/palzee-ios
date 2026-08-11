@@ -1033,8 +1033,15 @@ export default function HomeScreen({
 
                   {/* Edit Profile Sub-Menu Items List (Box expanded to fit pushed down text) */}
                   <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
-                    {/* Sub-Option 1: display name */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    {/* Sub-Option 1: display name -> OPENS EDIT NAME MODAL */}
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        setShowEditNameModal(true);
+                      }}
+                    >
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
                         display name
                       </Text>
@@ -1157,6 +1164,149 @@ export default function HomeScreen({
               )}
               </View>
             </TouchableWithoutFeedback>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* EXACT EDIT NAME MODAL MATCHING ATTACHED SCREENSHOT */}
+        <Modal
+          visible={showEditNameModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowEditNameModal(false)}
+        >
+          <TouchableOpacity
+            style={styles.dropdownModalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowEditNameModal(false)}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View
+                  style={{
+                    width: '86%',
+                    maxWidth: 340,
+                    borderRadius: 28,
+                    backgroundColor: isDark ? 'rgba(20, 16, 36, 0.96)' : 'rgba(250, 244, 252, 0.98)',
+                    padding: 22,
+                    shadowColor: isDark ? accentColor : '#000000',
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowOpacity: 0.35,
+                    shadowRadius: 20,
+                    elevation: 16,
+                    borderWidth: 0,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* SMOOTH DIAGONAL GRADIENT GLOW FILL */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                    <Defs>
+                      <LinearGradient id="editNameDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.40} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.18 : 0.15} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.02} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#editNameDiagonalGlow)" />
+                  </Svg>
+
+                  <BlurView intensity={Platform.OS === 'ios' ? 80 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                  {/* Header Title */}
+                  <Text style={{ fontSize: 20, fontWeight: '700', color: isDark ? '#FFFFFF' : '#1C1C1E', marginBottom: 4, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                    edit name
+                  </Text>
+                  <Text style={{ fontSize: 14, fontWeight: '400', color: isDark ? 'rgba(255, 255, 255, 0.60)' : 'rgba(0, 0, 0, 0.55)', marginBottom: 18, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                    enter your name
+                  </Text>
+
+                  {/* Input Box Container */}
+                  <View
+                    style={{
+                      borderRadius: 20,
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      marginBottom: 20,
+                    }}
+                  >
+                    <TextInput
+                      style={{
+                        fontSize: 17,
+                        fontWeight: '500',
+                        color: isDark ? '#FFFFFF' : '#1C1C1E',
+                        paddingVertical: 8,
+                        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                      }}
+                      value={editFirstName}
+                      onChangeText={setEditFirstName}
+                      placeholder="First name"
+                      placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)'}
+                      autoFocus
+                      autoCorrect={false}
+                    />
+
+                    <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)', marginVertical: 4 }} />
+
+                    <TextInput
+                      style={{
+                        fontSize: 17,
+                        fontWeight: '400',
+                        color: isDark ? '#FFFFFF' : '#1C1C1E',
+                        paddingVertical: 8,
+                        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                      }}
+                      value={editLastName}
+                      onChangeText={setEditLastName}
+                      placeholder="Last"
+                      placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)'}
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  {/* Action Buttons Row */}
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      activeOpacity={0.7}
+                      onPress={() => setShowEditNameModal(false)}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#FFFFFF' : '#1C1C1E', fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                        cancel
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: accentColor,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setShowEditNameModal(false);
+                      }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' }}>
+                        save
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
           </TouchableOpacity>
         </Modal>
 
