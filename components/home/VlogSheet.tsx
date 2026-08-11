@@ -56,25 +56,69 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
           </LiquidGlassIconButton>
 
-          {/* CENTER: VLOG DROPDOWN PILL (IN-LINE WITH LEFT & RIGHT ICONS) */}
-          <TouchableOpacity
-            style={[
-              styles.vlogPillBtn,
-              { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
-            ]}
-            activeOpacity={0.8}
-            onPress={() => setShowVlogDropdown(!showVlogDropdown)}
-          >
-            <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-              Vlog
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={16}
-              color={isDark ? '#FFFFFF' : '#000000'}
-              style={{ marginLeft: 4 }}
-            />
-          </TouchableOpacity>
+          {/* CENTER: VLOG DROPDOWN PILL (EXACT HORIZONTAL CENTER & INLINE WITH ICONS) */}
+          <View style={styles.centerHeaderGroup} pointerEvents="box-none">
+            <TouchableOpacity
+              style={styles.vlogLiquidPillBtn}
+              activeOpacity={0.8}
+              onPress={() => setShowVlogDropdown(!showVlogDropdown)}
+            >
+              <BlurView
+                intensity={35}
+                tint={isDark ? 'dark' : 'light'}
+                style={StyleSheet.absoluteFill}
+              />
+              <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop
+                      offset="0%"
+                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                      stopOpacity={isDark ? 0.75 : 0.88}
+                    />
+                    <Stop
+                      offset="50%"
+                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                      stopOpacity={isDark ? 0.6 : 0.75}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                      stopOpacity={isDark ? 0.85 : 0.65}
+                    />
+                  </LinearGradient>
+                  <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                    <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                  </LinearGradient>
+                </Defs>
+                <Rect
+                  x="0.75"
+                  y="0.75"
+                  width="94.5"
+                  height="42.5"
+                  rx="21.25"
+                  fill="url(#vlogPillGrad)"
+                  stroke="url(#vlogPillBdr)"
+                  strokeWidth="1.5"
+                />
+              </Svg>
+              <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                Vlog
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={16}
+                color={isDark ? '#FFFFFF' : '#000000'}
+                style={{ marginLeft: 4 }}
+              />
+            </TouchableOpacity>
+
+            {/* CAMERA LENS INDICATOR DOT BELOW VLOG PILL */}
+            <View style={styles.cameraDotRing}>
+              <View style={styles.cameraDotInner} />
+            </View>
+          </View>
 
           {/* RIGHT: SHARE & CHAT BUTTONS */}
           <View style={styles.headerRightIcons}>
@@ -95,16 +139,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           </View>
         </View>
 
-        {/* CAMERA LENS DOT DIRECTLY UNDERNEATH VLOG PILL */}
-        <View style={styles.cameraDotWrapper}>
-          <View style={styles.cameraLensDotOuter}>
-            <View style={styles.cameraLensDotInner} />
-          </View>
-        </View>
-
-        {/* 2. CENTER CONTENT SECTION */}
+        {/* 2. CENTER CONTENT SECTION (PERFECTLY CENTERED FROM ALL SIDES) */}
         <View style={styles.centerContent}>
-          {/* TV GLITCH / NOISE PREVIEW CARD */}
+          {/* TV GLITCH / NOISE PREVIEW CARD (EXACT 16:9 DIMENSIONS) */}
           <View
             style={[
               styles.glitchCard,
@@ -206,39 +243,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 8,
-    marginBottom: 4,
+    marginBottom: 20,
+    position: 'relative',
+    zIndex: 10,
   },
-  vlogPillBtn: {
+  centerHeaderGroup: {
+    position: 'absolute',
+    top: 4,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: -1,
+  },
+  vlogLiquidPillBtn: {
+    width: 96,
+    height: 44,
+    borderRadius: 22,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 22,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative',
   },
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
-  cameraDotWrapper: {
-    alignItems: 'center',
-    marginTop: -6,
-    marginBottom: 16,
-  },
-  cameraLensDotOuter: {
+  cameraDotRing: {
     width: 14,
     height: 14,
     borderRadius: 7,
     backgroundColor: '#3A3A3C',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 6,
   },
-  cameraLensDotInner: {
+  cameraDotInner: {
     width: 6,
     height: 6,
     borderRadius: 3,
@@ -255,11 +297,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
     paddingBottom: 20,
   },
   glitchCard: {
     width: '100%',
-    height: 240,
+    aspectRatio: 16 / 9,
     borderRadius: 24,
     padding: 20,
     justifyContent: 'space-between',
