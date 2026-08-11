@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   StyleSheet,
@@ -8,14 +8,18 @@ import {
   Image,
   useColorScheme,
   Platform,
+  Animated,
+  Easing,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
+
+import { CRTStaticCard } from './CRTStaticCard';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -41,6 +45,41 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
+  const [cardLayout, setCardLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+
+  const noiseAnimX = useRef(new Animated.Value(0)).current;
+  const noiseAnimY = useRef(new Animated.Value(0)).current;
+  const scanlineAnim = useRef(new Animated.Value(-50)).current;
+
+  useEffect(() => {
+    if (!visible) return;
+
+    const noiseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(noiseAnimX, { toValue: -8, duration: 80, useNativeDriver: true }),
+        Animated.timing(noiseAnimX, { toValue: 6, duration: 60, useNativeDriver: true }),
+        Animated.timing(noiseAnimY, { toValue: -6, duration: 70, useNativeDriver: true }),
+        Animated.timing(noiseAnimY, { toValue: 4, duration: 90, useNativeDriver: true }),
+      ])
+    );
+
+    const scanlineLoop = Animated.loop(
+      Animated.timing(scanlineAnim, {
+        toValue: 250,
+        duration: 2200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+
+    noiseLoop.start();
+    scanlineLoop.start();
+
+    return () => {
+      noiseLoop.stop();
+      scanlineLoop.stop();
+    };
+  }, [visible]);
 
   return (
     <Modal
@@ -122,8 +161,18 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               </TouchableOpacity>
 
               {/* CAMERA LENS INDICATOR DOT BELOW VLOG PILL */}
-              <View style={styles.cameraDotRing}>
-                <View style={styles.cameraDotInner} />
+              <View
+                style={[
+                  styles.cameraDotRing,
+                  { backgroundColor: isDark ? '#2C2C2E' : '#D6D6D8' },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.cameraDotInner,
+                    { backgroundColor: isDark ? '#FFFFFF' : '#000000' },
+                  ]}
+                />
               </View>
             </View>
 
@@ -148,26 +197,36 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
           {/* 2. CENTER CONTENT SECTION (EXACT GEOMETRIC CENTER OF SCREEN) */}
           <View style={styles.centerContent}>
-            {/* TV GLITCH / NOISE PREVIEW CARD (EXACT 16:9 DIMENSIONS) */}
+            {/* TV GLITCH / NOISE PREVIEW CARD (SKIA GPU CANVAS CRT STATIC NOISE) */}
             <View
               style={[
                 styles.glitchCard,
-                { backgroundColor: isDark ? '#1C1C1E' : '#D6D6D6' },
+                { backgroundColor: isDark ? '#161616' : '#E2E2E4' },
               ]}
+              onLayout={(e) => {
+                const { width, height } = e.nativeEvent.layout;
+                if (width > 0 && height > 0) {
+                  setCardLayout({ width, height });
+                }
+              }}
             >
-              {/* TV STATIC NOISE OVERLAY PATTERN */}
-              <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id="tvNoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.18} />
-                    <Stop offset="25%" stopColor="#000000" stopOpacity={0.10} />
-                    <Stop offset="50%" stopColor="#FFFFFF" stopOpacity={0.15} />
-                    <Stop offset="75%" stopColor="#000000" stopOpacity={0.08} />
-                    <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.14} />
-                  </LinearGradient>
-                </Defs>
-                <Rect width="100%" height="100%" fill="url(#tvNoiseGrad)" />
-              </Svg>
+              {/* 1. SKIA GPU PROCEDURAL SHADER CRT STATIC CANVAS */}
+              {cardLayout.width > 0 && cardLayout.height > 0 && (
+                <CRTStaticCard
+                  isDark={isDark}
+                  width={cardLayout.width}
+                  height={cardLayout.height}
+                  borderRadius={24}
+                />
+              )}
+
+              {/* 2. FROSTED GLASS BLUR LAYER */}
+              <BlurView
+                intensity={12}
+                tint={isDark ? 'dark' : 'light'}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
 
               {/* TOP LEFT USER ROW INSIDE CARD */}
               <View style={styles.cardUserRow}>
@@ -178,12 +237,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.usernameText}>{username}</Text>
+                <Text style={[styles.usernameText, { color: isDark ? '#8E8E93' : '#636366' }]}>{username}</Text>
               </View>
 
               {/* MIDDLE ROW: VLOG TEXT (LEFT) | TAP TO CAPTURE (CENTER) | 0:00 (RIGHT) */}
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
-                <Text style={styles.cardVlogTitle}>Vlog</Text>
+                <Text style={[styles.cardVlogTitle, { color: isDark ? '#8E8E93' : '#5C5C60' }]}>Vlog</Text>
 
                 <TouchableOpacity
                   style={styles.tapToCaptureBtnCenter}
@@ -233,7 +292,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </Text>
                 </TouchableOpacity>
 
-                <Text style={styles.timestampText}>0:00</Text>
+                <Text style={[styles.timestampText, { color: isDark ? '#48484A' : '#BEBEC2' }]}>0:00</Text>
+              </View>
+
+              {/* BOTTOM RIGHT THREE DOTS ICON AS PER DARK MODE IMAGE */}
+              <View style={styles.cardBottomRightDots} pointerEvents="none">
+                <Text style={[styles.dotsText, { color: isDark ? '#636366' : '#8E8E93' }]}>...</Text>
               </View>
             </View>
           </View>
@@ -248,7 +312,7 @@ export const EditExportSheet = VlogSheet;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8.5,
   },
   headerBar: {
     flexDirection: 'row',
@@ -284,21 +348,17 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   cameraDotRing: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#3A3A3C',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 8,
   },
   cameraDotInner: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#000000',
-    borderWidth: 1,
-    borderColor: '#636366',
   },
   headerRightIcons: {
     flexDirection: 'row',
@@ -316,7 +376,10 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 16 / 9,
     borderRadius: 24,
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 32,
+    marginVertical: -15,
+    transform: [{ translateY: -15 }],
     justifyContent: 'space-between',
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -327,11 +390,13 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   cardUserRow: {
+    position: 'absolute',
+    top: 10,
+    left: 14.5,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: -3,
-    marginLeft: -3,
+    zIndex: 5,
   },
   avatarCircleFilled: {
     width: 29,
@@ -356,11 +421,12 @@ const styles = StyleSheet.create({
     left: 18,
     right: 18,
     top: '50%',
-    transform: [{ translateY: 0 }],
+    transform: [{ translateY: 12.5 }],
     height: 40,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    zIndex: 5,
   },
   cardVlogTitle: {
     fontSize: 20,
@@ -387,7 +453,7 @@ const styles = StyleSheet.create({
   },
   tapToCaptureText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#000000',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
@@ -396,5 +462,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#8E8E93',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  cardBottomRightDots: {
+    position: 'absolute',
+    bottom: 14,
+    right: 18,
+  },
+  dotsText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 1.5,
   },
 });
