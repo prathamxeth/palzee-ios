@@ -867,6 +867,9 @@ export default function HomeScreen({
                   isDark={isDark}
                   accentColor={accentColor}
                   borderRadius={26}
+                  variant="clear"
+                  renderer="auto"
+                  cornerStyle="continuous"
                 >
                   {/* ADD MENU ITEMS LIST */}
                   <View style={{ paddingVertical: 12, paddingHorizontal: 16 }}>
