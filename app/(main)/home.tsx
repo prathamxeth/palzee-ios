@@ -568,9 +568,17 @@ export default function HomeScreen({
                 <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
-              {/* 3. USER PROFILE PERSON ICON */}
+              {/* 3. USER PROFILE PERSON ICON OR CHOSEN PFP (FILLS COMPLETELY IN CIRCLE, ZERO SPACING) */}
               <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
-                <MaterialPersonIcon size={24} color={iconColor} />
+                {profilePhotoUri ? (
+                  <Image
+                    source={{ uri: profilePhotoUri }}
+                    style={{ width: 44, height: 44, borderRadius: 22 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <MaterialPersonIcon size={24} color={iconColor} />
+                )}
               </LiquidGlassIconButton>
             </View>
           </View>
@@ -912,7 +920,7 @@ export default function HomeScreen({
                   />
                 </Svg>
 
-                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR + USERNAME (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
+                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
                 <View style={[styles.dropdownHeaderRow, { opacity: profileSubMenu !== 'main' ? 0.40 : 1.0 }]}>
                   <View
                     style={{
@@ -926,11 +934,19 @@ export default function HomeScreen({
                       overflow: 'hidden',
                     }}
                   >
-                    <Image
-                      source={require('../../assets/images/capture_smile.png')}
-                      style={{ width: 31.8, height: 31.8 }}
-                      resizeMode="contain"
-                    />
+                    {profilePhotoUri ? (
+                      <Image
+                        source={{ uri: profilePhotoUri }}
+                        style={{ width: 31.6, height: 31.6, borderRadius: 15.8 }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Image
+                        source={require('../../assets/images/capture_smile.png')}
+                        style={{ width: 31.8, height: 31.8 }}
+                        resizeMode="contain"
+                      />
+                    )}
                   </View>
 
                   <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -1002,13 +1018,14 @@ export default function HomeScreen({
               </View>
 
               {/* OVERLAPPING SUB-DROPDOWN CARD ("DROPDOWN IN DROPDOWN") */}
-              {profileSubMenu === 'editProfile' && (
+              {(profileSubMenu === 'editProfile' || profileSubMenu === 'color') && (
                 <View
                   style={[
                     styles.profileSubDropdownCard,
                     {
                       backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
                       shadowColor: isDark ? accentColor : '#000000',
+                      opacity: profileSubMenu === 'color' ? 0.40 : 1.0,
                     },
                   ]}
                 >
@@ -1052,7 +1069,7 @@ export default function HomeScreen({
                     <Ionicons name="chevron-down" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                   </TouchableOpacity>
 
-                  {/* Hairline Separator Line (Shifted down by 2dp further) */}
+                  {/* Hairline Separator Line */}
                   <View
                     style={{
                       height: StyleSheet.hairlineWidth,
@@ -1063,9 +1080,9 @@ export default function HomeScreen({
                     }}
                   />
 
-                  {/* Edit Profile Sub-Menu Items List (Box expanded to fit pushed down text) */}
+                  {/* Edit Profile Sub-Menu Items List */}
                   <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
-                    {/* Sub-Option 1: display name -> OPENS EDIT NAME MODAL WITH SEPARATE FIRST/LAST NAME */}
+                    {/* Sub-Option 1: display name */}
                     <TouchableOpacity
                       style={styles.dropdownMenuItem}
                       activeOpacity={0.7}
@@ -1093,13 +1110,13 @@ export default function HomeScreen({
                     </TouchableOpacity>
 
                     {/* Sub-Option 2: choose photo */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={handleChoosePhoto}>
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
                         choose photo
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Sub-Option 3: color -> opens theme swatches */}
+                    {/* Sub-Option 3: color -> opens color palette dropdown */}
                     <TouchableOpacity
                       style={styles.dropdownMenuItem}
                       activeOpacity={0.7}
@@ -1114,54 +1131,53 @@ export default function HomeScreen({
                 </View>
               )}
 
-              {/* OVERLAPPING COLOR ACCENT SUB-DROPDOWN CARD */}
+              {/* 3RD LEVEL OVERLAPPING COLOR PALETTE SUB-DROPDOWN CARD (EXACTLY MATCHING ATTACHED SCREENSHOT) */}
               {profileSubMenu === 'color' && (
                 <View
                   style={[
-                    styles.profileSubDropdownCard,
+                    styles.profileColorDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
+                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.96)' : 'rgba(250, 244, 252, 0.97)',
                       shadowColor: isDark ? accentColor : '#000000',
                     },
                   ]}
                 >
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
-                      <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.75} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={0.35} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.08 : 0.10} />
+                      <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
                       </LinearGradient>
                     </Defs>
-                    <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
+                    <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
                   </Svg>
 
                   <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
-                      <LinearGradient id="subCardBorderGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.95 : 0.98} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.60 : 0.65} />
-                        <Stop offset="100%" stopColor={isDark ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF'} stopOpacity={isDark ? 0.45 : 0.35} />
+                      <LinearGradient id="colorSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
+                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
                       </LinearGradient>
                     </Defs>
-                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="1.2" />
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="0.8" />
                   </Svg>
 
-                  {/* Header Row: color accent + up chevron */}
+                  {/* Header Row: color title + down chevron v */}
                   <TouchableOpacity
                     style={styles.dropdownHeaderRow}
                     activeOpacity={0.7}
                     onPress={() => setProfileSubMenu('editProfile')}
                   >
                     <View style={styles.dropdownMenuLeft}>
-                      <Ionicons name="color-palette-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                      <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 10 }]}>
-                        color accent
+                      <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
+                        color
                       </Text>
                     </View>
-                    <Ionicons name="chevron-up" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                    <Ionicons name="chevron-down" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                   </TouchableOpacity>
 
                   {/* Hairline Separator Line */}
@@ -1170,40 +1186,57 @@ export default function HomeScreen({
                       height: StyleSheet.hairlineWidth,
                       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
                       marginHorizontal: 16,
-                      marginBottom: 12,
+                      marginTop: 4,
+                      marginBottom: 10,
                     }}
                   />
 
-                  {/* Color Swatches Grid & Sign Out */}
-                  <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                    <View style={styles.themeGridRow}>
-                      {Object.keys(Colors.BorderGlow).map((colorKey) => {
-                        const isSelected = selectedThemeColor === colorKey;
-                        const swatchColor = Colors.BorderGlow[colorKey as keyof typeof Colors.BorderGlow];
-                        return (
-                          <TouchableOpacity
-                            key={colorKey}
-                            activeOpacity={0.8}
-                            style={[
-                              styles.profileThemeSwatch,
-                              { backgroundColor: swatchColor },
-                              isSelected && styles.activeProfileThemeSwatch,
-                            ]}
-                            onPress={() => onSelectedThemeColorChange(colorKey)}
-                          />
-                        );
-                      })}
-                    </View>
+                  {/* 6 Color Palette Options List (Exact colors from reference screenshot) */}
+                  <View style={[styles.dropdownMenuList, { paddingTop: 2, paddingBottom: 14 }]}>
+                    {[
+                      { key: 'blue', name: 'blue', hex: Colors.BorderGlow.blue },
+                      { key: 'orange', name: 'orange', hex: Colors.BorderGlow.orange },
+                      { key: 'purple', name: 'purple', hex: Colors.BorderGlow.purple },
+                      { key: 'green', name: 'green', hex: Colors.BorderGlow.green },
+                      { key: 'cyan', name: 'ocean', hex: Colors.BorderGlow.cyan },
+                      { key: 'pink', name: 'pink', hex: Colors.BorderGlow.pink },
+                    ].map((opt) => {
+                      const isSelected = selectedThemeColor === opt.key;
+                      return (
+                        <TouchableOpacity
+                          key={opt.key}
+                          style={styles.dropdownMenuItem}
+                          activeOpacity={0.7}
+                          onPress={() => onSelectedThemeColorChange(opt.key)}
+                        >
+                          <View style={styles.dropdownMenuLeft}>
+                            {/* Checkmark Indicator Column */}
+                            <View style={{ width: 20, alignItems: 'center', justifyContent: 'center' }}>
+                              {isSelected && (
+                                <Ionicons name="checkmark" size={16} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                              )}
+                            </View>
 
-                    <TouchableOpacity
-                      style={{ marginTop: 12, alignItems: 'center', paddingVertical: 8 }}
-                      onPress={() => {
-                        setShowProfileMenu(false);
-                        onSignOut();
-                      }}
-                    >
-                      <Text style={{ fontSize: 14, fontWeight: '600', color: '#FF3B30' }}>Sign Out</Text>
-                    </TouchableOpacity>
+                            {/* Color Dot Swatch Circle */}
+                            <View
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 11,
+                                backgroundColor: opt.hex,
+                                marginRight: 14,
+                                marginLeft: 4,
+                              }}
+                            />
+
+                            {/* Color Name */}
+                            <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 0 }]}>
+                              {opt.name}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 </View>
               )}
