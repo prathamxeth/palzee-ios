@@ -64,17 +64,17 @@
     <key>UIAppFonts</key>
     <array>
       <string>bricolage_grotesque_variable.ttf</string>
+      <string>courier_prime.ttf</string>
       <string>dela_gothic_one_regular.ttf</string>
       <string>google_sans_regular.ttf</string>
-      <string>ownglyph.ttf</string>
-      <string>roboto_medium_numbers.ttf</string>
-      <string>unpack.otf</string>
-      <string>courier_prime.ttf</string>
       <string>ibm_plex_mono.ttf</string>
       <string>jetbrains_mono_regular.ttf</string>
+      <string>ownglyph.ttf</string>
+      <string>roboto_medium_numbers.ttf</string>
       <string>roboto_mono_regular.ttf</string>
       <string>roboto_slab_regular.ttf</string>
       <string>space_mono_regular.ttf</string>
+      <string>unpack.otf</string>
     </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>

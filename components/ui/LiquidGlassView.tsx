@@ -3,6 +3,13 @@ import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
+let NativeGlassView: any = null;
+try {
+  NativeGlassView = require('expo-glass-effect').GlassView;
+} catch (e) {
+  // Native module not linked yet
+}
+
 interface LiquidGlassProps {
   style?: ViewStyle | ViewStyle[];
   children?: React.ReactNode;
@@ -19,6 +26,20 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   borderRadius = 26,
   variant = 'clear',
 }) => {
+  // If native expo-glass-effect is linked and compiled into the app binary:
+  if (NativeGlassView && Platform.OS === 'ios') {
+    return (
+      <NativeGlassView
+        style={[style, { borderRadius, overflow: 'hidden' }]}
+        glassEffectStyle={variant}
+        tintColor={isDark ? 'rgba(24, 20, 36, 0.4)' : 'rgba(255, 255, 255, 0.4)'}
+      >
+        {children}
+      </NativeGlassView>
+    );
+  }
+
+  // High-fidelity fallback (Expo BlurView)
   const isClear = variant === 'clear';
   const surfaceAlpha = isClear ? (isDark ? 0.65 : 0.65) : (isDark ? 0.90 : 0.90);
   const blurIntensity = isClear ? 65 : 85;
@@ -34,7 +55,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         },
       ]}
     >
-      {/* 1. TOP-LEFT LIQUID CYAN-PINK COLOR SPLASH MIXING BEHIND FIRST TEXT OPTION */}
+      {/* 1. TOP-LEFT LIQUID CYAN-PINK COLOR SPLASH */}
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         <Defs>
           <LinearGradient id="auroraTopLeftGlow" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -46,7 +67,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         <Rect width="100%" height="100%" fill="url(#auroraTopLeftGlow)" />
       </Svg>
 
-      {/* 2. FROSTED BACKDROP BLUR (EXPO-BLUR) */}
+      {/* 2. FROSTED BACKDROP BLUR */}
       <BlurView
         intensity={Platform.OS === 'ios' ? blurIntensity : 90}
         tint={isDark ? 'dark' : 'light'}

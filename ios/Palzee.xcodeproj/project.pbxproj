@@ -7,53 +7,53 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11EFEB9290DAAECFC5C393B5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4D00A261334EA0C9709B2277 /* PrivacyInfo.xcprivacy */; };
+		006D4BE1BBD3426A96802641 /* courier_prime.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1D20BBD7341347609C331D7A /* courier_prime.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		1E2256B1FB3B42B88FF0538C /* ownglyph.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CCBF7ACE99324770A29512D0 /* ownglyph.ttf */; };
-		296F697A7CF34DA69E7DB4AD /* google_sans_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0844FE087854A10806BDC98 /* google_sans_regular.ttf */; };
+		2D16ED7307FB7E3BFA8A1EB7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BA5AFEA9D2A982B6D9BD10AD /* PrivacyInfo.xcprivacy */; };
+		3AE21B83A4104731820FE59D /* space_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EA7E2330D494F80B868E6D2 /* space_mono_regular.ttf */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		404E73F30D384E96855010C4 /* ibm_plex_mono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FF559EE43C4E4D74A229F4AD /* ibm_plex_mono.ttf */; };
-		47B017534F21427DB8DF36E4 /* roboto_medium_numbers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 094B3D717BCA46E1A906DB26 /* roboto_medium_numbers.ttf */; };
-		48E80FC6BB7644F3A976E469 /* roboto_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016A77F27F2D4A8DB5E0A7A1 /* roboto_mono_regular.ttf */; };
-		4950BD953D444C80B665C95A /* jetbrains_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6991F07AC004A44B89A4654 /* jetbrains_mono_regular.ttf */; };
-		6F0442E7337772274D266EB0 /* libPods-Palzee.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D1386500A236264F9B398F81 /* libPods-Palzee.a */; };
-		71103D0391DB45DF83879CBE /* space_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F7AAAB15D84B46A990A0C0A9 /* space_mono_regular.ttf */; };
-		830E4173A3F746A3B1E35AA6 /* dela_gothic_one_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 60E91B0925CB4AA3B0988FCF /* dela_gothic_one_regular.ttf */; };
-		9FEA6C15FADF4B1FA0064192 /* courier_prime.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 637D1756AE8541BDB3FEACD5 /* courier_prime.ttf */; };
-		A0015B9B386C4E6B9C817E65 /* unpack.otf in Resources */ = {isa = PBXBuildFile; fileRef = 54133F3F19CA4D49998BCAE4 /* unpack.otf */; };
-		AC2E720BAB1A494D9011694E /* roboto_slab_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 61FD94A4E6AB4848B8C49BCC /* roboto_slab_regular.ttf */; };
+		45E817E76D55465DBC91A96F /* unpack.otf in Resources */ = {isa = PBXBuildFile; fileRef = 5AC71C5DFFD8452CA7358297 /* unpack.otf */; };
+		4DF762FF82814AD1B1E5551A /* ibm_plex_mono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3FA6C0DE9E414F6A9B0C116D /* ibm_plex_mono.ttf */; };
+		6B8F50B8048C41BBA500A8F6 /* dela_gothic_one_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E4E9E60CC55F4D3A8981352E /* dela_gothic_one_regular.ttf */; };
+		6BEBFC720B4C469690F12955 /* roboto_slab_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 08FF18C705FA4CA090451331 /* roboto_slab_regular.ttf */; };
+		721755ACF9D0444F92C92DDC /* jetbrains_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DBC6B034A5E44B89AF605C81 /* jetbrains_mono_regular.ttf */; };
+		79B838D6695E07B535F675F4 /* libPods-Palzee.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A0EBC2B9A2EEB2B3BF27B0B /* libPods-Palzee.a */; };
+		7E149582DDBF4591B0B98DDC /* roboto_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5C305C2AC47450991C98A58 /* roboto_mono_regular.ttf */; };
+		832FD7C178A845908AE9182D /* bricolage_grotesque_variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 567083AD86F741F2ABECD009 /* bricolage_grotesque_variable.ttf */; };
+		A206BFD08235E2655CD4FA43 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087BADAA23C949F676DC1441 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		CA668058B3062CA29328F228 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3ECA97EEA48DAB1939AF5CB /* ExpoModulesProvider.swift */; };
+		E73A0F4D4FE44DF78CC1B6FA /* google_sans_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8541F1E4B67A46019141016B /* google_sans_regular.ttf */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		FDD93F73EB58427EA9C22DD2 /* bricolage_grotesque_variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8501DEBA4981420880045D63 /* bricolage_grotesque_variable.ttf */; };
+		FB0D9A61F3AD4BD99CD9CCA8 /* ownglyph.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 14CFEE246FBB4A06A79FC937 /* ownglyph.ttf */; };
+		FD2B33E8CDF14C10B8BEF6CE /* roboto_medium_numbers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3812D25A1CE7430DBEBB13ED /* roboto_medium_numbers.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		016A77F27F2D4A8DB5E0A7A1 /* roboto_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_mono_regular.ttf; path = ../assets/fonts/roboto_mono_regular.ttf; sourceTree = "<group>"; };
-		094B3D717BCA46E1A906DB26 /* roboto_medium_numbers.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_medium_numbers.ttf; path = ../assets/fonts/roboto_medium_numbers.ttf; sourceTree = "<group>"; };
+		087BADAA23C949F676DC1441 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Palzee/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		08FF18C705FA4CA090451331 /* roboto_slab_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_slab_regular.ttf; path = ../assets/fonts/roboto_slab_regular.ttf; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Palzee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Palzee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Palzee/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Palzee/Info.plist; sourceTree = "<group>"; };
-		41487812BA7513E1FAD5BD3F /* Pods-Palzee.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Palzee.debug.xcconfig"; path = "Target Support Files/Pods-Palzee/Pods-Palzee.debug.xcconfig"; sourceTree = "<group>"; };
-		4B9E49D38E92650FCF943E6F /* Pods-Palzee.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Palzee.release.xcconfig"; path = "Target Support Files/Pods-Palzee/Pods-Palzee.release.xcconfig"; sourceTree = "<group>"; };
-		4D00A261334EA0C9709B2277 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Palzee/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		54133F3F19CA4D49998BCAE4 /* unpack.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = unpack.otf; path = ../assets/fonts/unpack.otf; sourceTree = "<group>"; };
-		60E91B0925CB4AA3B0988FCF /* dela_gothic_one_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = dela_gothic_one_regular.ttf; path = ../assets/fonts/dela_gothic_one_regular.ttf; sourceTree = "<group>"; };
-		61FD94A4E6AB4848B8C49BCC /* roboto_slab_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_slab_regular.ttf; path = ../assets/fonts/roboto_slab_regular.ttf; sourceTree = "<group>"; };
-		637D1756AE8541BDB3FEACD5 /* courier_prime.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = courier_prime.ttf; path = ../assets/fonts/courier_prime.ttf; sourceTree = "<group>"; };
-		8501DEBA4981420880045D63 /* bricolage_grotesque_variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = bricolage_grotesque_variable.ttf; path = ../assets/fonts/bricolage_grotesque_variable.ttf; sourceTree = "<group>"; };
+		14CFEE246FBB4A06A79FC937 /* ownglyph.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = ownglyph.ttf; path = ../assets/fonts/ownglyph.ttf; sourceTree = "<group>"; };
+		1D20BBD7341347609C331D7A /* courier_prime.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = courier_prime.ttf; path = ../assets/fonts/courier_prime.ttf; sourceTree = "<group>"; };
+		3812D25A1CE7430DBEBB13ED /* roboto_medium_numbers.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_medium_numbers.ttf; path = ../assets/fonts/roboto_medium_numbers.ttf; sourceTree = "<group>"; };
+		3FA6C0DE9E414F6A9B0C116D /* ibm_plex_mono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = ibm_plex_mono.ttf; path = ../assets/fonts/ibm_plex_mono.ttf; sourceTree = "<group>"; };
+		567083AD86F741F2ABECD009 /* bricolage_grotesque_variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = bricolage_grotesque_variable.ttf; path = ../assets/fonts/bricolage_grotesque_variable.ttf; sourceTree = "<group>"; };
+		5AC71C5DFFD8452CA7358297 /* unpack.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = unpack.otf; path = ../assets/fonts/unpack.otf; sourceTree = "<group>"; };
+		6A0EBC2B9A2EEB2B3BF27B0B /* libPods-Palzee.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Palzee.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8541F1E4B67A46019141016B /* google_sans_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = google_sans_regular.ttf; path = ../assets/fonts/google_sans_regular.ttf; sourceTree = "<group>"; };
+		8ADBEBFEB76FF8BAD25238FE /* Pods-Palzee.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Palzee.release.xcconfig"; path = "Target Support Files/Pods-Palzee/Pods-Palzee.release.xcconfig"; sourceTree = "<group>"; };
+		9EA7E2330D494F80B868E6D2 /* space_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = space_mono_regular.ttf; path = ../assets/fonts/space_mono_regular.ttf; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Palzee/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B3ECA97EEA48DAB1939AF5CB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Palzee/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		B6991F07AC004A44B89A4654 /* jetbrains_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = jetbrains_mono_regular.ttf; path = ../assets/fonts/jetbrains_mono_regular.ttf; sourceTree = "<group>"; };
+		BA5AFEA9D2A982B6D9BD10AD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Palzee/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C0844FE087854A10806BDC98 /* google_sans_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = google_sans_regular.ttf; path = ../assets/fonts/google_sans_regular.ttf; sourceTree = "<group>"; };
-		CCBF7ACE99324770A29512D0 /* ownglyph.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = ownglyph.ttf; path = ../assets/fonts/ownglyph.ttf; sourceTree = "<group>"; };
-		D1386500A236264F9B398F81 /* libPods-Palzee.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Palzee.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5C305C2AC47450991C98A58 /* roboto_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_mono_regular.ttf; path = ../assets/fonts/roboto_mono_regular.ttf; sourceTree = "<group>"; };
+		DBC6B034A5E44B89AF605C81 /* jetbrains_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = jetbrains_mono_regular.ttf; path = ../assets/fonts/jetbrains_mono_regular.ttf; sourceTree = "<group>"; };
+		E4E9E60CC55F4D3A8981352E /* dela_gothic_one_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = dela_gothic_one_regular.ttf; path = ../assets/fonts/dela_gothic_one_regular.ttf; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Palzee/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Palzee-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Palzee-Bridging-Header.h"; path = "Palzee/Palzee-Bridging-Header.h"; sourceTree = "<group>"; };
-		F7AAAB15D84B46A990A0C0A9 /* space_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = space_mono_regular.ttf; path = ../assets/fonts/space_mono_regular.ttf; sourceTree = "<group>"; };
-		FF559EE43C4E4D74A229F4AD /* ibm_plex_mono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = ibm_plex_mono.ttf; path = ../assets/fonts/ibm_plex_mono.ttf; sourceTree = "<group>"; };
+		F140B3DCB53060C27CDDF6FC /* Pods-Palzee.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Palzee.debug.xcconfig"; path = "Target Support Files/Pods-Palzee/Pods-Palzee.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6F0442E7337772274D266EB0 /* libPods-Palzee.a in Frameworks */,
+				79B838D6695E07B535F675F4 /* libPods-Palzee.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,7 +77,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				4D00A261334EA0C9709B2277 /* PrivacyInfo.xcprivacy */,
+				BA5AFEA9D2A982B6D9BD10AD /* PrivacyInfo.xcprivacy */,
 			);
 			name = Palzee;
 			sourceTree = "<group>";
@@ -86,45 +86,47 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				D1386500A236264F9B398F81 /* libPods-Palzee.a */,
+				6A0EBC2B9A2EEB2B3BF27B0B /* libPods-Palzee.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		376127F6380760BE359024D9 /* ExpoModulesProviders */ = {
+		37ED4E220C744DEBB97084E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				539134948946D2D3924FDFF5 /* Palzee */,
+				567083AD86F741F2ABECD009 /* bricolage_grotesque_variable.ttf */,
+				1D20BBD7341347609C331D7A /* courier_prime.ttf */,
+				E4E9E60CC55F4D3A8981352E /* dela_gothic_one_regular.ttf */,
+				8541F1E4B67A46019141016B /* google_sans_regular.ttf */,
+				3FA6C0DE9E414F6A9B0C116D /* ibm_plex_mono.ttf */,
+				DBC6B034A5E44B89AF605C81 /* jetbrains_mono_regular.ttf */,
+				14CFEE246FBB4A06A79FC937 /* ownglyph.ttf */,
+				3812D25A1CE7430DBEBB13ED /* roboto_medium_numbers.ttf */,
+				D5C305C2AC47450991C98A58 /* roboto_mono_regular.ttf */,
+				08FF18C705FA4CA090451331 /* roboto_slab_regular.ttf */,
+				9EA7E2330D494F80B868E6D2 /* space_mono_regular.ttf */,
+				5AC71C5DFFD8452CA7358297 /* unpack.otf */,
 			);
-			name = ExpoModulesProviders;
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
-		539134948946D2D3924FDFF5 /* Palzee */ = {
+		44D45DF87CDFE7E8ADFB19B7 /* Palzee */ = {
 			isa = PBXGroup;
 			children = (
-				B3ECA97EEA48DAB1939AF5CB /* ExpoModulesProvider.swift */,
+				087BADAA23C949F676DC1441 /* ExpoModulesProvider.swift */,
 			);
 			name = Palzee;
 			sourceTree = "<group>";
 		};
-		82CBC204885241629416325D /* Resources */ = {
+		6EA2B1C386C4327CBEEC2EDB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				8501DEBA4981420880045D63 /* bricolage_grotesque_variable.ttf */,
-				60E91B0925CB4AA3B0988FCF /* dela_gothic_one_regular.ttf */,
-				C0844FE087854A10806BDC98 /* google_sans_regular.ttf */,
-				CCBF7ACE99324770A29512D0 /* ownglyph.ttf */,
-				094B3D717BCA46E1A906DB26 /* roboto_medium_numbers.ttf */,
-				54133F3F19CA4D49998BCAE4 /* unpack.otf */,
-				637D1756AE8541BDB3FEACD5 /* courier_prime.ttf */,
-				FF559EE43C4E4D74A229F4AD /* ibm_plex_mono.ttf */,
-				B6991F07AC004A44B89A4654 /* jetbrains_mono_regular.ttf */,
-				016A77F27F2D4A8DB5E0A7A1 /* roboto_mono_regular.ttf */,
-				61FD94A4E6AB4848B8C49BCC /* roboto_slab_regular.ttf */,
-				F7AAAB15D84B46A990A0C0A9 /* space_mono_regular.ttf */,
+				F140B3DCB53060C27CDDF6FC /* Pods-Palzee.debug.xcconfig */,
+				8ADBEBFEB76FF8BAD25238FE /* Pods-Palzee.release.xcconfig */,
 			);
-			name = Resources;
-			path = "";
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -141,9 +143,9 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				82CBC204885241629416325D /* Resources */,
-				E44589C7E7105846CD831764 /* Pods */,
-				376127F6380760BE359024D9 /* ExpoModulesProviders */,
+				37ED4E220C744DEBB97084E4 /* Resources */,
+				6EA2B1C386C4327CBEEC2EDB /* Pods */,
+				AED9AE50A1AF621E3A8A4E90 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -158,6 +160,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AED9AE50A1AF621E3A8A4E90 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				44D45DF87CDFE7E8ADFB19B7 /* Palzee */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -165,16 +175,6 @@
 			);
 			name = Supporting;
 			path = Palzee/Supporting;
-			sourceTree = "<group>";
-		};
-		E44589C7E7105846CD831764 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				41487812BA7513E1FAD5BD3F /* Pods-Palzee.debug.xcconfig */,
-				4B9E49D38E92650FCF943E6F /* Pods-Palzee.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -185,13 +185,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Palzee" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				3EFBF255169B7B8F25E3F763 /* [Expo] Configure project */,
+				A2CCD0434C7BD54A64BCC44C /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				B9A3003762D4AEA2D2B12852 /* [CP] Embed Pods Frameworks */,
+				4F340518D99D06F90B9499C4 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -211,8 +211,8 @@
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = ZS8DZ4279U;
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "ZS8DZ4279U";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -243,19 +243,19 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				FDD93F73EB58427EA9C22DD2 /* bricolage_grotesque_variable.ttf in Resources */,
-				830E4173A3F746A3B1E35AA6 /* dela_gothic_one_regular.ttf in Resources */,
-				296F697A7CF34DA69E7DB4AD /* google_sans_regular.ttf in Resources */,
-				1E2256B1FB3B42B88FF0538C /* ownglyph.ttf in Resources */,
-				47B017534F21427DB8DF36E4 /* roboto_medium_numbers.ttf in Resources */,
-				A0015B9B386C4E6B9C817E65 /* unpack.otf in Resources */,
-				11EFEB9290DAAECFC5C393B5 /* PrivacyInfo.xcprivacy in Resources */,
-				9FEA6C15FADF4B1FA0064192 /* courier_prime.ttf in Resources */,
-				404E73F30D384E96855010C4 /* ibm_plex_mono.ttf in Resources */,
-				4950BD953D444C80B665C95A /* jetbrains_mono_regular.ttf in Resources */,
-				48E80FC6BB7644F3A976E469 /* roboto_mono_regular.ttf in Resources */,
-				AC2E720BAB1A494D9011694E /* roboto_slab_regular.ttf in Resources */,
-				71103D0391DB45DF83879CBE /* space_mono_regular.ttf in Resources */,
+				832FD7C178A845908AE9182D /* bricolage_grotesque_variable.ttf in Resources */,
+				006D4BE1BBD3426A96802641 /* courier_prime.ttf in Resources */,
+				6B8F50B8048C41BBA500A8F6 /* dela_gothic_one_regular.ttf in Resources */,
+				E73A0F4D4FE44DF78CC1B6FA /* google_sans_regular.ttf in Resources */,
+				4DF762FF82814AD1B1E5551A /* ibm_plex_mono.ttf in Resources */,
+				721755ACF9D0444F92C92DDC /* jetbrains_mono_regular.ttf in Resources */,
+				FB0D9A61F3AD4BD99CD9CCA8 /* ownglyph.ttf in Resources */,
+				FD2B33E8CDF14C10B8BEF6CE /* roboto_medium_numbers.ttf in Resources */,
+				7E149582DDBF4591B0B98DDC /* roboto_mono_regular.ttf in Resources */,
+				6BEBFC720B4C469690F12955 /* roboto_slab_regular.ttf in Resources */,
+				3AE21B83A4104731820FE59D /* space_mono_regular.ttf in Resources */,
+				45E817E76D55465DBC91A96F /* unpack.otf in Resources */,
+				2D16ED7307FB7E3BFA8A1EB7 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,29 +301,27 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		3EFBF255169B7B8F25E3F763 /* [Expo] Configure project */ = {
+		4F340518D99D06F90B9499C4 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/Palzee/Palzee.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Palzee/expo-configure-project.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Palzee/Pods-Palzee-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Palzee/ExpoModulesProvider.swift",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Palzee/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Palzee/Pods-Palzee-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -363,27 +361,29 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Palzee/Pods-Palzee-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B9A3003762D4AEA2D2B12852 /* [CP] Embed Pods Frameworks */ = {
+		A2CCD0434C7BD54A64BCC44C /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Palzee/Pods-Palzee-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Palzee/Palzee.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Palzee/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-Palzee/ExpoModulesProvider.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Palzee/Pods-Palzee-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Palzee/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -393,7 +393,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				CA668058B3062CA29328F228 /* ExpoModulesProvider.swift in Sources */,
+				A206BFD08235E2655CD4FA43 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -402,15 +402,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 41487812BA7513E1FAD5BD3F /* Pods-Palzee.debug.xcconfig */;
+			baseConfigurationReference = F140B3DCB53060C27CDDF6FC /* Pods-Palzee.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Palzee/Palzee.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ZS8DZ4279U;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -436,20 +433,20 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "ZS8DZ4279U";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B9E49D38E92650FCF943E6F /* Pods-Palzee.release.xcconfig */;
+			baseConfigurationReference = 8ADBEBFEB76FF8BAD25238FE /* Pods-Palzee.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Palzee/Palzee.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = ZS8DZ4279U;
 				INFOPLIST_FILE = Palzee/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -469,6 +466,9 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "ZS8DZ4279U";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};
