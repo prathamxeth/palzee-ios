@@ -334,23 +334,20 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
+                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures to Fill 16:9 Frame */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
                         ref={videoPlayerRef}
                         source={{ uri: videoUri }}
-                        style={isVertical ? rotatedStyle : horizontalStyle}
+                        style={rotatedStyle}
                         shouldPlay={true}
                         isLooping={true}
-                        isMuted={isMuted}
+                        isMuted={true}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
-                        onReadyForDisplay={(event) => {
-                          if (event?.naturalSize) {
-                            const { width, height } = event.naturalSize;
-                            setIsVertical(height > width);
-                          }
+                        onLoad={() => {
+                          videoPlayerRef.current?.playAsync().catch(() => {});
                         }}
                       />
                     )}

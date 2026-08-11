@@ -263,26 +263,17 @@ export default function PalCameraPreview({
       useNativeDriver: false,
     }).start();
 
-    const stopTimeout = setTimeout(() => {
-      try {
-        cameraRef.current?.stopRecording();
-      } catch (e) {}
-    }, durationMs);
-
     try {
       const videoPromise = cameraRef.current.recordAsync({
         maxDuration: Math.max(1, Math.ceil(durationMs / 1000)),
       });
 
       const video = await videoPromise;
-      clearTimeout(stopTimeout);
       setIsRecording(false);
       progressAnim.setValue(0);
 
       if (video?.uri) {
-        setTimeout(() => {
-          setPreviewVideoUri(video.uri);
-        }, 100);
+        setPreviewVideoUri(video.uri);
       }
     } catch (e) {
       console.error('Video recording error:', e);
