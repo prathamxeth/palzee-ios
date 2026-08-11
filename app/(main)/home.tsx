@@ -449,8 +449,6 @@ export default function HomeScreen({
     setShowCreateModal(false);
   };
 
-  const systemScheme = useColorScheme();
-  const isDark = systemScheme === 'dark';
   const screenBg = isDark ? '#000000' : Colors.PalBackground;
   const iconColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
   const mainTextColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
@@ -800,7 +798,7 @@ export default function HomeScreen({
           )}
         </View>
 
-        {/* EXACT LIQUID GLASS PROFILE DROPDOWN MENU */}
+        {/* EXACT LIQUID GLASS PROFILE DROPDOWN MENU MATCHING REFERENCE IMAGES */}
         <Modal
           visible={showProfileMenu}
           transparent
@@ -817,74 +815,79 @@ export default function HomeScreen({
                 style={[
                   styles.profileDropdownCard,
                   {
-                    backgroundColor: isDark ? 'rgba(22, 19, 36, 0.88)' : 'rgba(250, 245, 250, 0.92)',
+                    backgroundColor: isDark ? 'rgba(20, 16, 32, 0.92)' : 'rgba(250, 244, 252, 0.95)',
                     borderColor: accentColor,
                     shadowColor: accentColor,
                   },
                 ]}
               >
                 <BlurView
-                  intensity={Platform.OS === 'ios' ? 65 : 90}
+                  intensity={Platform.OS === 'ios' ? 70 : 95}
                   tint={isDark ? 'dark' : 'light'}
                   style={StyleSheet.absoluteFill}
                 />
 
-                {/* 1. HEADER ROW: SMILEY AVATAR + USERNAME */}
+                {/* 1. HEADER ROW: SMILEY SHUTTER REPLICA AVATAR + USERNAME */}
                 <View style={styles.dropdownHeaderRow}>
-                  {/* Circle Avatar with accentColor background & capture_smile.png */}
-                  <View style={[styles.avatarCircle, { backgroundColor: accentColor }]}>
-                    <Image
-                      source={require('../../assets/images/capture_smile.png')}
-                      style={styles.avatarSmileyImage}
-                      resizeMode="contain"
-                    />
+                  {/* Replicated Smiley Shutter Button Avatar */}
+                  <View style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                    <Svg width={34} height={34} style={StyleSheet.absoluteFill}>
+                      <Circle cx="17" cy="17" r="16" stroke="#1000E5" strokeWidth="1.8" fill="none" />
+                    </Svg>
+                    <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: accentColor, justifyContent: 'center', alignItems: 'center' }}>
+                      <Image
+                        source={require('../../assets/images/capture_smile.png')}
+                        style={{ width: 22, height: 22, transform: [{ rotate: '90deg' }] }}
+                        resizeMode="contain"
+                      />
+                    </View>
                   </View>
 
                   {/* Username (Onboarding name or apple_user) */}
-                  <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                  <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
                     {user?.authProvider === 'apple' || user?.displayName === 'apple_user'
                       ? 'apple_user'
                       : user?.displayName || 'apple_user'}
                   </Text>
                 </View>
 
-                {/* 2. MENU OPTIONS LIST */}
+                {/* 2. MENU OPTIONS LIST (EXACT 5 OPTIONS FROM REFERENCE IMAGES) */}
                 <View style={styles.dropdownMenuList}>
                   {/* Option 1: edit profile */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="person-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
                         edit profile
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'} />
                   </TouchableOpacity>
 
                   {/* Option 2: log notifications */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="notifications-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
                         log notifications
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'} />
                   </TouchableOpacity>
 
                   {/* Option 3: account */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="person-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
                         account
                       </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)'} />
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'} />
                   </TouchableOpacity>
 
                   {/* Option 4: feedback */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="add-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -894,45 +897,13 @@ export default function HomeScreen({
                   </TouchableOpacity>
 
                   {/* Option 5: guide */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="help-circle-outline" size={19} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
                         guide
                       </Text>
                     </View>
-                  </TouchableOpacity>
-                </View>
-
-                {/* THEME COLOR SELECTOR & SIGN OUT */}
-                <View style={styles.dropdownThemeSection}>
-                  <View style={styles.themeGridRow}>
-                    {Object.keys(Colors.BorderGlow).map((colorKey) => {
-                      const isSelected = selectedThemeColor === colorKey;
-                      const swatchColor = Colors.BorderGlow[colorKey as keyof typeof Colors.BorderGlow];
-                      return (
-                        <TouchableOpacity
-                          key={colorKey}
-                          activeOpacity={0.8}
-                          style={[
-                            styles.profileThemeSwatch,
-                            { backgroundColor: swatchColor },
-                            isSelected && styles.activeProfileThemeSwatch,
-                          ]}
-                          onPress={() => onSelectedThemeColorChange(colorKey)}
-                        />
-                      );
-                    })}
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.dropdownSignOutBtn}
-                    onPress={() => {
-                      setShowProfileMenu(false);
-                      onSignOut();
-                    }}
-                  >
-                    <Text style={styles.dropdownSignOutText}>Sign Out</Text>
                   </TouchableOpacity>
                 </View>
               </View>

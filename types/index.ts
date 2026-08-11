@@ -3,6 +3,7 @@ export interface User {
   email: string;
   displayName: string;
   isPasskeyRegistered: boolean;
+  authProvider?: string;
 }
 
 export enum UserRouteState {
