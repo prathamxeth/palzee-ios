@@ -154,18 +154,23 @@ export default function PalVideoSendPreviewModal({
   videoUri,
   timeText,
   selectedThemeColor = 'cyan',
+  isVerticalCapture = true,
   onRetake,
   onSend,
 }: PalVideoSendPreviewModalProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(false);
   const [captionText, setCaptionText] = useState('');
-  const [isVertical, setIsVertical] = useState(true);
+  const [isVertical, setIsVertical] = useState(isVerticalCapture);
   const textInputRef = useRef<TextInput>(null);
   const videoPlayerRef = useRef<Video>(null);
   const slideAnim = useRef(new Animated.Value(screenWidth * 0.85)).current;
   const scaleAnim = useRef(new Animated.Value(0.96)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setIsVertical(isVerticalCapture);
+  }, [isVerticalCapture, videoUri]);
 
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -215,7 +220,6 @@ export default function PalVideoSendPreviewModal({
       });
     } else {
       setCaptionText('');
-      setIsVertical(true);
     }
   }, [visible]);
 
@@ -343,7 +347,7 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Native Unrotated for Horizontal Captures */}
+                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
@@ -356,9 +360,13 @@ export default function PalVideoSendPreviewModal({
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
                         onReadyForDisplay={(event) => {
+                          videoPlayerRef.current?.playAsync().catch(() => {});
                           if (event?.naturalSize) {
                             const { width, height } = event.naturalSize;
-                            setIsVertical(height > width);
+                            const isVert = height > width;
+                            if (isVert !== isVertical) {
+                              setIsVertical(isVert);
+                            }
                           }
                         }}
                       />
