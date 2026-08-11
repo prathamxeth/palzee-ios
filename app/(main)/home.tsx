@@ -865,56 +865,49 @@ export default function HomeScreen({
                   style={[
                     styles.addDropdownCard,
                     {
-                      backgroundColor: 'transparent',
+                      backgroundColor: isDark ? 'rgba(22, 24, 38, 0.75)' : 'rgba(255, 255, 255, 0.80)',
                     },
                   ]}
                 >
-                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                  {/* 1. MUTED PASTEL SOFT AMBIENT LIGHTING LAYER */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
-                      <LinearGradient id="addPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop
-                          offset="0%"
-                          stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                          stopOpacity={isDark ? 0.75 : 0.92}
-                        />
-                        <Stop
-                          offset="50%"
-                          stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                          stopOpacity={isDark ? 0.60 : 0.80}
-                        />
-                        <Stop
-                          offset="100%"
-                          stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                          stopOpacity={isDark ? 0.85 : 0.70}
-                        />
-                      </LinearGradient>
-                      <LinearGradient id="addPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop
-                          offset="0%"
-                          stopColor="#FFFFFF"
-                          stopOpacity={isDark ? 0.35 : 0.95}
-                        />
-                        <Stop
-                          offset="100%"
-                          stopColor={isDark ? '#FFFFFF' : '#000000'}
-                          stopOpacity={isDark ? 0.08 : 0.08}
-                        />
+                      <LinearGradient id="pastelAmbientGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? '#4A5B8C' : '#E8F0FE'} stopOpacity={isDark ? 0.40 : 0.70} />
+                        <Stop offset="50%" stopColor={isDark ? '#3D4A6E' : '#F3E8FF'} stopOpacity={isDark ? 0.25 : 0.40} />
+                        <Stop offset="100%" stopColor={isDark ? '#262D42' : '#FFFFFF'} stopOpacity={isDark ? 0.10 : 0.20} />
                       </LinearGradient>
                     </Defs>
-                    <Rect
-                      x="0.75"
-                      y="0.75"
-                      width="99.1%"
-                      height="99.1%"
-                      rx="25.25"
-                      fill="url(#addPillGrad)"
-                      stroke="url(#addPillBdr)"
-                      strokeWidth="1.5"
-                    />
+                    <Rect width="100%" height="100%" fill="url(#pastelAmbientGrad)" />
                   </Svg>
 
-                  {/* ADD MENU ITEMS LIST - CLEAN TRANSPARENT ROWS */}
+                  {/* 2. FROSTED GLASS BACKDROP BLUR */}
+                  <BlurView intensity={Platform.OS === 'ios' ? 75 : 90} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                  {/* 3. GLOSSY TOP HIGHLIGHT SHEEN LAYER */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="glossySheenGrad" x1="0%" y1="0%" x2="0%" y2="50%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.22 : 0.45} />
+                        <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.0} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="50%" fill="url(#glossySheenGrad)" />
+                  </Svg>
+
+                  {/* 4. SPECULAR HIGHLIGHT BORDER RING */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="pastelSpecularRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.55 : 0.95} />
+                        <Stop offset="40%" stopColor={isDark ? '#A4C6FF' : '#D8C2FF'} stopOpacity={isDark ? 0.30 : 0.50} />
+                        <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.10 : 0.20} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="0.75" y="0.75" width="99.1%" height="99.1%" rx="25" ry="25" fill="none" stroke="url(#pastelSpecularRing)" strokeWidth="1.2" />
+                  </Svg>
+
+                  {/* 4. ADD MENU ITEMS LIST */}
                   <View style={{ paddingVertical: 12, paddingHorizontal: 16 }}>
                     {/* Option 1: create a log */}
                     <TouchableOpacity
