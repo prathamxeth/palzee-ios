@@ -625,30 +625,7 @@ export default function HomeScreen({
                 />
               </TouchableOpacity>
 
-              {/* 2. HI / PERSONAL ROOM CARD BELOW VLOG CARD */}
-              <TouchableOpacity
-                style={[
-                  styles.hiCard,
-                  { backgroundColor: isDark ? '#161616' : '#EFEFEF' },
-                ]}
-                activeOpacity={0.9}
-                onPress={() => setActiveTab('camera')}
-              >
-                <Text style={[styles.hiCardTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                  Hi
-                </Text>
-                <View style={styles.hiCardIconsRow}>
-                  <Image
-                    source={require('../../assets/images/ic_smiley_avatar.png')}
-                    style={{ width: 24, height: 24, tintColor: isDark ? '#8E8E93' : '#636366' }}
-                    resizeMode="contain"
-                  />
-                  <View style={{ width: 1, height: 16, backgroundColor: isDark ? '#38383A' : '#C7C7CC', marginHorizontal: 10 }} />
-                  <Ionicons name="camera" size={22} color={isDark ? '#8E8E93' : '#636366'} />
-                </View>
-              </TouchableOpacity>
-
-              {/* 3. ADDITIONAL PAL ROOM CARDS IF ANY */}
+              {/* 2. ADDITIONAL PAL ROOM CARDS IF ANY */}
               {userPalRooms.map((room) => (
                 <TouchableOpacity
                   key={room.id}
@@ -1658,9 +1635,9 @@ const styles = StyleSheet.create({
   },
   vlogTitle: {
     color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif',
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 4,
   },
   vlogSubtext: {
@@ -1711,7 +1688,7 @@ const styles = StyleSheet.create({
   },
   stepBadgeText: {
     color: '#000000',
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   stepContent: {
@@ -1720,12 +1697,12 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: 10,
   },
   plusSymbolText: {
-    fontSize: 18,
+    fontSize: 15,
   },
   pillActionRow: {
     flexDirection: 'row',
@@ -1749,21 +1726,21 @@ const styles = StyleSheet.create({
   actionPillText: {
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
   },
   actionHintText: {
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
   },
   stepSubtext: {
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    lineHeight: 24,
+    lineHeight: 20,
     marginTop: 2,
   },
   blobContainer: {
