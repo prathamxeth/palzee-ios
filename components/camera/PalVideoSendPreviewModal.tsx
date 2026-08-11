@@ -177,12 +177,6 @@ export default function PalVideoSendPreviewModal({
   }, []);
 
   useEffect(() => {
-    if (visible && videoUri && videoPlayerRef.current) {
-      videoPlayerRef.current.playFromPositionAsync(0).catch(() => {});
-    }
-  }, [visible, videoUri]);
-
-  useEffect(() => {
     if (visible) {
       slideAnim.setValue(screenWidth * 0.85);
       scaleAnim.setValue(0.96);
@@ -209,9 +203,6 @@ export default function PalVideoSendPreviewModal({
         }),
       ]).start(() => {
         textInputRef.current?.focus();
-        if (videoPlayerRef.current) {
-          videoPlayerRef.current.playFromPositionAsync(0).catch(() => {});
-        }
       });
     } else {
       setCaptionText('');
@@ -347,32 +338,15 @@ export default function PalVideoSendPreviewModal({
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
-                        ref={(ref) => {
-                          videoPlayerRef.current = ref;
-                          if (ref) {
-                            ref.playFromPositionAsync(0).catch(() => {});
-                          }
-                        }}
+                        ref={videoPlayerRef}
                         source={{ uri: videoUri }}
                         style={isVertical ? rotatedStyle : horizontalStyle}
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
-                        rate={1.0}
-                        volume={1.0}
-                        progressUpdateIntervalMillis={100}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
-                        onLoad={() => {
-                          videoPlayerRef.current?.playFromPositionAsync(0).catch(() => {});
-                        }}
-                        onPlaybackStatusUpdate={(status) => {
-                          if (status.isLoaded && !status.isPlaying && status.shouldPlay) {
-                            videoPlayerRef.current?.playAsync().catch(() => {});
-                          }
-                        }}
                         onReadyForDisplay={(event) => {
-                          videoPlayerRef.current?.playAsync().catch(() => {});
                           if (event?.naturalSize) {
                             const { width, height } = event.naturalSize;
                             setIsVertical(height > width);

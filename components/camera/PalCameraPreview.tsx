@@ -263,20 +263,26 @@ export default function PalCameraPreview({
       useNativeDriver: false,
     }).start();
 
+    const stopTimeout = setTimeout(() => {
+      try {
+        cameraRef.current?.stopRecording();
+      } catch (e) {}
+    }, durationMs);
+
     try {
       const videoPromise = cameraRef.current.recordAsync({
-        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
+        maxDuration: Math.max(1, Math.ceil(durationMs / 1000)),
       });
 
       const video = await videoPromise;
+      clearTimeout(stopTimeout);
       setIsRecording(false);
       progressAnim.setValue(0);
 
       if (video?.uri) {
-        // Allow iOS native camera 250ms to finalize and flush recorded file to disk
         setTimeout(() => {
           setPreviewVideoUri(video.uri);
-        }, 250);
+        }, 100);
       }
     } catch (e) {
       console.error('Video recording error:', e);
