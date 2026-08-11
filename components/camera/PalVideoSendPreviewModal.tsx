@@ -177,6 +177,15 @@ export default function PalVideoSendPreviewModal({
   }, []);
 
   useEffect(() => {
+    if (visible && videoUri) {
+      const timer = setTimeout(() => {
+        videoPlayerRef.current?.playAsync().catch(() => {});
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, videoUri]);
+
+  useEffect(() => {
     if (visible) {
       slideAnim.setValue(screenWidth * 0.85);
       scaleAnim.setValue(0.96);
@@ -185,19 +194,19 @@ export default function PalVideoSendPreviewModal({
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 400,
+          duration: 350,
           easing: Easing.bezier(0.16, 1, 0.3, 1), // Apple native iOS bezier curve
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 400,
+          duration: 350,
           easing: Easing.bezier(0.16, 1, 0.3, 1),
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 320,
+          duration: 280,
           easing: Easing.linear,
           useNativeDriver: true,
         }),
@@ -334,25 +343,16 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
+                    {/* Standard Expo AV Motion Video Player */}
                     {visible && !!videoUri && (
                       <Video
-                        key={videoUri}
-                        ref={videoPlayerRef}
                         source={{ uri: videoUri }}
-                        style={isVertical ? rotatedStyle : horizontalStyle}
+                        style={StyleSheet.absoluteFill}
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
                         useNativeControls={false}
-                        progressUpdateIntervalMillis={50}
                         resizeMode={ResizeMode.COVER}
-                        onReadyForDisplay={(event) => {
-                          if (event?.naturalSize) {
-                            const { width, height } = event.naturalSize;
-                            setIsVertical(height > width);
-                          }
-                        }}
                       />
                     )}
 
