@@ -9,7 +9,7 @@ import {
   useColorScheme,
   Platform,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -169,11 +169,20 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               {/* TOP LEFT USER ROW INSIDE CARD */}
               <View style={styles.cardUserRow}>
                 <View style={styles.avatarCircleFilled}>
-                  <Image
-                    source={require('../../assets/images/capture_smile.png')}
-                    style={styles.avatarSmileImage}
-                    resizeMode="contain"
-                  />
+                  <Svg width={30} height={30} viewBox="0 0 30 30">
+                    <Circle cx={15} cy={15} r={14.9} fill="#FF7A59" />
+                    {/* BLACK EYES */}
+                    <Circle cx={11} cy={12} r={1.6} fill="#000000" />
+                    <Circle cx={19} cy={12} r={1.6} fill="#000000" />
+                    {/* BLACK SMILE MOUTH */}
+                    <Path
+                      d="M 10 17.5 Q 15 21.5 20 17.5"
+                      stroke="#000000"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </Svg>
                 </View>
                 <Text style={styles.usernameText}>{username}</Text>
               </View>
@@ -307,6 +316,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    paddingBottom: 80,
   },
   glitchCard: {
     width: '100%',
