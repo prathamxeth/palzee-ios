@@ -265,7 +265,7 @@ export default function PalCameraPreview({
 
     try {
       const videoPromise = cameraRef.current.recordAsync({
-        maxDuration: Math.max(1, Math.ceil(durationMs / 1000)),
+        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
       });
 
       const video = await videoPromise;
