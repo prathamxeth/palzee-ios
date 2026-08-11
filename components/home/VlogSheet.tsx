@@ -13,6 +13,8 @@ import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Fonts } from '../../constants/typography';
+import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 
 export interface VlogSheetProps {
@@ -36,6 +38,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
+  const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
 
@@ -168,21 +171,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
               {/* TOP LEFT USER ROW INSIDE CARD */}
               <View style={styles.cardUserRow}>
-                <View style={styles.avatarCircleFilled}>
-                  <Svg width={30} height={30} viewBox="0 0 30 30">
-                    <Circle cx={15} cy={15} r={14.9} fill="#FF7A59" />
-                    {/* BLACK EYES */}
-                    <Circle cx={11} cy={12} r={1.6} fill="#000000" />
-                    <Circle cx={19} cy={12} r={1.6} fill="#000000" />
-                    {/* BLACK SMILE MOUTH */}
-                    <Path
-                      d="M 10 17.5 Q 15 21.5 20 17.5"
-                      stroke="#000000"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                  </Svg>
+                <View style={[styles.avatarCircleFilled, { backgroundColor: edgeColor }]}>
+                  <Image
+                    source={require('../../assets/images/capture_smile.png')}
+                    style={styles.avatarSmileImage}
+                    resizeMode="contain"
+                  />
                 </View>
                 <Text style={styles.usernameText}>{username}</Text>
               </View>
@@ -336,42 +330,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: -2,
-    marginLeft: -2,
+    marginTop: -3,
+    marginLeft: -3,
   },
   avatarCircleFilled: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FF6B4A',
+    width: 29,
+    height: 29,
+    borderRadius: 14.5,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   avatarSmileImage: {
-    width: 24,
-    height: 24,
-    tintColor: '#FFFFFF',
+    width: 28,
+    height: 28,
   },
   usernameText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: '#636366',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   cardMiddleRow: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    top: '50%',
+    transform: [{ translateY: 0 }],
+    height: 40,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    position: 'relative',
-    width: '100%',
-    marginVertical: 'auto',
   },
   cardVlogTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#4A4A4A',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#3A3A3C',
     fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+    marginTop: -2,
   },
   tapToCaptureBtnCenter: {
     position: 'absolute',
