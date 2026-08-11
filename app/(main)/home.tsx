@@ -865,30 +865,60 @@ export default function HomeScreen({
                   style={[
                     styles.addDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.80)',
-                      shadowColor: '#000000',
+                      backgroundColor: 'transparent',
                     },
                   ]}
                 >
-                  {/* FROSTED LIQUID GLASS BACKDROP (ZERO COLOR TINT) */}
-                  <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-
-                  {/* SOFT SPECULAR HIGHLIGHT BORDER STROKE */}
-                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                     <Defs>
-                      <LinearGradient id="addCardBorderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.30 : 0.85} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                      <LinearGradient id="addPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop
+                          offset="0%"
+                          stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                          stopOpacity={isDark ? 0.75 : 0.92}
+                        />
+                        <Stop
+                          offset="50%"
+                          stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                          stopOpacity={isDark ? 0.60 : 0.80}
+                        />
+                        <Stop
+                          offset="100%"
+                          stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                          stopOpacity={isDark ? 0.85 : 0.70}
+                        />
+                      </LinearGradient>
+                      <LinearGradient id="addPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop
+                          offset="0%"
+                          stopColor="#FFFFFF"
+                          stopOpacity={isDark ? 0.35 : 0.95}
+                        />
+                        <Stop
+                          offset="100%"
+                          stopColor={isDark ? '#FFFFFF' : '#000000'}
+                          stopOpacity={isDark ? 0.08 : 0.08}
+                        />
                       </LinearGradient>
                     </Defs>
-                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#addCardBorderGradient)" strokeWidth="0.8" />
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width="99.1%"
+                      height="99.1%"
+                      rx="25.25"
+                      fill="url(#addPillGrad)"
+                      stroke="url(#addPillBdr)"
+                      strokeWidth="1.5"
+                    />
                   </Svg>
 
-                  {/* ADD MENU ITEMS LIST */}
-                  <View style={{ paddingVertical: 10, paddingHorizontal: 6 }}>
-                    {/* Option 1: create a pal */}
+                  {/* ADD MENU ITEMS LIST - CLEAN TRANSPARENT ROWS */}
+                  <View style={{ paddingVertical: 12, paddingHorizontal: 16 }}>
+                    {/* Option 1: create a log */}
                     <TouchableOpacity
-                      style={styles.addMenuItem}
+                      style={{ paddingVertical: 8 }}
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowAddMenu(false);
@@ -897,13 +927,13 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        create a pal
+                        create a log
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Option 2: join a pal */}
+                    {/* Option 2: join a log */}
                     <TouchableOpacity
-                      style={styles.addMenuItem}
+                      style={{ paddingVertical: 8 }}
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowAddMenu(false);
@@ -912,7 +942,7 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        join a pal
+                        join a log
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -2023,20 +2053,21 @@ const styles = StyleSheet.create({
   addDropdownCard: {
     position: 'absolute',
     top: 60,
-    left: 14,
-    width: 246.75,
-    borderRadius: 24,
+    left: 46.5,
+    width: 215,
+    borderRadius: 26,
     borderWidth: 0,
     overflow: 'hidden',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    elevation: 10,
   },
   addMenuItem: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   addMenuText: {
     fontSize: 18.0,
