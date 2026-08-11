@@ -177,6 +177,14 @@ export default function PalVideoSendPreviewModal({
   }, []);
 
   useEffect(() => {
+    if (visible && videoUri && videoPlayerRef.current) {
+      videoPlayerRef.current.setPositionAsync(0).then(() => {
+        videoPlayerRef.current?.playAsync().catch(() => {});
+      }).catch(() => {});
+    }
+  }, [visible, videoUri]);
+
+  useEffect(() => {
     if (visible) {
       slideAnim.setValue(screenWidth * 0.85);
       scaleAnim.setValue(0.96);
@@ -334,7 +342,7 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Seamless Video Player */}
+                    {/* Dynamic Video Player */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
@@ -346,6 +354,9 @@ export default function PalVideoSendPreviewModal({
                         isMuted={isMuted}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
+                        onLoad={() => {
+                          videoPlayerRef.current?.playAsync().catch(() => {});
+                        }}
                       />
                     )}
 
@@ -469,7 +480,7 @@ const styles = StyleSheet.create({
   timeTextHorizontal: {
     color: '#FFFFFF',
     fontFamily: Fonts.DelaGothicOne,
-    fontSize: 17.5,
+    fontSize: 18.5,
     fontWeight: '800',
     letterSpacing: 0.8,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
