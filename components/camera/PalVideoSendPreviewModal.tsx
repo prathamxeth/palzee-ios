@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
+  useColorScheme,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -223,6 +224,13 @@ export default function PalVideoSendPreviewModal({
     });
   };
 
+  const systemScheme = useColorScheme();
+  const isDark = systemScheme === 'dark';
+  const containerBg = isDark ? '#000000' : Colors.PalBackground;
+  const titleColor = isDark ? '#FFFFFF' : '#000000';
+  const iconColor = isDark ? '#FFFFFF' : '#000000';
+  const sendToColor = isDark ? '#9E9EA5' : '#707070';
+
   if (!visible || !videoUri) return null;
 
   const baseAccentColor =
@@ -257,23 +265,23 @@ export default function PalVideoSendPreviewModal({
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalContainer}
+            style={[styles.modalContainer, { backgroundColor: containerBg }]}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: 50, paddingBottom: 20 }}>
                 {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X) & ARROW UP (↑) */}
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
-                  <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn">
-                    <Ionicons name="close" size={24} color="#000000" />
+                  <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
+                    <Ionicons name="close" size={24} color={iconColor} />
                   </LiquidGlassCircleButton>
 
                   {/* Title Text "send" */}
-                  <Text style={styles.headerTitle}>send</Text>
+                  <Text style={[styles.headerTitle, { color: titleColor }]}>send</Text>
 
                   {/* Exact Home Screen Liquid Glass Send Arrow Button (↑) */}
-                  <LiquidGlassCircleButton onPress={handleSend} idPrefix="sendBtn">
-                    <Ionicons name="arrow-up" size={24} color="#000000" />
+                  <LiquidGlassCircleButton onPress={handleSend} idPrefix="sendBtn" isDark={isDark}>
+                    <Ionicons name="arrow-up" size={24} color={iconColor} />
                   </LiquidGlassCircleButton>
                 </View>
 
@@ -342,7 +350,7 @@ export default function PalVideoSendPreviewModal({
 
                 {/* 3. CLEAN "send to:" SUBTITLE (NO INPUT OR CURSOR BELOW "send to:", ONLY BELOW TIME TEXT) */}
                 <View style={styles.captionSection}>
-                  <Text style={styles.sendToLabel}>send to:</Text>
+                  <Text style={[styles.sendToLabel, { color: sendToColor }]}>send to:</Text>
                 </View>
               </View>
             </TouchableWithoutFeedback>
