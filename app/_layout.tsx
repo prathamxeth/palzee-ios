@@ -8,6 +8,9 @@ LogBox.ignoreLogs([
   '[expo-av]',
   'Expo AV has been deprecated',
   'Video component from `expo-av` is deprecated',
+  'expo-av',
+  'expo-video',
+  'SDK 54',
 ]);
 
 SplashScreen.preventAutoHideAsync();

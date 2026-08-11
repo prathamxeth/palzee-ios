@@ -24,7 +24,7 @@ type TimerMode = 'off' | '3s' | '5s' | 'timelapse' | 'jump_cut';
 
 interface PalCameraPreviewProps {
   selectedThemeColor?: string;
-  onCaptureSuccess?: (uri: string) => void;
+  onCaptureSuccess?: (uri: string, caption?: string) => void;
   onClose?: () => void;
   timerMode?: TimerMode;
   onToggleTimerMode?: () => void;
@@ -77,18 +77,28 @@ export default function PalCameraPreview({
   }, []);
 
   // Smooth continuous free rotation of smiley button with zero lag, stopping, or interruption
-  useEffect(() => {
+  const startIdleRotation = () => {
     idleRotateAnim.setValue(0);
-    const loopAnim = Animated.loop(
+    Animated.loop(
       Animated.timing(idleRotateAnim, {
         toValue: 1,
         duration: 3666,
         easing: Easing.linear,
         useNativeDriver: true,
       })
-    );
-    loopAnim.start();
+    ).start();
+  };
+
+  useEffect(() => {
+    startIdleRotation();
   }, []);
+
+  // Re-kick continuous idle rotation when closing/sending preview modal or finishing recording
+  useEffect(() => {
+    if (!previewVideoUri && !isRecording && countdown === null) {
+      startIdleRotation();
+    }
+  }, [previewVideoUri, isRecording, countdown]);
 
   // Floating mode pill auto-hide state (fades out after 2.5s when mode changes)
   const [showPill, setShowPill] = useState(false);
@@ -502,11 +512,17 @@ export default function PalCameraPreview({
         videoUri={previewVideoUri}
         timeText={timeText}
         selectedThemeColor={selectedThemeColor}
-        onRetake={() => setPreviewVideoUri(null)}
-        onSend={(uri) => {
+        onRetake={() => {
           setPreviewVideoUri(null);
+          setIsRecording(false);
+          progressAnim.setValue(0);
+        }}
+        onSend={(uri, caption) => {
+          setPreviewVideoUri(null);
+          setIsRecording(false);
+          progressAnim.setValue(0);
           if (onCaptureSuccess) {
-            onCaptureSuccess(uri);
+            onCaptureSuccess(uri, caption);
           }
         }}
       />

@@ -23,7 +23,14 @@ import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 
-LogBox.ignoreLogs(['[expo-av]', 'Expo AV has been deprecated']);
+LogBox.ignoreLogs([
+  '[expo-av]',
+  'Expo AV has been deprecated',
+  'Video component from `expo-av` is deprecated',
+  'expo-av',
+  'expo-video',
+  'SDK 54',
+]);
 
 interface PalVideoSendPreviewModalProps {
   visible: boolean;
@@ -176,6 +183,33 @@ export default function PalVideoSendPreviewModal({
     });
   };
 
+  const handleSend = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: screenWidth * 0.85,
+        duration: 280,
+        easing: Easing.bezier(0.16, 1, 0.3, 1),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.96,
+        duration: 280,
+        easing: Easing.bezier(0.16, 1, 0.3, 1),
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      if (videoUri) {
+        onSend(videoUri, captionText);
+      }
+    });
+  };
+
   if (!visible || !videoUri) return null;
 
   const baseAccentColor =
@@ -225,7 +259,7 @@ export default function PalVideoSendPreviewModal({
                   <Text style={styles.headerTitle}>send</Text>
 
                   {/* Exact Home Screen Liquid Glass Send Arrow Button (↑) */}
-                  <LiquidGlassCircleButton onPress={() => onSend(videoUri, captionText)} idPrefix="sendBtn">
+                  <LiquidGlassCircleButton onPress={handleSend} idPrefix="sendBtn">
                     <Ionicons name="arrow-up" size={24} color="#000000" />
                   </LiquidGlassCircleButton>
                 </View>
@@ -245,7 +279,7 @@ export default function PalVideoSendPreviewModal({
                     <Video
                       source={{ uri: videoUri }}
                       style={isVertical ? rotatedStyle : horizontalStyle}
-                      shouldPlay
+                      shouldPlay={visible}
                       isLooping
                       isMuted={isMuted}
                       resizeMode={ResizeMode.COVER}

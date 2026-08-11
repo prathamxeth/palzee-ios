@@ -36,8 +36,8 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
             borderWidth: 3.5,
             shadowColor: accentColor,
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.72,
-            shadowRadius: 10.0,
+            shadowOpacity: isDark ? 0.72 : 0.95, // Increased light mode brightness
+            shadowRadius: 10.0, // Area & radius strictly preserved
             elevation: 10,
           },
           style,
@@ -67,7 +67,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
                 ry={48}
                 stroke={accentColor}
                 strokeWidth={14}
-                strokeOpacity={0.25}
+                strokeOpacity={isDark ? 0.25 : 0.65} // Increased light mode glow brightness
                 fill="none"
                 filter="url(#cornerGlowBlur)"
               />
