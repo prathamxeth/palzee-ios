@@ -28,7 +28,8 @@ import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
-import { EditExportSheet } from '../../components/home/EditExportSheet';
+import { VlogSheet } from '../../components/home/EditExportSheet';
+import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
 import PalGroupGridScreen from './groups';
@@ -93,66 +94,6 @@ const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) =>
       />
     </Svg>
   );
-
-const LiquidGlassIconButton = ({
-  onPress,
-  children,
-  isDark = true,
-  idPrefix = 'btn',
-}: {
-  onPress: () => void;
-  children: React.ReactNode;
-  isDark?: boolean;
-  idPrefix?: string;
-}) => (
-  <TouchableOpacity style={styles.circleIconBtn} activeOpacity={0.8} onPress={onPress}>
-    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-    <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
-      <Defs>
-        <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor={isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.75 : 0.88}
-          />
-          <Stop
-            offset="50%"
-            stopColor={isDark ? '#18181B' : '#F7F6F3'}
-            stopOpacity={isDark ? 0.6 : 0.75}
-          />
-          <Stop
-            offset="100%"
-            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.85 : 0.65}
-          />
-        </LinearGradient>
-        <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.35 : 0.95}
-          />
-          <Stop
-            offset="100%"
-            stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.08 : 0.08}
-          />
-        </LinearGradient>
-      </Defs>
-      <Rect
-        x="0.75"
-        y="0.75"
-        width="42.5"
-        height="42.5"
-        rx="21.25"
-        fill={`url(#${idPrefix}Grad)`}
-        stroke={`url(#${idPrefix}Bdr)`}
-        strokeWidth="1.5"
-      />
-    </Svg>
-    {children}
-  </TouchableOpacity>
-);
 
 const LiquidGlassPillButton = ({
   onPress,
@@ -1540,7 +1481,7 @@ export default function HomeScreen({
           selectedThemeColor={selectedThemeColor}
         />
 
-        <EditExportSheet
+        <VlogSheet
           visible={showExportSheet}
           onClose={() => setShowExportSheet(false)}
           user={user}
@@ -1658,8 +1599,8 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   starDoodleImage: {
-    width: 70.05,
-    height: 70.05,
+    width: 65.05,
+    height: 65.05,
   },
   /* EMPTY FEED STYLES */
   emptyFeedContainer: {

@@ -12,9 +12,9 @@ import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
-import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
+import { LiquidGlassIconButton } from '../ui';
 
-interface EditExportSheetProps {
+export interface VlogSheetProps {
   visible: boolean;
   onClose: () => void;
   user?: any;
@@ -22,7 +22,7 @@ interface EditExportSheetProps {
   onOpenChat?: () => void;
 }
 
-export const EditExportSheet: React.FC<EditExportSheetProps> = ({
+export const VlogSheet: React.FC<VlogSheetProps> = ({
   visible,
   onClose,
   user,
@@ -316,3 +316,5 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
 });
+
+export const EditExportSheet = VlogSheet;
