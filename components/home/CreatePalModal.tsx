@@ -9,6 +9,8 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
@@ -164,7 +166,51 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
           <View style={styles.headerRow}>
             {step === 'FORM' ? (
               <TouchableOpacity style={styles.closeBtn} activeOpacity={0.7} onPress={onClose}>
-                <Text style={styles.closeIcon}>✕</Text>
+                <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
+                  <Defs>
+                    <LinearGradient id="closeBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop
+                        offset="0%"
+                        stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                        stopOpacity={isDark ? 0.75 : 0.88}
+                      />
+                      <Stop
+                        offset="50%"
+                        stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                        stopOpacity={isDark ? 0.6 : 0.75}
+                      />
+                      <Stop
+                        offset="100%"
+                        stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                        stopOpacity={isDark ? 0.85 : 0.65}
+                      />
+                    </LinearGradient>
+                    <LinearGradient id="closeBtnBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop
+                        offset="0%"
+                        stopColor="#FFFFFF"
+                        stopOpacity={isDark ? 0.35 : 0.95}
+                      />
+                      <Stop
+                        offset="100%"
+                        stopColor={isDark ? '#FFFFFF' : '#000000'}
+                        stopOpacity={isDark ? 0.08 : 0.08}
+                      />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect
+                    x="0.75"
+                    y="0.75"
+                    width="42.5"
+                    height="42.5"
+                    rx="21.25"
+                    fill="url(#closeBtnGrad)"
+                    stroke="url(#closeBtnBdr)"
+                    strokeWidth="1.5"
+                  />
+                </Svg>
+                <Text style={[styles.closeIcon, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>✕</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.btnPlaceholder} />
@@ -192,12 +238,12 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
 
           {step === 'FORM' && (
             <View style={styles.body}>
-              {/* Section Title: → create a pal room */}
+              {/* Section Title: → create a pal group */}
               <Text style={[styles.sectionTitle, { color: textColor }]}>
-                {tab === 'create' ? '→ create a pal room' : '→ join pal room'}
+                {tab === 'create' ? '→ create a pal group' : '→ join pal group'}
               </Text>
 
-              {/* Room Name Input Row with Dynamic Following Blinking Cursor */}
+              {/* Group Name Input Row with Dynamic Following Blinking Cursor */}
               <View style={styles.inputRow}>
                 <View style={styles.inlineTextRow} pointerEvents="none">
                   {inputVal.length === 0 ? (
@@ -211,7 +257,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                         █
                       </Text>
                       <Text style={styles.placeholderText}>
-                        {tab === 'create' ? 'room name' : '6-digit pal code'}
+                        {tab === 'create' ? 'group name' : '6-digit pal code'}
                       </Text>
                     </>
                   ) : (
@@ -243,7 +289,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
               {tab === 'create' && (
                 <View style={styles.sizeSection}>
                   <Text style={[styles.sizeLabel, { color: textColor }]}>
-                    room size
+                    group size
                   </Text>
 
                   {/* Size Row 1: vlog, 2, 3, 4, 5 */}
@@ -321,7 +367,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                 }}
               >
                 <Text style={[styles.modeToggleText, { color: textColor }]}>
-                  {tab === 'create' ? 'join with code →' : 'create room →'}
+                  {tab === 'create' ? 'join with code →' : 'create group →'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -371,9 +417,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#161618',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -396,6 +440,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -478,7 +523,7 @@ const styles = StyleSheet.create({
     height: 38,
     paddingHorizontal: 14,
     borderRadius: 12,
-    backgroundColor: 'transparent', // TRANSPARENT BG (NOT GREYED/FROSTED)
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#444448',
     alignItems: 'center',
@@ -489,7 +534,7 @@ const styles = StyleSheet.create({
     height: 38,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: 'transparent', // TRANSPARENT BG (NOT GREYED/FROSTED)
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#444448',
     alignItems: 'center',

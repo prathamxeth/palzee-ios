@@ -443,8 +443,8 @@ export default function PalCameraPreview({
             style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
           >
             {/* Outer Concentric Deep Blue Border Ring */}
-            <Svg width={82} height={82} style={StyleSheet.absoluteFill}>
-              <Circle cx="41" cy="41" r="39" stroke="#1000E5" strokeWidth="3.5" fill="none" />
+            <Svg width={83} height={83} style={StyleSheet.absoluteFill}>
+              <Circle cx="41.5" cy="41.5" r="39.5" stroke="#1000E5" strokeWidth="3.5" fill="none" />
             </Svg>
 
             <Animated.View
@@ -717,15 +717,15 @@ const styles = StyleSheet.create({
   shutterWrapperAbsolute: {
     position: 'absolute',
     bottom: 26,
-    width: 82,
-    height: 82,
+    width: 83,
+    height: 83,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 71,
+    height: 71,
+    borderRadius: 35.5,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -3,13 +3,6 @@ import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
-let NativeGlassView: any = null;
-try {
-  NativeGlassView = require('expo-glass-effect').GlassView;
-} catch (e) {
-  // Native module not linked yet
-}
-
 interface LiquidGlassProps {
   style?: ViewStyle | ViewStyle[];
   children?: React.ReactNode;
@@ -17,6 +10,11 @@ interface LiquidGlassProps {
   accentColor?: string;
   borderRadius?: number;
   variant?: 'regular' | 'clear';
+  renderer?: 'auto' | 'native' | 'metal';
+  cornerStyle?: 'continuous' | 'circular';
+  tint?: string;
+  interactive?: boolean;
+  enableBackgroundExtension?: boolean;
 }
 
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
@@ -24,26 +22,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   children,
   isDark = false,
   borderRadius = 26,
-  variant = 'clear',
 }) => {
-  // If native expo-glass-effect is linked and compiled into the app binary:
-  if (NativeGlassView && Platform.OS === 'ios') {
-    return (
-      <NativeGlassView
-        style={[style, { borderRadius, overflow: 'hidden' }]}
-        glassEffectStyle={variant}
-        tintColor={isDark ? 'rgba(24, 20, 36, 0.4)' : 'rgba(255, 255, 255, 0.4)'}
-      >
-        {children}
-      </NativeGlassView>
-    );
-  }
-
-  // High-fidelity fallback (Expo BlurView)
-  const isClear = variant === 'clear';
-  const surfaceAlpha = isClear ? (isDark ? 0.65 : 0.65) : (isDark ? 0.90 : 0.90);
-  const blurIntensity = isClear ? 65 : 85;
-
   return (
     <View
       style={[
@@ -51,36 +30,53 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         {
           borderRadius,
           overflow: 'hidden',
-          backgroundColor: isDark ? `rgba(24, 20, 36, ${surfaceAlpha})` : `rgba(252, 248, 254, ${surfaceAlpha})`,
+          backgroundColor: 'transparent',
         },
       ]}
     >
-      {/* 1. TOP-LEFT LIQUID CYAN-PINK COLOR SPLASH */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <LinearGradient id="auroraTopLeftGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#00E5FF" stopOpacity={isDark ? 0.55 : 0.65} />
-            <Stop offset="22%" stopColor="#FF77E9" stopOpacity={isDark ? 0.28 : 0.35} />
-            <Stop offset="55%" stopColor={isDark ? '#1C1C1E' : '#FFFFFF'} stopOpacity={0.0} />
-          </LinearGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#auroraTopLeftGlow)" />
-      </Svg>
-
-      {/* 2. FROSTED BACKDROP BLUR */}
+      {/* 1. FROSTED BACKDROP BLUR MATCHING ICON BUTTONS */}
       <BlurView
-        intensity={Platform.OS === 'ios' ? blurIntensity : 90}
+        intensity={35}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 3. SPECULAR WHITE BORDER HIGHLIGHT STROKE */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      {/* 2. GRADIENT FILL & SPECULAR BORDER STROKE MATCHING OTHER ICONS EXACTLY */}
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <LinearGradient id="liquidPillBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.50 : 0.95} />
-            <Stop offset="45%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.20 : 0.40} />
-            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+          <LinearGradient id="iconMatchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <Stop
+              offset="0%"
+              stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.15 : 0.20}
+            />
+            <Stop
+              offset="35%"
+              stopColor={isDark ? '#18181B' : '#F7F6F3'}
+              stopOpacity={isDark ? 0.60 : 0.70}
+            />
+            <Stop
+              offset="75%"
+              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+              stopOpacity={1.0}
+            />
+            <Stop
+              offset="100%"
+              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+              stopOpacity={1.0}
+            />
+          </LinearGradient>
+          <LinearGradient id="iconMatchBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+            <Stop
+              offset="0%"
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.35 : 0.95}
+            />
+            <Stop
+              offset="100%"
+              stopColor={isDark ? '#FFFFFF' : '#000000'}
+              stopOpacity={isDark ? 0.08 : 0.08}
+            />
           </LinearGradient>
         </Defs>
         <Rect
@@ -90,9 +86,9 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           height="99.1%"
           rx={borderRadius - 1}
           ry={borderRadius - 1}
-          fill="none"
-          stroke="url(#liquidPillBorder)"
-          strokeWidth="1.2"
+          fill="url(#iconMatchGrad)"
+          stroke="url(#iconMatchBdr)"
+          strokeWidth="1.5"
         />
       </Svg>
 
