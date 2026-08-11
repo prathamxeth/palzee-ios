@@ -920,8 +920,15 @@ export default function HomeScreen({
                   />
                 </Svg>
 
-                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (HIDDEN WHEN SUBMENU IS ACTIVE, SHOWING ONLY GLOW) */}
-                <View style={[styles.dropdownHeaderRow, { opacity: profileSubMenu !== 'main' ? 0.0 : 1.0 }]}>
+                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (DIMMED FOR EDIT PROFILE, HIDDEN FOR COLOR) */}
+                <View
+                  style={[
+                    styles.dropdownHeaderRow,
+                    {
+                      opacity: profileSubMenu === 'color' ? 0.0 : profileSubMenu === 'editProfile' ? 0.40 : 1.0,
+                    },
+                  ]}
+                >
                   <View
                     style={{
                       width: 32,
@@ -956,8 +963,15 @@ export default function HomeScreen({
                   </Text>
                 </View>
 
-                {/* MAIN MENU OPTIONS (HIDDEN WHEN SUBMENU IS ACTIVE, SHOWING ONLY GLOW) */}
-                <View style={[styles.dropdownMenuList, { opacity: profileSubMenu !== 'main' ? 0.0 : 1.0 }]}>
+                {/* MAIN MENU OPTIONS (DIMMED FOR EDIT PROFILE, HIDDEN FOR COLOR) */}
+                <View
+                  style={[
+                    styles.dropdownMenuList,
+                    {
+                      opacity: profileSubMenu === 'color' ? 0.0 : profileSubMenu === 'editProfile' ? 0.40 : 1.0,
+                    },
+                  ]}
+                >
                   {/* Option 1: edit profile */}
                   <TouchableOpacity
                     style={styles.dropdownMenuItem}
@@ -1908,7 +1922,7 @@ const styles = StyleSheet.create({
   },
   profileColorDropdownCard: {
     position: 'absolute',
-    top: 152,
+    top: 236,
     right: 7,
     width: 259.5,
     borderRadius: 24,
