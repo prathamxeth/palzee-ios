@@ -20,6 +20,7 @@ import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop, Te
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
+import * as ImagePicker from 'expo-image-picker';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
@@ -433,6 +434,31 @@ export default function HomeScreen({
   });
   const [activeTab, setActiveTab] = useState<'camera' | 'pals'>('pals');
   const [userPalRooms, setUserPalRooms] = useState<PalRoom[]>([]);
+  const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
+
+  const handleChoosePhoto = async () => {
+    try {
+      setShowProfileMenu(false);
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        alert('Permission to access photos is required to update profile picture.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.9,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setProfilePhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error selecting profile photo:', error);
+    }
+  };
 
   useEffect(() => {
     if (autoOpenCreateModal) {
