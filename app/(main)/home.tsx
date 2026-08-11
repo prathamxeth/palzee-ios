@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import {
   Image,
   ImageBackground,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -419,6 +422,9 @@ export default function HomeScreen({
   const [showCamera, setShowCamera] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color'>('main');
+  const [showEditNameModal, setShowEditNameModal] = useState(false);
+  const [editFirstName, setEditFirstName] = useState(user?.displayName || 'apple_user');
+  const [editLastName, setEditLastName] = useState('');
   const [activeTab, setActiveTab] = useState<'camera' | 'pals'>('pals');
   const [userPalRooms, setUserPalRooms] = useState<PalRoom[]>([]);
 
@@ -822,7 +828,7 @@ export default function HomeScreen({
                     },
                   ]}
                 >
-                {/* SMOOTH DIAGONAL GRADIENT GLOW FILL (0.75 GLOW INTENSITY) */}
+                {/* INNER DIAGONAL GLOW FILL: CREATES NATURAL GLOWING EDGE (TOP-RIGHT) & DIMMED GLOW (BOTTOM-LEFT) */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                   <Defs>
                     <LinearGradient
@@ -832,9 +838,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={0.75} />
-                      <Stop offset="45%" stopColor={accentColor} stopOpacity={0.35} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.08 : 0.10} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
+                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -846,7 +852,7 @@ export default function HomeScreen({
                   style={StyleSheet.absoluteFill}
                 />
 
-                {/* DYNAMIC GRADIENT BORDER STROKE: PURE WHITE IN LIGHT MODE, NO BLACK STROKE */}
+                {/* SOFT GLASS SPECULAR EDGE HIGHLIGHT (NO HARSH BRIGHT BOUNDARY STROKE) */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                   <Defs>
                     <LinearGradient
@@ -856,9 +862,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.95 : 0.98} />
-                      <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.60 : 0.65} />
-                      <Stop offset="100%" stopColor={isDark ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF'} stopOpacity={isDark ? 0.45 : 0.35} />
+                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
+                      <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
                     </LinearGradient>
                   </Defs>
                   <Rect
@@ -870,12 +876,12 @@ export default function HomeScreen({
                     ry="23"
                     fill="none"
                     stroke="url(#cardBorderGradient)"
-                    strokeWidth="1.2"
+                    strokeWidth="0.8"
                   />
                 </Svg>
 
-                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR + USERNAME (ALWAYS VISIBLE IN BACKGROUND) */}
-                <View style={styles.dropdownHeaderRow}>
+                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR + USERNAME (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
+                <View style={[styles.dropdownHeaderRow, { opacity: profileSubMenu !== 'main' ? 0.40 : 1.0 }]}>
                   <View
                     style={{
                       width: 32,
@@ -902,67 +908,65 @@ export default function HomeScreen({
                   </Text>
                 </View>
 
-                {/* MAIN MENU OPTIONS (WHEN IN MAIN LEVEL) */}
-                {profileSubMenu === 'main' && (
-                  <View style={styles.dropdownMenuList}>
-                    {/* Option 1: edit profile */}
-                    <TouchableOpacity
-                      style={styles.dropdownMenuItem}
-                      activeOpacity={0.7}
-                      onPress={() => setProfileSubMenu('editProfile')}
-                    >
-                      <View style={styles.dropdownMenuLeft}>
-                        <Ionicons name="person-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                          edit profile
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
-                    </TouchableOpacity>
+                {/* MAIN MENU OPTIONS (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
+                <View style={[styles.dropdownMenuList, { opacity: profileSubMenu !== 'main' ? 0.40 : 1.0 }]}>
+                  {/* Option 1: edit profile */}
+                  <TouchableOpacity
+                    style={styles.dropdownMenuItem}
+                    activeOpacity={0.7}
+                    onPress={() => setProfileSubMenu('editProfile')}
+                  >
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="person-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        edit profile
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
+                  </TouchableOpacity>
 
-                    {/* Option 2: log notifications */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
-                      <View style={styles.dropdownMenuLeft}>
-                        <Ionicons name="notifications-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                          log notifications
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
-                    </TouchableOpacity>
+                  {/* Option 2: log notifications */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="notifications-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        log notifications
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
+                  </TouchableOpacity>
 
-                    {/* Option 3: account */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
-                      <View style={styles.dropdownMenuLeft}>
-                        <Ionicons name="person-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                          account
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
-                    </TouchableOpacity>
+                  {/* Option 3: account */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="person-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        account
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)'} />
+                  </TouchableOpacity>
 
-                    {/* Option 4: feedback */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
-                      <View style={styles.dropdownMenuLeft}>
-                        <Ionicons name="add-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                          feedback
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
+                  {/* Option 4: feedback */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="add-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        feedback
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
 
-                    {/* Option 5: guide */}
-                    <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
-                      <View style={styles.dropdownMenuLeft}>
-                        <Ionicons name="help-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
-                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                          guide
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                  {/* Option 5: guide */}
+                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="help-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        guide
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {/* OVERLAPPING SUB-DROPDOWN CARD ("DROPDOWN IN DROPDOWN") */}
@@ -979,9 +983,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.75} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={0.35} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.08 : 0.10} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.62 : 0.72} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.25 : 0.32} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.05} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
@@ -989,16 +993,16 @@ export default function HomeScreen({
 
                   <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                  {/* DYNAMIC PURE WHITE SPECULAR BORDER STROKE IN LIGHT MODE */}
+                  {/* SOFT SPECULAR HIGHLIGHT (NO HARD BRIGHT BORDER STROKE) */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="subCardBorderGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.95 : 0.98} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.60 : 0.65} />
-                        <Stop offset="100%" stopColor={isDark ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF'} stopOpacity={isDark ? 0.45 : 0.35} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
+                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
                       </LinearGradient>
                     </Defs>
-                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="1.2" />
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="0.8" />
                   </Svg>
 
                   {/* Sub-Card Header Row: edit profile + down chevron v */}
@@ -1016,18 +1020,19 @@ export default function HomeScreen({
                     <Ionicons name="chevron-down" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                   </TouchableOpacity>
 
-                  {/* Hairline Separator Line */}
+                  {/* Hairline Separator Line (Shifted down by 2dp further) */}
                   <View
                     style={{
                       height: StyleSheet.hairlineWidth,
                       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
                       marginHorizontal: 16,
-                      marginBottom: 6,
+                      marginTop: 4,
+                      marginBottom: 12,
                     }}
                   />
 
-                  {/* Edit Profile Sub-Menu Items List */}
-                  <View style={styles.dropdownMenuList}>
+                  {/* Edit Profile Sub-Menu Items List (Box expanded to fit pushed down text) */}
+                  <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
                     {/* Sub-Option 1: display name */}
                     <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => {}}>
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
@@ -1573,7 +1578,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     right: 13,
-    width: 247,
+    width: 246.75,
     borderRadius: 24,
     borderWidth: 0,
     overflow: 'hidden',
@@ -1633,9 +1638,9 @@ const styles = StyleSheet.create({
   },
   profileSubDropdownCard: {
     position: 'absolute',
-    top: 108,
-    right: 13,
-    width: 247,
+    top: 104,
+    right: 10,
+    width: 253,
     borderRadius: 24,
     borderWidth: 0,
     overflow: 'hidden',
