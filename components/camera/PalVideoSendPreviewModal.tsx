@@ -79,6 +79,7 @@ interface PalVideoSendPreviewModalProps {
   videoUri: string | null;
   timeText: string;
   selectedThemeColor?: string;
+  isVerticalCapture?: boolean;
   onRetake: () => void;
   onSend: (uri: string, caption?: string) => void;
 }
