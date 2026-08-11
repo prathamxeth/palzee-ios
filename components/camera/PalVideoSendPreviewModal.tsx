@@ -312,8 +312,14 @@ export default function PalVideoSendPreviewModal({
     transform: [],
   };
   return (
-    <Modal visible={visible} animationType="fade" transparent={false} onRequestClose={handleClose}>
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent={false}
+      supportedOrientations={['portrait']}
+      onRequestClose={handleClose}
+    >
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={false}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -382,7 +388,7 @@ export default function PalVideoSendPreviewModal({
                         selectionColor={baseAccentColor}
                         cursorColor={baseAccentColor}
                         multiline={false}
-                        autoFocus={true}
+                        autoFocus={false}
                       />
                     </View>
 

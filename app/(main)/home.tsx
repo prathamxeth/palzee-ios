@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  AppState,
   Image,
   ImageBackground,
   Keyboard,
@@ -463,11 +464,25 @@ export default function HomeScreen({
     }
   };
 
+  // Auto-prompt Create/Join Pals Group modal if user has 0 Pal groups
   useEffect(() => {
-    if (autoOpenCreateModal) {
+    if (userPalRooms.length === 0) {
       setShowCreateModal(true);
     }
-  }, [autoOpenCreateModal]);
+  }, [userPalRooms.length, activeTab, showGroupsView, showCamera, autoOpenCreateModal]);
+
+  // Re-check on App Cold Start & App Foreground (opening app after closing)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && userPalRooms.length === 0) {
+        setShowCreateModal(true);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [userPalRooms.length]);
 
   const handleCreateRoom = async (name: string, maxCount: number) => {
     const newRoom: PalRoom = {
