@@ -16,7 +16,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
@@ -166,6 +166,15 @@ export default function PalVideoSendPreviewModal({
   const slideAnim = useRef(new Animated.Value(screenWidth * 0.85)).current;
   const scaleAnim = useRef(new Animated.Value(0.96)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -325,25 +334,18 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
+                    {/* Seamless Video Player */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
                         ref={videoPlayerRef}
                         source={{ uri: videoUri }}
-                        style={isVertical ? rotatedStyle : horizontalStyle}
+                        style={StyleSheet.absoluteFillObject}
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
                         useNativeControls={false}
-                        progressUpdateIntervalMillis={50}
                         resizeMode={ResizeMode.COVER}
-                        onReadyForDisplay={(event) => {
-                          if (event?.naturalSize) {
-                            const { width, height } = event.naturalSize;
-                            setIsVertical(height > width);
-                          }
-                        }}
                       />
                     )}
 
