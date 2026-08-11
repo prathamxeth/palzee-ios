@@ -12,9 +12,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.pratham.palzee",
-      "associatedDomains": [
-        "webcredentials:palzee.app"
-      ],
       "infoPlist": {
         "NSCameraUsageDescription": "Palzee needs access to your camera to capture photos and videos for your daily pal feed.",
         "NSMicrophoneUsageDescription": "Palzee needs access to your microphone to record audio for videos.",

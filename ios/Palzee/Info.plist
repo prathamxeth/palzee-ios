@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>io.supabase.pals</string>
-          <string>com.finrein.pals</string>
+          <string>com.pratham.palzee</string>
         </array>
       </dict>
     </array>
@@ -69,6 +69,12 @@
       <string>ownglyph.ttf</string>
       <string>roboto_medium_numbers.ttf</string>
       <string>unpack.otf</string>
+      <string>courier_prime.ttf</string>
+      <string>ibm_plex_mono.ttf</string>
+      <string>jetbrains_mono_regular.ttf</string>
+      <string>roboto_mono_regular.ttf</string>
+      <string>roboto_slab_regular.ttf</string>
+      <string>space_mono_regular.ttf</string>
     </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
