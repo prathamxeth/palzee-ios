@@ -418,6 +418,8 @@ export default function HomeScreen({
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#11D5F3';
   const [showGroupsView, setShowGroupsView] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(autoOpenCreateModal);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [createModalInitialTab, setCreateModalInitialTab] = useState<'create' | 'join'>('create');
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -559,7 +561,7 @@ export default function HomeScreen({
 
             <View style={styles.headerRightIcons}>
               {/* 1. PLUS BUTTON (+ Icon) */}
-              <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowCreateModal(true)}>
+              <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowAddMenu(true)}>
                 <LucidePlus size={26} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
@@ -844,6 +846,94 @@ export default function HomeScreen({
             <View style={{ width: 44 }} />
           )}
         </View>
+
+        {/* EXACT LIQUID GLASS ADD DROPDOWN MENU MATCHING ATTACHED REFERENCE IMAGE */}
+        <Modal
+          visible={showAddMenu}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowAddMenu(false)}
+        >
+          <TouchableOpacity
+            style={styles.dropdownModalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowAddMenu(false)}
+          >
+            <TouchableWithoutFeedback>
+              <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+                <View
+                  style={[
+                    styles.addDropdownCard,
+                    {
+                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
+                      shadowColor: isDark ? accentColor : '#000000',
+                    },
+                  ]}
+                >
+                  {/* INNER DIAGONAL AMBIENT THEME GLOW FILL */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                    <Defs>
+                      <LinearGradient id="addMenuDiagonalGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#addMenuDiagonalGlow)" />
+                  </Svg>
+
+                  {/* FROSTED GLASS BACKDROP */}
+                  <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                  {/* SOFT SPECULAR HIGHLIGHT BORDER STROKE */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="addCardBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
+                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#addCardBorderGradient)" strokeWidth="0.8" />
+                  </Svg>
+
+                  {/* ADD MENU ITEMS LIST */}
+                  <View style={{ paddingVertical: 10, paddingHorizontal: 6 }}>
+                    {/* Option 1: create a log */}
+                    <TouchableOpacity
+                      style={styles.addMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowAddMenu(false);
+                        setCreateModalInitialTab('create');
+                        setShowCreateModal(true);
+                      }}
+                    >
+                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        create a log
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Option 2: join a log */}
+                    <TouchableOpacity
+                      style={styles.addMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowAddMenu(false);
+                        setCreateModalInitialTab('join');
+                        setShowCreateModal(true);
+                      }}
+                    >
+                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                        join a log
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </TouchableOpacity>
+        </Modal>
 
         {/* EXACT LIQUID GLASS PROFILE DROPDOWN MENU MATCHING REFERENCE IMAGES */}
         <Modal
@@ -1445,6 +1535,7 @@ export default function HomeScreen({
           onCreate={handleCreateRoom}
           onJoin={handleJoinRoom}
           themeColor={selectedThemeColor}
+          initialTab={createModalInitialTab}
         />
 
         <ChatDrawer
@@ -1941,5 +2032,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.38,
     shadowRadius: 20,
     elevation: 14,
+  },
+  addDropdownCard: {
+    position: 'absolute',
+    top: 60,
+    left: 14,
+    width: 246.75,
+    borderRadius: 24,
+    borderWidth: 0,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  addMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  addMenuText: {
+    fontSize: 18.0,
+    fontWeight: '400',
+    letterSpacing: 0.1,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
 });
