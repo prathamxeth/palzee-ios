@@ -613,8 +613,8 @@ export default function HomeScreen({
                   <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                     vlog
                   </Text>
-                  <Text numberOfLines={1} style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
-                    your space. Each day runs 4am to 4am.
+                  <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
+                    your space. Each day runs 4am{'\n'}to 4am.
                   </Text>
                 </View>
 
@@ -1627,7 +1627,8 @@ const styles = StyleSheet.create({
   vlogCard: {
     backgroundColor: '#161616',
     borderRadius: 24,
-    padding: 24,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -1635,15 +1636,15 @@ const styles = StyleSheet.create({
   hiCard: {
     backgroundColor: '#161616',
     borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 22,
+    paddingVertical: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 4,
   },
   hiCardTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
@@ -1657,21 +1658,22 @@ const styles = StyleSheet.create({
   },
   vlogTitle: {
     color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   vlogSubtext: {
     color: '#8E8E93',
-    fontFamily: Platform.OS === 'ios' ? 'SF Compact Text' : 'sans-serif',
-    fontSize: 14,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontSize: 15,
     fontWeight: '400',
-    lineHeight: 18,
+    lineHeight: 21,
   },
   starDoodleImage: {
-    width: 60,
-    height: 60,
+    width: 52,
+    height: 52,
+    marginTop: 2,
   },
   /* EMPTY FEED STYLES */
   emptyFeedContainer: {
