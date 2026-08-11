@@ -24,17 +24,44 @@ import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 
+const shouldSuppressExpoAv = (...args: any[]) => {
+  try {
+    const fullMsg = args
+      .map((a) => (typeof a === 'string' ? a : JSON.stringify(a || '')))
+      .join(' ');
+    return (
+      fullMsg.includes('expo-av') ||
+      fullMsg.includes('expo-video') ||
+      fullMsg.includes('Video component') ||
+      fullMsg.includes('deprecated in favor of')
+    );
+  } catch (e) {
+    return false;
+  }
+};
+
 const originalWarn = console.warn;
 console.warn = (...args: any[]) => {
-  if (
-    typeof args[0] === 'string' &&
-    (args[0].includes('[expo-av]') ||
-      args[0].includes('Expo AV has been deprecated') ||
-      args[0].includes('expo-video'))
-  ) {
-    return;
-  }
+  if (shouldSuppressExpoAv(...args)) return;
   originalWarn(...args);
+};
+
+const originalError = console.error;
+console.error = (...args: any[]) => {
+  if (shouldSuppressExpoAv(...args)) return;
+  originalError(...args);
+};
+
+const originalLog = console.log;
+console.log = (...args: any[]) => {
+  if (shouldSuppressExpoAv(...args)) return;
+  originalLog(...args);
+};
+
+const originalInfo = console.info;
+console.info = (...args: any[]) => {
+  if (shouldSuppressExpoAv(...args)) return;
+  originalInfo(...args);
 };
 
 LogBox.ignoreLogs([
@@ -43,6 +70,7 @@ LogBox.ignoreLogs([
   'Video component from `expo-av` is deprecated',
   'expo-av',
   'expo-video',
+  'deprecated in favor of `expo-video`',
   'SDK 54',
 ]);
 
@@ -134,6 +162,7 @@ export default function PalVideoSendPreviewModal({
   const [captionText, setCaptionText] = useState('');
   const [isVertical, setIsVertical] = useState(true);
   const textInputRef = useRef<TextInput>(null);
+  const videoPlayerRef = useRef<Video>(null);
   const slideAnim = useRef(new Animated.Value(screenWidth * 0.85)).current;
   const scaleAnim = useRef(new Animated.Value(0.96)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -143,6 +172,7 @@ export default function PalVideoSendPreviewModal({
       slideAnim.setValue(screenWidth * 0.85);
       scaleAnim.setValue(0.96);
       fadeAnim.setValue(0);
+      videoPlayerRef.current?.playAsync();
 
       Animated.parallel([
         Animated.timing(slideAnim, {
@@ -297,20 +327,26 @@ export default function PalVideoSendPreviewModal({
                     ]}
                   >
                     {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
-                    <Video
-                      source={{ uri: videoUri }}
-                      style={isVertical ? rotatedStyle : horizontalStyle}
-                      shouldPlay={visible}
-                      isLooping
-                      isMuted={isMuted}
-                      resizeMode={ResizeMode.COVER}
-                      onReadyForDisplay={(event) => {
-                        if (event?.naturalSize) {
-                          const { width, height } = event.naturalSize;
-                          setIsVertical(height > width);
-                        }
-                      }}
-                    />
+                    {visible && !!videoUri && (
+                      <Video
+                        key={videoUri}
+                        ref={videoPlayerRef}
+                        source={{ uri: videoUri }}
+                        style={isVertical ? rotatedStyle : horizontalStyle}
+                        shouldPlay={true}
+                        isLooping={true}
+                        isMuted={isMuted}
+                        useNativeControls={false}
+                        progressUpdateIntervalMillis={50}
+                        resizeMode={ResizeMode.COVER}
+                        onReadyForDisplay={(event) => {
+                          if (event?.naturalSize) {
+                            const { width, height } = event.naturalSize;
+                            setIsVertical(height > width);
+                          }
+                        }}
+                      />
+                    )}
 
                     {/* CENTER TIME TEXT + BLINKING CURSOR CAPTION INPUT DIRECTLY BELOW TIME TEXT */}
                     <View style={styles.centerTimeAndCaptionContainer}>

@@ -367,7 +367,6 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                     {getSubtext()}
                   </Text>
                 </View>
-              </View>
             )}
 
           {step === 'CREATING' && (
