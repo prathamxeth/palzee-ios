@@ -14,6 +14,7 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { JoinPalModal } from './JoinPalModal';
 
 interface CreatePalModalProps {
   visible: boolean;
@@ -149,6 +150,18 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
   const modalBg = isDark ? '#000000' : Colors.PalBackground;
   const textColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
 
+  if (tab === 'join') {
+    return (
+      <JoinPalModal
+        visible={visible}
+        onClose={onClose}
+        onJoin={onJoin}
+        themeColor={themeColor}
+        onSwitchToCreate={() => setTab('create')}
+      />
+    );
+  }
+
   return (
     <Modal visible={visible} transparent={false} animationType="slide">
       <DynamicGlowContainer selectedThemeColor={themeColor} showBorder={true}>
@@ -240,7 +253,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
             <View style={styles.body}>
               {/* Section Title: → create a pal group */}
               <Text style={[styles.sectionTitle, { color: textColor }]}>
-                {tab === 'create' ? '→ create a pal group' : '→ join pal group'}
+                → create a pal group
               </Text>
 
               {/* Group Name Input Row with Dynamic Following Blinking Cursor */}
@@ -257,7 +270,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                         █
                       </Text>
                       <Text style={styles.placeholderText}>
-                        {tab === 'create' ? 'group name' : '6-digit pal code'}
+                        group name
                       </Text>
                     </>
                   ) : (
@@ -280,17 +293,16 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                   style={styles.invisibleInput}
                   value={inputVal}
                   onChangeText={setInputVal}
-                  autoCapitalize={tab === 'join' ? 'characters' : 'words'}
+                  autoCapitalize="words"
                   autoFocus
                   caretHidden={true}
                 />
               </View>
 
-              {tab === 'create' && (
-                <View style={styles.sizeSection}>
-                  <Text style={[styles.sizeLabel, { color: textColor }]}>
-                    group size
-                  </Text>
+              <View style={styles.sizeSection}>
+                <Text style={[styles.sizeLabel, { color: textColor }]}>
+                  group size
+                </Text>
 
                   {/* Size Row 1: vlog, 2, 3, 4, 5 */}
                   <View style={styles.sizeRow1}>
@@ -355,28 +367,13 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                     {getSubtext()}
                   </Text>
                 </View>
-              )}
-
-              {/* Mode Toggle Action Link */}
-              <TouchableOpacity
-                style={styles.modeToggleLink}
-                activeOpacity={0.7}
-                onPress={() => {
-                  setTab(tab === 'create' ? 'join' : 'create');
-                  setInputVal('');
-                }}
-              >
-                <Text style={[styles.modeToggleText, { color: textColor }]}>
-                  {tab === 'create' ? 'join with code →' : 'create group →'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+              </View>
+            )}
 
           {step === 'CREATING' && (
             <View style={styles.creatingContainer}>
               <Text style={[styles.creatingText, { color: textColor }]}>
-                creating log{dots}
+                creating pal{dots}
               </Text>
             </View>
           )}

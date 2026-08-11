@@ -873,7 +873,7 @@ export default function HomeScreen({
                 >
                   {/* ADD MENU ITEMS LIST */}
                   <View style={{ paddingVertical: 12, paddingHorizontal: 16 }}>
-                    {/* Option 1: create a log */}
+                    {/* Option 1: create a pal */}
                     <TouchableOpacity
                       style={{ paddingVertical: 8 }}
                       activeOpacity={0.7}
@@ -884,11 +884,11 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        create a log
+                        create a pal
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Option 2: join a log */}
+                    {/* Option 2: join a pal */}
                     <TouchableOpacity
                       style={{ paddingVertical: 8 }}
                       activeOpacity={0.7}
@@ -899,7 +899,7 @@ export default function HomeScreen({
                       }}
                     >
                       <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
-                        join a log
+                        join a pal
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -942,9 +942,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
-                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={0.88} />
+                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.65 : 0.78} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.26 : 0.38} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -966,9 +966,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
-                      <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
+                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.40 : 0.48} />
+                      <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.18 : 0.24} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.07 : 0.10} />
                     </LinearGradient>
                   </Defs>
                   <Rect
@@ -1230,9 +1230,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.88} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.65 : 0.78} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.26 : 0.38} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
@@ -1243,9 +1243,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="colorSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.40 : 0.48} />
+                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.18 : 0.24} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.07 : 0.10} />
                       </LinearGradient>
                     </Defs>
                     <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="0.8" />

@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { View, StyleSheet, ViewStyle, Platform, useColorScheme } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
@@ -20,9 +19,11 @@ interface LiquidGlassProps {
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   style,
   children,
-  isDark = false,
+  isDark: isDarkProp,
   borderRadius = 26,
 }) => {
+  const systemScheme = useColorScheme();
+  const isDark = isDarkProp ?? (systemScheme === 'dark');
   return (
     <View
       style={[
