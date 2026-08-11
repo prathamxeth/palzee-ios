@@ -38,7 +38,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<'create' | 'join'>(initialTab);
   const [inputVal, setInputVal] = useState('');
-  const [sizeKey, setSizeKey] = useState<'vlog' | '2' | '3' | '4' | '5' | '6-10'>('3');
+  const [sizeKey, setSizeKey] = useState<'2' | '3' | '4' | '5' | '6-10'>('3');
   const [step, setStep] = useState<Step>('FORM');
   const [dots, setDots] = useState('.');
   const [createdCode, setCreatedCode] = useState('c6vhflp');
@@ -304,9 +304,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                   group size
                 </Text>
 
-                  {/* Size Row 1: vlog, 2, 3, 4, 5 */}
+                  {/* Size Row 1: 2, 3, 4, 5 */}
                   <View style={styles.sizeRow1}>
-                    {(['vlog', '2', '3', '4', '5'] as const).map((key) => {
+                    {(['2', '3', '4', '5'] as const).map((key) => {
                       const isActive = sizeKey === key;
                       return (
                         <TouchableOpacity

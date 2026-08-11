@@ -464,25 +464,11 @@ export default function HomeScreen({
     }
   };
 
-  // Auto-prompt Create/Join Pals Group modal if user has 0 Pal groups
   useEffect(() => {
-    if (userPalRooms.length === 0) {
+    if (autoOpenCreateModal) {
       setShowCreateModal(true);
     }
-  }, [userPalRooms.length, activeTab, showGroupsView, showCamera, autoOpenCreateModal]);
-
-  // Re-check on App Cold Start & App Foreground (opening app after closing)
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active' && userPalRooms.length === 0) {
-        setShowCreateModal(true);
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [userPalRooms.length]);
+  }, [autoOpenCreateModal]);
 
   const handleCreateRoom = async (name: string, maxCount: number) => {
     const newRoom: PalRoom = {
@@ -613,36 +599,79 @@ export default function HomeScreen({
           />
         ) : (
           <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
-            {userPalRooms.length > 0 ? (
-              /* HAS PAL ROOMS: SHOW VIDEO VLOG FEED CARD */
-              <View style={styles.vlogFeedSection}>
-                {userPalRooms.map((room) => (
-                  <TouchableOpacity
-                    key={room.id}
-                    style={[styles.vlogCard, { backgroundColor: cardBg }]}
-                    activeOpacity={0.9}
-                    onPress={() => setShowExportSheet(true)}
-                  >
-                    <View style={styles.vlogTextSection}>
-                      <Text style={[styles.vlogTitle, { color: mainTextColor }]}>
-                        {room.name.toLowerCase()}
-                      </Text>
-                      <Text style={[styles.vlogSubtext, { color: subtextColor }]}>
-                        your space. Each day runs 4am{'\n'}to 4am. max {room.maxCount} pals.
-                      </Text>
-                    </View>
+            <View style={styles.vlogFeedSection}>
+              {/* 1. DEFAULT VLOG CARD (MATCHING SETLOG DESIGN EXACTLY) */}
+              <TouchableOpacity
+                style={[
+                  styles.vlogCard,
+                  { backgroundColor: isDark ? '#161616' : '#EFEFEF' },
+                ]}
+                activeOpacity={0.9}
+                onPress={() => setShowExportSheet(true)}
+              >
+                <View style={styles.vlogTextSection}>
+                  <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    vlog
+                  </Text>
+                  <Text numberOfLines={1} style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
+                    your space. Each day runs 4am to 4am.
+                  </Text>
+                </View>
 
-                    <Image
-                      source={require('../../assets/images/dm_star_2.png')}
-                      style={styles.starDoodleImage}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              /* EMPTY FEED SCREEN */
-              <View style={styles.emptyFeedContainer}>
+                <Image
+                  source={require('../../assets/images/dm_star_4.png')}
+                  style={styles.starDoodleImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+
+              {/* 2. HI / PERSONAL ROOM CARD BELOW VLOG CARD */}
+              <TouchableOpacity
+                style={[
+                  styles.hiCard,
+                  { backgroundColor: isDark ? '#161616' : '#EFEFEF' },
+                ]}
+                activeOpacity={0.9}
+                onPress={() => setActiveTab('camera')}
+              >
+                <Text style={[styles.hiCardTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                  Hi
+                </Text>
+                <View style={styles.hiCardIconsRow}>
+                  <Image
+                    source={require('../../assets/images/ic_smiley_avatar.png')}
+                    style={{ width: 24, height: 24, tintColor: isDark ? '#8E8E93' : '#636366' }}
+                    resizeMode="contain"
+                  />
+                  <View style={{ width: 1, height: 16, backgroundColor: isDark ? '#38383A' : '#C7C7CC', marginHorizontal: 10 }} />
+                  <Ionicons name="camera" size={22} color={isDark ? '#8E8E93' : '#636366'} />
+                </View>
+              </TouchableOpacity>
+
+              {/* 3. ADDITIONAL PAL ROOM CARDS IF ANY */}
+              {userPalRooms.map((room) => (
+                <TouchableOpacity
+                  key={room.id}
+                  style={[styles.vlogCard, { backgroundColor: isDark ? '#161616' : '#EFEFEF' }]}
+                  activeOpacity={0.9}
+                  onPress={() => setShowExportSheet(true)}
+                >
+                  <View style={styles.vlogTextSection}>
+                    <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      {room.name.toLowerCase()}
+                    </Text>
+                    <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
+                      max {room.maxCount} pals.
+                    </Text>
+                  </View>
+                  <Image
+                    source={require('../../assets/images/dm_star_4.png')}
+                    style={styles.starDoodleImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
                 {/* INSTRUCTION STEPS */}
                 <View style={styles.instructionsContainer}>
                   <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
@@ -759,8 +788,6 @@ export default function HomeScreen({
                   />
                   <View style={styles.groundLine} />
                 </View>
-              </View>
-            )}
           </ScrollView>
         )}
 
@@ -1605,22 +1632,42 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
+  hiCard: {
+    backgroundColor: '#161616',
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  hiCardTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  hiCardIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   vlogTextSection: {
     flex: 1,
     paddingRight: 10,
   },
   vlogTitle: {
     color: '#FFFFFF',
-    fontFamily: Fonts.IBMPlexMono,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 6,
   },
   vlogSubtext: {
     color: '#8E8E93',
-    fontFamily: Fonts.IBMPlexMono,
-    fontSize: 15,
-    lineHeight: 22,
+    fontFamily: Platform.OS === 'ios' ? 'SF Compact Text' : 'sans-serif',
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 18,
   },
   starDoodleImage: {
     width: 60,
