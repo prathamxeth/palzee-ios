@@ -512,7 +512,6 @@ export default function PalCameraPreview({
         videoUri={previewVideoUri}
         timeText={timeText}
         selectedThemeColor={selectedThemeColor}
-        isVerticalCapture={true}
         onRetake={() => {
           setPreviewVideoUri(null);
           setIsRecording(false);

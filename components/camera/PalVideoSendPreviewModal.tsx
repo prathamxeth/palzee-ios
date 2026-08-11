@@ -364,10 +364,7 @@ export default function PalVideoSendPreviewModal({
                           videoPlayerRef.current?.playAsync().catch(() => {});
                           if (event?.naturalSize) {
                             const { width, height } = event.naturalSize;
-                            const isVert = height > width;
-                            if (isVert !== isVertical) {
-                              setIsVertical(isVert);
-                            }
+                            setIsVertical(height > width);
                           }
                         }}
                       />
