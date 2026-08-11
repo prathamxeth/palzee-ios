@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   centerHeaderGroup: {
     position: 'absolute',
-    top: 4,
+    top: 0,
     left: 0,
     right: 0,
     alignItems: 'center',
