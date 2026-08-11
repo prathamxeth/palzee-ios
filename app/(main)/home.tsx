@@ -1543,6 +1543,15 @@ export default function HomeScreen({
         <EditExportSheet
           visible={showExportSheet}
           onClose={() => setShowExportSheet(false)}
+          user={user}
+          onOpenCamera={() => {
+            setShowExportSheet(false);
+            setActiveTab('camera');
+          }}
+          onOpenChat={() => {
+            setShowExportSheet(false);
+            setShowChatDrawer(true);
+          }}
         />
       </View>
     </DynamicGlowContainer>
@@ -1553,7 +1562,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000000',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   topHeader: {
     flexDirection: 'row',
@@ -1604,11 +1613,12 @@ const styles = StyleSheet.create({
   vlogCard: {
     backgroundColor: '#161616',
     borderRadius: 24,
+    marginHorizontal: 0,
     paddingHorizontal: 22,
     paddingVertical: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   hiCard: {
     backgroundColor: '#161616',
@@ -1648,9 +1658,8 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   starDoodleImage: {
-    width: 52,
-    height: 52,
-    marginTop: 2,
+    width: 70.05,
+    height: 70.05,
   },
   /* EMPTY FEED STYLES */
   emptyFeedContainer: {
