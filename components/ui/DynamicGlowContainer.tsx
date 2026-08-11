@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     overflow: 'hidden',
     position: 'relative',
+    margin: -0.25,
   },
   innerContainer: {
     flex: 1,
@@ -99,7 +100,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   inwardGlowOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: -1.10,
+    bottom: -1.10,
+    left: -1.10,
+    right: -1.10,
     borderRadius: 48,
     overflow: 'hidden',
     zIndex: 9999,

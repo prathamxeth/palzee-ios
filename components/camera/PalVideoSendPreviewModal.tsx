@@ -23,6 +23,19 @@ import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 
+const originalWarn = console.warn;
+console.warn = (...args: any[]) => {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('[expo-av]') ||
+      args[0].includes('Expo AV has been deprecated') ||
+      args[0].includes('expo-video'))
+  ) {
+    return;
+  }
+  originalWarn(...args);
+};
+
 LogBox.ignoreLogs([
   '[expo-av]',
   'Expo AV has been deprecated',
