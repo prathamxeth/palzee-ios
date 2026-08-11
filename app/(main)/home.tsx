@@ -920,8 +920,8 @@ export default function HomeScreen({
                   />
                 </Svg>
 
-                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
-                <View style={[styles.dropdownHeaderRow, { opacity: profileSubMenu !== 'main' ? 0.40 : 1.0 }]}>
+                {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (HIDDEN WHEN SUBMENU IS ACTIVE, SHOWING ONLY GLOW) */}
+                <View style={[styles.dropdownHeaderRow, { opacity: profileSubMenu !== 'main' ? 0.0 : 1.0 }]}>
                   <View
                     style={{
                       width: 32,
@@ -956,8 +956,8 @@ export default function HomeScreen({
                   </Text>
                 </View>
 
-                {/* MAIN MENU OPTIONS (TEXT BRIGHTNESS DIMMED IN BACKGROUND) */}
-                <View style={[styles.dropdownMenuList, { opacity: profileSubMenu !== 'main' ? 0.40 : 1.0 }]}>
+                {/* MAIN MENU OPTIONS (HIDDEN WHEN SUBMENU IS ACTIVE, SHOWING ONLY GLOW) */}
+                <View style={[styles.dropdownMenuList, { opacity: profileSubMenu !== 'main' ? 0.0 : 1.0 }]}>
                   {/* Option 1: edit profile */}
                   <TouchableOpacity
                     style={styles.dropdownMenuItem}
@@ -1025,7 +1025,6 @@ export default function HomeScreen({
                     {
                       backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
                       shadowColor: isDark ? accentColor : '#000000',
-                      opacity: profileSubMenu === 'color' ? 0.40 : 1.0,
                     },
                   ]}
                 >
@@ -1054,9 +1053,9 @@ export default function HomeScreen({
                     <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="0.8" />
                   </Svg>
 
-                  {/* Sub-Card Header Row: edit profile + down chevron v */}
+                  {/* Sub-Card Header Row: edit profile + down chevron v (DIMMED WHEN COLOR MENU IS ACTIVE) */}
                   <TouchableOpacity
-                    style={styles.dropdownHeaderRow}
+                    style={[styles.dropdownHeaderRow, { opacity: profileSubMenu === 'color' ? 0.35 : 1.0 }]}
                     activeOpacity={0.7}
                     onPress={() => setProfileSubMenu('main')}
                   >
@@ -1077,11 +1076,12 @@ export default function HomeScreen({
                       marginHorizontal: 16,
                       marginTop: 4,
                       marginBottom: 12,
+                      opacity: profileSubMenu === 'color' ? 0.35 : 1.0,
                     }}
                   />
 
-                  {/* Edit Profile Sub-Menu Items List */}
-                  <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
+                  {/* Edit Profile Sub-Menu Items List (DIMMED WHEN COLOR MENU IS ACTIVE) */}
+                  <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16, opacity: profileSubMenu === 'color' ? 0.35 : 1.0 }]}>
                     {/* Sub-Option 1: display name */}
                     <TouchableOpacity
                       style={styles.dropdownMenuItem}
@@ -1905,5 +1905,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 18,
     elevation: 12,
+  },
+  profileColorDropdownCard: {
+    position: 'absolute',
+    top: 152,
+    right: 7,
+    width: 259.5,
+    borderRadius: 24,
+    borderWidth: 0,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.38,
+    shadowRadius: 20,
+    elevation: 14,
   },
 });
