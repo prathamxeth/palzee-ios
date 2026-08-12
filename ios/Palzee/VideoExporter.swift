@@ -39,8 +39,11 @@ class VideoExporter: NSObject {
       return
     }
     
-    // Target canvas size: Native 16:9 Horizontal (1920 x 1080)
-    let renderSize = CGSize(width: 1920, height: 1080)
+    // Target canvas size: 1080x1920 (9:16 Portrait)
+    let renderSize = CGSize(width: 1080, height: 1920)
+    let cardHeight: CGFloat = 607.5 // (1080 * 9 / 16)
+    let yOffset: CGFloat = (1920.0 - cardHeight) / 2.0 // 656.25px centered
+    
     let videoComposition = AVMutableVideoComposition()
     videoComposition.renderSize = renderSize
     videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
@@ -50,64 +53,69 @@ class VideoExporter: NSObject {
     
     let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
     
-    // Calculate aspect ratio scaling to fill 1920x1080 perfectly
-    let naturalSize = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
-    let videoWidth = max(abs(naturalSize.width), 1)
-    let videoHeight = max(abs(naturalSize.height), 1)
+    // Account for camera rotation transform & scale into centered 1080x607.5 frame
+    let transform = videoTrack.preferredTransform
+    let naturalSize = videoTrack.naturalSize
+    let rect = CGRect(origin: .zero, size: naturalSize).applying(transform)
+    let videoWidth = max(abs(rect.width), 1)
+    let videoHeight = max(abs(rect.height), 1)
     
-    let scaleX = renderSize.width / videoWidth
-    let scaleY = renderSize.height / videoHeight
-    let finalTransform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+    let scaleX = 1080.0 / videoWidth
+    let scaleY = cardHeight / videoHeight
     
+    let finalTransform = transform
+      .concatenating(CGAffineTransform(scaleX: scaleX, y: scaleY))
+      .concatenating(CGAffineTransform(translationX: 0, y: yOffset))
+      
     layerInstruction.setTransform(finalTransform, at: .zero)
     instruction.layerInstructions = [layerInstruction]
     videoComposition.instructions = [instruction]
     
-    // CoreAnimation Overlay Layers Composition on 1920x1080 16:9 Canvas
+    // CALayer Setup (1080x1920 Portrait Frame)
     let parentLayer = CALayer()
-    parentLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+    parentLayer.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
+    parentLayer.backgroundColor = UIColor.black.cgColor
     
     let videoLayer = CALayer()
-    videoLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
-    
+    videoLayer.frame = CGRect(x: 0, y: yOffset, width: 1080, height: cardHeight)
     parentLayer.addSublayer(videoLayer)
     
-    // Overlay Text 1: "vlog" header tag
+    // Overlay 1: "vlog" badge (CALayer Y origin is at bottom)
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-    vlogLayer.fontSize = 28
+    vlogLayer.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+    vlogLayer.fontSize = 22
     vlogLayer.foregroundColor = UIColor.white.withAlphaComponent(0.9).cgColor
     vlogLayer.backgroundColor = UIColor.black.withAlphaComponent(0.4).cgColor
-    vlogLayer.cornerRadius = 10
+    vlogLayer.cornerRadius = 8
     vlogLayer.alignmentMode = .center
-    vlogLayer.frame = CGRect(x: 48, y: 1080 - 80, width: 120, height: 44)
+    vlogLayer.frame = CGRect(x: 24, y: yOffset + cardHeight - 50, width: 90, height: 36)
     vlogLayer.contentsScale = 2.0
     parentLayer.addSublayer(vlogLayer)
     
-    // Overlay Text 2: Caption (if provided)
+    // Overlay 2: Caption (if provided)
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
-      captionLayer.fontSize = 36
+      captionLayer.font = UIFont.systemFont(ofSize: 28, weight: .semibold)
+      captionLayer.fontSize = 28
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 60, y: 40, width: 1800, height: 80)
+      captionLayer.frame = CGRect(x: 40, y: yOffset + 20, width: 1000, height: 60)
       captionLayer.contentsScale = 2.0
       parentLayer.addSublayer(captionLayer)
     }
     
-    // Overlay Text 3: Timestamp (if provided)
+    // Overlay 3: Timestamp (if provided)
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 26, weight: .medium)
-      timeLayer.fontSize = 26
+      timeLayer.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+      timeLayer.fontSize = 20
       timeLayer.foregroundColor = UIColor.white.withAlphaComponent(0.75).cgColor
       timeLayer.alignmentMode = .right
-      timeLayer.frame = CGRect(x: 1560, y: 1080 - 74, width: 300, height: 38)
+      timeLayer.frame = CGRect(x: 840, y: yOffset + cardHeight - 46, width: 216, height: 32)
       timeLayer.contentsScale = 2.0
       parentLayer.addSublayer(timeLayer)
     }
@@ -115,7 +123,6 @@ class VideoExporter: NSObject {
     let animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: parentLayer)
     videoComposition.animationTool = animationTool
     
-    // Output location
     let outputURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("collection_export.mp4")
     try? FileManager.default.removeItem(at: outputURL)
     

@@ -16,6 +16,7 @@ import {
   NativeModules,
 } from 'react-native';
 import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -112,17 +113,25 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
 
       const processedUri = await processAndSaveVideo();
 
-      setSaveState('saved');
-      Alert.alert('Success', 'Saved vertical 9:16 video to Photos!');
+      if (processedUri) {
+        try {
+          await MediaLibrary.saveToLibraryAsync(processedUri);
+        } catch (mediaErr) {
+          console.log('MediaLibrary save exception:', mediaErr);
+        }
+        setSaveState('saved');
+        Alert.alert('Success', 'Saved vertical 9:16 video to Photos!');
+      } else {
+        setSaveState('idle');
+        Alert.alert('Export Error', 'Could not generate export file.');
+      }
+
       setTimeout(() => {
         setSaveState('idle');
       }, 2500);
     } catch (error) {
       console.log('Save error:', error);
-      setSaveState('saved');
-      setTimeout(() => {
-        setSaveState('idle');
-      }, 2500);
+      setSaveState('idle');
     }
   };
 
