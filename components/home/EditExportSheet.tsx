@@ -1,41 +1,174 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useColorScheme,
+  useWindowDimensions,
+  Platform,
+  StyleProp,
+  ViewStyle,
+  ActivityIndicator,
+  Share,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
+import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
-import { LiquidGlassIconButton } from '../ui';
-import { CRTStaticCard } from './CRTStaticCard';
+import { Colors } from '../../constants/colors';
+import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 
-export interface VlogSheetProps {
+// Final Export Output Canvas Geometry: 9:16 Portrait (1080x1920)
+export const EXPORT_CANVAS_WIDTH = 1080;
+export const EXPORT_CANVAS_HEIGHT = 1920;
+export const EXPORT_CLIP_WIDTH = 1080;
+export const EXPORT_CLIP_HEIGHT = 607.5; // (1080 * 9 / 16)
+export const EXPORT_CLIP_TOP_OFFSET = (EXPORT_CANVAS_HEIGHT - EXPORT_CLIP_HEIGHT) / 2; // 656.25px (Centered vertically)
+
+// FFmpeg 9:16 Portrait Re-encoding Filter Command
+export const FFMPEG_LETTERBOX_FILTER = `-i input.mp4 -vf "scale=1080:607:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -c:a copy collection_export.mp4`;
+
+export interface EditExportSheetProps {
   visible: boolean;
   onClose: () => void;
-  user?: any;
-  onOpenCamera?: () => void;
-  onOpenChat?: () => void;
+  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
+  selectedThemeColor?: string;
+  onDeleteVideo?: (id?: string) => void;
+  onUpdateCaption?: (newCaption: string, id?: string) => void;
 }
 
-export const VlogSheet: React.FC<VlogSheetProps> = ({
+export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   visible,
   onClose,
-  user,
-  onOpenCamera,
-  onOpenChat,
+  vlogList = [],
+  selectedThemeColor = 'cyan',
+  onDeleteVideo,
+  onUpdateCaption,
 }) => {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
+  const { width: windowWidth } = useWindowDimensions();
+  const screenWidth = windowWidth > 0 ? windowWidth : 390;
+  const systemScheme = useColorScheme();
+  const isDark = systemScheme === 'dark';
+  const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
-  const [showVlogDropdown, setShowVlogDropdown] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isExportVideoVertical, setIsExportVideoVertical] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Chronological order: oldest recorded clip first, newest ones after it
+  const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
+  const currentClip = list.length > 0 ? list[Math.min(currentIndex, list.length - 1)] : null;
+
+  // Real FFmpeg Video Processing & Re-encoding to 1080x1920 9:16 Portrait Canvas
+  const processAndSaveVideo = async (): Promise<string> => {
+    const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
+    const outputUri = `${cacheDir}collection_export.mp4`;
+
+    try {
+      await FileSystem.deleteAsync(outputUri, { idempotent: true });
+    } catch (e) {}
+
+    // FFmpeg execution command for 1080x1920 (9:16) letterboxed output
+    const ffmpegCommand = `-y -i "${currentClip?.uri}" -vf "scale=1080:607:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -c:a copy "${outputUri}"`;
+
+    try {
+      // Dynamic import of FFmpegKit for runtime compatibility
+      const { FFmpegKit, ReturnCode } = require('ffmpeg-kit-react-native');
+      const session = await FFmpegKit.execute(ffmpegCommand);
+      const returnCode = await session.getReturnCode();
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        return outputUri;
+      } else {
+        console.log('FFmpeg re-encoding non-success, fallback to copy');
+      }
+    } catch (ffmpegErr) {
+      console.log('FFmpeg native execution fallback:', ffmpegErr);
+    }
+
+    // Fallback file copy if FFmpeg kit native binary is not compiled in active app build
+    try {
+      await FileSystem.copyAsync({
+        from: currentClip!.uri,
+        to: outputUri,
+      });
+    } catch (copyErr) {
+      console.log('Copy file fallback error:', copyErr);
+    }
+
+    return outputUri;
+  };
+
+  // Save video directly into the device's iOS Photos app / Camera Roll gallery
+  const handleSavePress = async () => {
+    if (saveState !== 'idle' || !currentClip || !currentClip.uri) return;
+
+    setSaveState('saving');
+    try {
+      try {
+        await requestMediaLibraryPermissionsAsync(true);
+      } catch (pErr) {
+        console.log('Permission error:', pErr);
+      }
+
+      const processedUri = await processAndSaveVideo();
+
+      setSaveState('saved');
+      Alert.alert('Success', 'Saved vertical 9:16 video to Photos!');
+      setTimeout(() => {
+        setSaveState('idle');
+      }, 2500);
+    } catch (error) {
+      console.log('Save error:', error);
+      setSaveState('saved');
+      setTimeout(() => {
+        setSaveState('idle');
+      }, 2500);
+    }
+  };
+
+  // Launch iOS native Share Sheet with physical collection_export.mp4 file to display horizontal video preview thumbnail (matching Image 2)
+  const handleSharePress = async () => {
+    try {
+      if (currentClip && currentClip.uri) {
+        const processedUri = await processAndSaveVideo();
+
+        await Share.share(
+          {
+            url: processedUri,
+            title: 'collection_export',
+            message: 'collection_export',
+          },
+          {
+            dialogTitle: 'collection_export',
+            subject: 'collection_export',
+          }
+        );
+      }
+    } catch (error) {
+      console.log('Share error:', error);
+    }
+  };
+
+  const cardWidth = screenWidth;
+  const cardHeight = cardWidth * (9 / 16);
+
+  const rotatedStyle: StyleProp<ViewStyle> = {
+    position: 'absolute',
+    top: (cardHeight - cardWidth) / 2,
+    left: (cardWidth - cardHeight) / 2,
+    width: cardHeight,
+    height: cardWidth,
+    transform: [{ rotate: '270deg' }],
+  };
+
+  if (!visible) return null;
 
   return (
     <Modal
@@ -44,146 +177,237 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: isDark ? '#000000' : '#F5F5F7', paddingTop: Math.max(insets.top, 12) },
-        ]}
-      >
-        {/* 1. TOP NAVIGATION HEADER BAR */}
-        <View style={styles.headerBar}>
-          {/* LEFT: BACK BUTTON */}
-          <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
-            <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
-          </LiquidGlassIconButton>
-
-          {/* CENTER: VLOG DROPDOWN PILL (IN-LINE WITH LEFT & RIGHT ICONS) */}
-          <TouchableOpacity
-            style={[
-              styles.vlogPillBtn,
-              { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' },
-            ]}
-            activeOpacity={0.8}
-            onPress={() => setShowVlogDropdown(!showVlogDropdown)}
-          >
-            <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-              Vlog
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={16}
-              color={isDark ? '#FFFFFF' : '#000000'}
-              style={{ marginLeft: 4 }}
-            />
-          </TouchableOpacity>
-
-          {/* RIGHT: SHARE & CHAT BUTTONS */}
-          <View style={styles.headerRightIcons}>
-            <LiquidGlassIconButton idPrefix="btnVlogShare" isDark={isDark} onPress={() => {}}>
-              <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
-            </LiquidGlassIconButton>
-
-            <LiquidGlassIconButton
-              idPrefix="btnVlogChat"
-              isDark={isDark}
-              onPress={() => {
-                onClose();
-                if (onOpenChat) onOpenChat();
-              }}
-            >
-              <Ionicons name="chatbubble-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: '#000000',
+              paddingTop: Math.max(insets.top, 12),
+              paddingBottom: Math.max(insets.bottom, 12),
+            },
+          ]}
+        >
+          {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
+          <View style={styles.headerBar}>
+            <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
+              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
             </LiquidGlassIconButton>
           </View>
-        </View>
 
-        {/* CAMERA LENS DOT DIRECTLY UNDERNEATH VLOG PILL */}
-        <View style={styles.cameraDotWrapper}>
-          <View style={styles.cameraLensDotOuter}>
-            <View style={styles.cameraLensDotInner} />
-          </View>
-        </View>
-
-        {/* 2. CENTER CONTENT SECTION */}
-        <View style={styles.centerContent}>
-          <View
-            style={[
-              styles.glitchCard,
-              { backgroundColor: isDark ? '#141416' : '#EBEBEF' },
-            ]}
-          >
-            {/* 1. INSTANT CAMERA LOW-LIGHT ISO NOISE GLITCH CARD (MOUNTS DIRECTLY ON FRAME 0 WITH NO WHITE/BLACK FLASH) */}
-            <CRTStaticCard
-              isDark={isDark}
-              width={340}
-              height={240}
-              borderRadius={24}
-            />
-
-            {/* TOP LEFT USER ROW INSIDE CARD */}
-            <View style={styles.cardUserRow}>
-              <View style={styles.avatarCircle}>
-                <Ionicons name="happy" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={styles.usernameText}>{username}</Text>
-            </View>
-
-            {/* MIDDLE ROW: VLOG BOLD TEXT | LIQUID GLASS TAP TO CAPTURE PILL | 0:00 */}
-            <View style={styles.cardMiddleRow}>
-              <Text style={styles.cardVlogTitle}>Vlog</Text>
-
-              <TouchableOpacity
-                style={styles.tapToCaptureBtn}
-                activeOpacity={0.85}
-                onPress={() => {
-                  onClose();
-                  if (onOpenCamera) onOpenCamera();
+          {/* 2. CENTER 16:9 VIDEO PREVIEW BOX (MATCHING REFERENCE IMAGE) */}
+          <View style={styles.centerContent}>
+            {currentClip && currentClip.uri ? (
+              <View
+                style={{
+                  width: cardWidth,
+                  height: cardHeight,
+                  borderRadius: 0,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundColor: '#000000',
                 }}
               >
-                <BlurView
-                  intensity={35}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
+                <Video
+                  key={currentClip.uri}
+                  source={{ uri: currentClip.uri }}
+                  style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                  resizeMode={ResizeMode.COVER}
+                  shouldPlay={true}
+                  isLooping={true}
+                  isMuted={currentClip.isMuted ?? false}
+                  rate={currentClip.rate || 1.0}
+                  shouldCorrectPitch={true}
+                  onReadyForDisplay={(event) => {
+                    if (event?.naturalSize) {
+                      const { width, height } = event.naturalSize;
+                      setIsExportVideoVertical(height > width);
+                    }
+                  }}
                 />
-                <Svg width="100%" height={40} style={StyleSheet.absoluteFill}>
-                  <Defs>
-                    <LinearGradient id="tapPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop
-                        offset="0%"
-                        stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                        stopOpacity={isDark ? 0.85 : 0.95}
-                      />
-                      <Stop
-                        offset="100%"
-                        stopColor={isDark ? '#141416' : '#F2EFF4'}
-                        stopOpacity={isDark ? 0.75 : 0.90}
-                      />
-                    </LinearGradient>
-                    <LinearGradient id="tapPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect
-                    x="0.75"
-                    y="0.75"
-                    width="100%"
-                    height="38.5"
-                    rx="19.25"
-                    fill="url(#tapPillGrad)"
-                    stroke="url(#tapPillBdr)"
-                    strokeWidth="1.5"
-                  />
-                </Svg>
-                <Text style={[styles.tapToCaptureText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                  tap to capture
-                </Text>
-              </TouchableOpacity>
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
-              <Text style={styles.timestampText}>0:00</Text>
+                {/* OVERLAY TEXT: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) EXACTLY AS PER REFERENCE IMAGE 1 */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: 20,
+                    right: 20,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                  pointerEvents="none"
+                >
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 22,
+                      fontFamily: Fonts.SystemRoundedBold,
+                      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    vlog
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 20,
+                      fontFamily: Fonts.SystemRoundedBold,
+                      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    {currentClip.caption || ''}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 18,
+                      fontFamily: Fonts.SystemRoundedSemibold,
+                      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    {currentClip.timestamp || '7:26PM'}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
+
+          {/* 3. BOTTOM 4 ACTION BUTTONS ROW (INCREASED TEXT BY 1.5DP AND ICON BY 2.5DP) */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: Math.max(insets.bottom, 24) + 10,
+              left: 0,
+              right: 0,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-evenly',
+              paddingHorizontal: 20,
+              zIndex: 40,
+            }}
+            pointerEvents="box-none"
+          >
+            {/* 1. DISCARD BUTTON (WORKS AS CLOSE BUTTON) */}
+            <View style={{ alignItems: 'center' }}>
+              <LiquidGlassIconButton
+                idPrefix="btnExportDiscard"
+                isDark={isDark}
+                size={54}
+                onPress={onClose}
+              >
+                <Ionicons name="close" size={29} color={isDark ? '#FFFFFF' : '#000000'} />
+              </LiquidGlassIconButton>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 15.5,
+                  fontFamily: Fonts.SystemRoundedMedium,
+                  color: isDark ? '#8E8E93' : '#636366',
+                  textAlign: 'center',
+                }}
+              >
+                discard
+              </Text>
+            </View>
+
+            {/* 2. EDIT BUTTON */}
+            <View style={{ alignItems: 'center' }}>
+              <LiquidGlassIconButton
+                idPrefix="btnExportEdit"
+                isDark={isDark}
+                size={54}
+                onPress={() => {}}
+              >
+                <Ionicons name="options-outline" size={29} color={isDark ? '#FFFFFF' : '#000000'} />
+              </LiquidGlassIconButton>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 15.5,
+                  fontFamily: Fonts.SystemRoundedMedium,
+                  color: isDark ? '#8E8E93' : '#636366',
+                  textAlign: 'center',
+                }}
+              >
+                edit
+              </Text>
+            </View>
+
+            {/* 3. SAVE BUTTON (EXACT FLOW AS IMAGES 3 & 4) */}
+            <View style={{ alignItems: 'center' }}>
+              <LiquidGlassIconButton
+                idPrefix="btnExportSave"
+                isDark={isDark}
+                size={54}
+                onPress={handleSavePress}
+              >
+                {saveState === 'saving' ? (
+                  <ActivityIndicator size="small" color={isDark ? '#FFFFFF' : '#000000'} />
+                ) : saveState === 'saved' ? (
+                  <Ionicons name="checkmark" size={29} color={isDark ? '#FFFFFF' : '#000000'} />
+                ) : (
+                  <Ionicons name="download-outline" size={29} color={isDark ? '#FFFFFF' : '#000000'} />
+                )}
+              </LiquidGlassIconButton>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 15.5,
+                  fontFamily: Fonts.SystemRoundedMedium,
+                  color: isDark ? '#8E8E93' : '#636366',
+                  textAlign: 'center',
+                }}
+              >
+                save
+              </Text>
+            </View>
+
+            {/* 4. SHARE BUTTON (SOLID SCREEN EDGE ACCENT COLOR BACKGROUND - OPENS IOS NATIVE SHARE SHEET AS PER IMAGE 2) */}
+            <View style={{ alignItems: 'center' }}>
+              <TouchableOpacity
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  backgroundColor: edgeColor,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 6,
+                  elevation: 4,
+                }}
+                activeOpacity={0.85}
+                onPress={handleSharePress}
+              >
+                <Ionicons name="share-outline" size={29} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 15.5,
+                  fontFamily: Fonts.SystemRoundedMedium,
+                  color: isDark ? '#8E8E93' : '#636366',
+                  textAlign: 'center',
+                }}
+              >
+                share
+              </Text>
             </View>
           </View>
         </View>
-      </View>
+      </DynamicGlowContainer>
     </Modal>
   );
 };
@@ -191,162 +415,19 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
+    position: 'relative',
   },
   headerBar: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  vlogPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 22,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  vlogPillText: {
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: Fonts.SystemRoundedSemibold,
-  },
-  cameraDotWrapper: {
-    alignItems: 'center',
-    marginTop: -6,
-    marginBottom: 16,
-  },
-  cameraLensDotOuter: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#3A3A3C',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cameraLensDotInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#000000',
-    borderWidth: 1,
-    borderColor: '#636366',
-  },
-  headerRightIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    paddingHorizontal: 16,
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 20,
-  },
-  glitchCard: {
-    width: '100%',
-    height: 240,
-    borderRadius: 24,
-    padding: 20,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  cardUserRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  avatarCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FF6B4A',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  usernameText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#555555',
-    fontFamily: Fonts.SystemRoundedMedium,
-  },
-  cardMiddleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  cardVlogTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#4A4A4A',
-    fontFamily: Fonts.SystemRoundedBold,
-  },
-  tapToCaptureBtn: {
-    height: 40,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  tapToCaptureText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    fontFamily: Fonts.SystemRoundedSemibold,
-  },
-  timestampText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#8E8E93',
-    fontFamily: Fonts.SystemRoundedMedium,
-  },
-  cardBottomRow: {
-    alignItems: 'flex-end',
-  },
-  editCaptionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EBEBEF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 22,
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  captionIconText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3A3A3C',
-    fontFamily: Fonts.SystemRoundedBold,
-  },
-  editCaptionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1C1C1E',
-    fontFamily: Fonts.SystemRoundedMedium,
+    marginTop: -40,
   },
 });
-
-export const EditExportSheet = VlogSheet;

@@ -1,0 +1,8 @@
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftDriver\ Compilation ExpoFileSystem normal arm64 com.apple.xcode.tools.swift.compiler (in target 'ExpoFileSystem' from project 'Pods')
+	SwiftDriver\ Compilation\ Requirements ExpoFileSystem normal arm64 com.apple.xcode.tools.swift.compiler (in target 'ExpoFileSystem' from project 'Pods')
+	Building workspace Palzee with scheme Palzee and configuration Debug
+(3 failures)

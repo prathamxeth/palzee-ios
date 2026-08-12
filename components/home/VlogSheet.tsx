@@ -26,6 +26,7 @@ import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 
 import { CRTStaticCard } from './CRTStaticCard';
 import { ChatDrawer } from './ChatDrawer';
+import { EditExportSheet } from './EditExportSheet';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -90,10 +91,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [show0Logs, setShow0Logs] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
 
-  const list = vlogList && vlogList.length > 0 ? vlogList : (activeVideoUri ? [{ id: 'default', uri: activeVideoUri, caption, timestamp, isMuted }] : []);
+  const rawList = vlogList && vlogList.length > 0 ? vlogList : (activeVideoUri ? [{ id: 'default', uri: activeVideoUri, caption, timestamp, isMuted }] : []);
+  // Oldest recorded clip as recent, newest ones after it
+  const list = [...rawList].reverse();
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
   const currentUri = currentClip ? currentClip.uri : activeVideoUri;
   const currentCaption = currentClip ? (currentClip.caption || '') : caption;
@@ -105,6 +109,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   useEffect(() => {
     if (visible) {
       setCurrentVlogIndex(0);
+      if (!vlogList || vlogList.length === 0) {
+        trigger0PalsEffect();
+      }
     }
   }, [visible, vlogList?.length]);
 
@@ -385,7 +392,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <LiquidGlassIconButton
                 idPrefix="btnVlogShare"
                 isDark={isDark}
-                onPress={trigger0PalsEffect}
+                onPress={() => {
+                  if (vlogList && vlogList.length > 0) {
+                    setShowExportModal(true);
+                  } else {
+                    trigger0PalsEffect();
+                  }
+                }}
               >
                 <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
               </LiquidGlassIconButton>
@@ -727,6 +740,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         </View>
       </DynamicGlowContainer>
 
+      {/* DEDICATED EDIT EXPORT SHEET (OPENED VIA TOP RIGHT SHARE ICON WHEN PALS EXIST) */}
+      <EditExportSheet
+        visible={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        vlogList={vlogList}
+        selectedThemeColor={selectedThemeColor}
+        onDeleteVideo={onDeleteVideo}
+        onUpdateCaption={onUpdateCaption}
+      />
+
       <ChatDrawer
         visible={showChatDrawer}
         onClose={() => setShowChatDrawer(false)}
@@ -896,8 +919,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     </Modal>
   );
 };
-
-export const EditExportSheet = VlogSheet;
 
 const styles = StyleSheet.create({
   container: {

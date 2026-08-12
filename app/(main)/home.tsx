@@ -1853,10 +1853,12 @@ export default function HomeScreen({
         <ChatDrawer
           visible={showChatDrawer}
           onClose={() => setShowChatDrawer(false)}
+          onOpenVlog={() => setShowExportSheet(true)}
           palCode="palzee_space"
           user={user}
           isDark={isDark}
           selectedThemeColor={selectedThemeColor}
+          vlogList={vlogList}
         />
 
         <VlogSheet
