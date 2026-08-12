@@ -318,7 +318,9 @@ export default function PalCameraPreview({
         quality: '1080p',
       });
       if (data && data.uri) {
-        setPreviewVideoUri(data.uri);
+        setTimeout(() => {
+          setPreviewVideoUri(data.uri);
+        }, 150);
       }
     } catch (e) {
       setIsRecording(false);

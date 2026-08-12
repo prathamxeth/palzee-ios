@@ -357,21 +357,19 @@ export default function PalVideoSendPreviewModal({
                         isMuted={isMuted}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
-                        onLoad={() => {
-                          videoPlayerRef.current?.playFromPositionAsync(0).catch(() => {
-                            videoPlayerRef.current?.playAsync().catch(() => {});
-                          });
-                        }}
+                        progressUpdateIntervalMillis={50}
                         onPlaybackStatusUpdate={(status) => {
-                          if (status.isLoaded && !status.isPlaying && visible) {
-                            videoPlayerRef.current?.playAsync().catch(() => {});
+                          if (status.isLoaded && status.didJustFinish) {
+                            videoPlayerRef.current?.replayAsync().catch(() => {});
                           }
                         }}
                         onReadyForDisplay={(event) => {
-                          videoPlayerRef.current?.playAsync().catch(() => {});
                           if (event?.naturalSize) {
                             const { width, height } = event.naturalSize;
-                            setIsVertical(height > width);
+                            const detectedVertical = height > width;
+                            if (isVertical !== detectedVertical) {
+                              setIsVertical(detectedVertical);
+                            }
                           }
                         }}
                       />
