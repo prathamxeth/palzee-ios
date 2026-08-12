@@ -142,8 +142,24 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     }, 3000);
   };
 
+  const handleClose = () => {
+    setShowChatDrawer(false);
+    setShowEditCaptionBox(false);
+    setShowDeleteDialog(false);
+    setIsEditingCaption(false);
+    setShowVlogDropdown(false);
+    onClose();
+  };
+
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      setShowChatDrawer(false);
+      setShowEditCaptionBox(false);
+      setShowDeleteDialog(false);
+      setIsEditingCaption(false);
+      setShowVlogDropdown(false);
+      return;
+    }
 
     // Reset 0 pals to hidden on initial Vlog screen open
     setShow0Logs(false);
@@ -162,7 +178,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       visible={visible}
       animationType="none"
       presentationStyle="fullScreen"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
         <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
@@ -175,7 +191,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <TouchableOpacity
                     style={styles.zeroLogsPillBtn}
                     activeOpacity={0.8}
-                    onPress={onClose}
+                    onPress={handleClose}
                   >
                     <BlurView
                       intensity={35}
@@ -229,7 +245,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </TouchableOpacity>
                 </Animated.View>
               ) : (
-                <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
+                <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={handleClose}>
                   <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
                 </LiquidGlassIconButton>
               )}
