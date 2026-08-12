@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { StyleSheet, View, Animated } from 'react-native';
+import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
 
 const vhsLightTexture = require('../../assets/images/vhs_static_light.png');
 const vhsDarkTexture = require('../../assets/images/vhs_static_dark.png');
@@ -19,77 +20,87 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
 }) => {
   const noiseAnimX = useRef(new Animated.Value(0)).current;
   const noiseAnimY = useRef(new Animated.Value(0)).current;
-  const lowLightFlicker = useRef(new Animated.Value(isDark ? 0.75 : 0.28)).current;
+  const noiseRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 1. IPHONE LOW-LIGHT SENSOR JITTER MOTION
+    // REAL iOS CAMERA APP LOW-LIGHT SENSOR MICRO-GRAIN SHIMMER (33ms 30fps discrete micro-steps +10% movement & 90° rotations)
     const noiseSequence = Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: -6, duration: 200, useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: 5, duration: 200, useNativeDriver: true }),
+          Animated.timing(noiseAnimX, { toValue: -1.65, duration: 40, useNativeDriver: true }),
+          Animated.timing(noiseAnimY, { toValue: 1.32, duration: 40, useNativeDriver: true }),
+          Animated.timing(noiseRotate, { toValue: 1, duration: 40, useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: 5, duration: 235, useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: -6, duration: 235, useNativeDriver: true }),
+          Animated.timing(noiseAnimX, { toValue: 1.32, duration: 35, useNativeDriver: true }),
+          Animated.timing(noiseAnimY, { toValue: -1.65, duration: 35, useNativeDriver: true }),
+          Animated.timing(noiseRotate, { toValue: 2, duration: 35, useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: -5, duration: 165, useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: 4, duration: 165, useNativeDriver: true }),
+          Animated.timing(noiseAnimX, { toValue: -1.10, duration: 42, useNativeDriver: true }),
+          Animated.timing(noiseAnimY, { toValue: -1.10, duration: 42, useNativeDriver: true }),
+          Animated.timing(noiseRotate, { toValue: 3, duration: 42, useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: 4, duration: 235, useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: -3, duration: 235, useNativeDriver: true }),
+          Animated.timing(noiseAnimX, { toValue: 1.65, duration: 38, useNativeDriver: true }),
+          Animated.timing(noiseAnimY, { toValue: 1.10, duration: 38, useNativeDriver: true }),
+          Animated.timing(noiseRotate, { toValue: 0, duration: 38, useNativeDriver: true }),
         ]),
-        Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: 0, duration: 165, useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: 0, duration: 165, useNativeDriver: true }),
-        ]),
-      ])
-    );
-
-    // 2. LOW-LIGHT ROLLING SHUTTER EXPOSURE FLICKER (IPHONE SELFIE SENSOR GLITCH)
-    const flickerSequence = Animated.loop(
-      Animated.sequence([
-        Animated.timing(lowLightFlicker, { toValue: isDark ? 0.95 : 0.42, duration: 120, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: isDark ? 0.65 : 0.22, duration: 180, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: isDark ? 0.88 : 0.38, duration: 150, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: isDark ? 0.70 : 0.26, duration: 220, useNativeDriver: true }),
       ])
     );
 
     noiseSequence.start();
-    flickerSequence.start();
 
     return () => {
       noiseSequence.stop();
-      flickerSequence.stop();
     };
-  }, [isDark]);
+  }, []);
+
+  const rotateInterpolation = noiseRotate.interpolate({
+    inputRange: [0, 1, 2, 3],
+    outputRange: ['0deg', '90deg', '180deg', '270deg'],
+  });
+
+  const noiseOpacity = isDark ? 0.32 : 0.20;
 
   return (
     <View
       style={[
         StyleSheet.absoluteFill,
-        { backgroundColor: isDark ? '#1B1B1D' : '#F6F6F8' },
+        { borderRadius, overflow: 'hidden' },
       ]}
       pointerEvents="none"
     >
-      {/* LOW-LIGHT CAMERA SENSOR ISO NOISE GRAIN */}
+      {/* 1. REAL-TIME LOW-LIGHT CAMERA VIEWFINDER VIGNETTE GRADIENT BACKDROP */}
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+        <Defs>
+          <RadialGradient id="cameraVignette" cx="50%" cy="50%" r="70%">
+            <Stop offset="0%" stopColor={isDark ? '#222228' : '#F5F5F8'} stopOpacity={1} />
+            <Stop offset="65%" stopColor={isDark ? '#141418' : '#E6E6EA'} stopOpacity={1} />
+            <Stop offset="100%" stopColor={isDark ? '#0A0A0C' : '#D2D2D8'} stopOpacity={1} />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#cameraVignette)" />
+      </Svg>
+
+      {/* 2. REAL-TIME iOS CAMERA ISO SENSOR MICRO-NOISE SHIMMER (1.65PX JITTER [+10%] & +0.1DP PARTICLE SCALE) */}
       <Animated.Image
         source={isDark ? vhsDarkTexture : vhsLightTexture}
         resizeMode="repeat"
+        fadeDuration={0}
         style={[
           StyleSheet.absoluteFill,
           {
-            width: '250%',
-            height: '250%',
-            left: '-75%',
-            top: '-75%',
-            opacity: lowLightFlicker,
+            width: '200%',
+            height: '200%',
+            left: '-50%',
+            top: '-50%',
+            opacity: noiseOpacity,
             transform: [
+              { scale: 1.15 },
               { translateX: noiseAnimX },
               { translateY: noiseAnimY },
+              { rotate: rotateInterpolation },
             ],
           },
         ]}

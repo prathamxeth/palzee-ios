@@ -1372,7 +1372,7 @@ export default function HomeScreen({
                       color: isDark ? '#FFFFFF' : '#1C1C1E',
                       marginBottom: 4,
                       letterSpacing: -0.2,
-                      fontFamily: 'System',
+                      fontFamily: Fonts.SystemRoundedBold,
                     }}
                   >
                     edit name
@@ -1384,7 +1384,7 @@ export default function HomeScreen({
                       color: isDark ? 'rgba(255, 255, 255, 0.60)' : 'rgba(0, 0, 0, 0.55)',
                       marginBottom: 16,
                       letterSpacing: -0.1,
-                      fontFamily: 'System',
+                      fontFamily: Fonts.SystemRoundedMedium,
                     }}
                   >
                     enter your name
@@ -1407,7 +1407,7 @@ export default function HomeScreen({
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
                         paddingVertical: 7,
                         letterSpacing: -0.1,
-                        fontFamily: 'System',
+                        fontFamily: Fonts.SystemRoundedSemibold,
                       }}
                       value={editFirstName}
                       onChangeText={setEditFirstName}
@@ -1426,7 +1426,7 @@ export default function HomeScreen({
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
                         paddingVertical: 7,
                         letterSpacing: -0.1,
-                        fontFamily: 'System',
+                        fontFamily: Fonts.SystemRoundedMedium,
                       }}
                       value={editLastName}
                       onChangeText={setEditLastName}
@@ -1456,7 +1456,7 @@ export default function HomeScreen({
                           fontWeight: '600',
                           color: isDark ? '#FFFFFF' : '#1C1C1E',
                           letterSpacing: -0.1,
-                          fontFamily: 'System',
+                          fontFamily: Fonts.SystemRoundedSemibold,
                         }}
                       >
                         cancel
@@ -1489,7 +1489,7 @@ export default function HomeScreen({
                           fontWeight: '600',
                           color: '#FFFFFF',
                           letterSpacing: -0.1,
-                          fontFamily: 'System',
+                          fontFamily: Fonts.SystemRoundedSemibold,
                         }}
                       >
                         save
@@ -1622,7 +1622,7 @@ const styles = StyleSheet.create({
   hiCardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedBold,
   },
   hiCardIconsRow: {
     flexDirection: 'row',
@@ -1634,14 +1634,14 @@ const styles = StyleSheet.create({
   },
   vlogTitle: {
     color: '#FFFFFF',
-    fontFamily: 'SF Pro Rounded',
+    fontFamily: Fonts.SystemRoundedBold,
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 4,
   },
   vlogSubtext: {
     color: '#8E8E93',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
     fontSize: 15,
     fontWeight: '400',
     lineHeight: 21,
@@ -1693,7 +1693,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stepTitle: {
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedBold,
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
@@ -1722,19 +1722,19 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionPillText: {
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   actionHintText: {
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   stepSubtext: {
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
@@ -1832,13 +1832,13 @@ const styles = StyleSheet.create({
   },
   inactiveSegmentText: {
     color: '#8E8E93',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
     fontSize: 16,
     fontWeight: '400',
   },
   activeSegmentText: {
     color: '#FFFFFF',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1995,7 +1995,7 @@ const styles = StyleSheet.create({
     fontSize: 19.0,
     fontWeight: '600',
     letterSpacing: 0.2,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   dropdownMenuList: {
     paddingHorizontal: 12,
@@ -2018,7 +2018,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginLeft: 13,
     letterSpacing: 0.1,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRounded,
   },
   profileSubDropdownCard: {
     position: 'absolute',
@@ -2069,6 +2069,6 @@ const styles = StyleSheet.create({
     fontSize: 18.0,
     fontWeight: '400',
     letterSpacing: 0.1,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRounded,
   },
 });

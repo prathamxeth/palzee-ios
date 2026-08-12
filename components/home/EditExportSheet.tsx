@@ -13,6 +13,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui';
+import { CRTStaticCard } from './CRTStaticCard';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -104,26 +105,19 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
         {/* 2. CENTER CONTENT SECTION */}
         <View style={styles.centerContent}>
-          {/* TV GLITCH / NOISE PREVIEW CARD */}
           <View
             style={[
               styles.glitchCard,
-              { backgroundColor: isDark ? '#1C1C1E' : '#D6D6D6' },
+              { backgroundColor: isDark ? '#141416' : '#EBEBEF' },
             ]}
           >
-            {/* TV STATIC NOISE OVERLAY PATTERN */}
-            <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id="tvNoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={0.18} />
-                  <Stop offset="25%" stopColor="#000000" stopOpacity={0.10} />
-                  <Stop offset="50%" stopColor="#FFFFFF" stopOpacity={0.15} />
-                  <Stop offset="75%" stopColor="#000000" stopOpacity={0.08} />
-                  <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.14} />
-                </LinearGradient>
-              </Defs>
-              <Rect width="100%" height="100%" fill="url(#tvNoiseGrad)" />
-            </Svg>
+            {/* 1. INSTANT CAMERA LOW-LIGHT ISO NOISE GLITCH CARD (MOUNTS DIRECTLY ON FRAME 0 WITH NO WHITE/BLACK FLASH) */}
+            <CRTStaticCard
+              isDark={isDark}
+              width={340}
+              height={240}
+              borderRadius={24}
+            />
 
             {/* TOP LEFT USER ROW INSIDE CARD */}
             <View style={styles.cardUserRow}>

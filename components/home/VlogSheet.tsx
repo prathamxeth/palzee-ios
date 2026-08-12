@@ -96,32 +96,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     // Reset 0 pals to hidden on initial Vlog screen open
     setShow0Logs(false);
 
-    const noiseLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(noiseAnimX, { toValue: -8, duration: 80, useNativeDriver: true }),
-        Animated.timing(noiseAnimX, { toValue: 6, duration: 60, useNativeDriver: true }),
-        Animated.timing(noiseAnimY, { toValue: -6, duration: 70, useNativeDriver: true }),
-        Animated.timing(noiseAnimY, { toValue: 4, duration: 90, useNativeDriver: true }),
-      ])
-    );
-
-    const scanlineLoop = Animated.loop(
-      Animated.timing(scanlineAnim, {
-        toValue: 250,
-        duration: 2200,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-
-    noiseLoop.start();
-    scanlineLoop.start();
-
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (rotateLoopRef.current) rotateLoopRef.current.stop();
-      noiseLoop.stop();
-      scanlineLoop.stop();
     };
   }, [visible]);
 
@@ -311,24 +288,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             <View
               style={[
                 styles.glitchCard,
-                { backgroundColor: isDark ? '#161616' : '#E2E2E4' },
+                { backgroundColor: isDark ? '#0A0A0C' : '#D2D2D8' },
               ]}
-              onLayout={(e) => {
-                const { width, height } = e.nativeEvent.layout;
-                if (width > 0 && height > 0) {
-                  setCardLayout({ width, height });
-                }
-              }}
             >
-              {/* 1. SKIA GPU PROCEDURAL SHADER CRT STATIC CANVAS */}
-              {cardLayout.width > 0 && cardLayout.height > 0 && (
-                <CRTStaticCard
-                  isDark={isDark}
-                  width={cardLayout.width}
-                  height={cardLayout.height}
-                  borderRadius={24}
-                />
-              )}
+              {/* 1. INSTANT CAMERA LOW-LIGHT ISO NOISE GLITCH CARD (ZERO FLICKER, DIRECT FRAME 0 RENDER) */}
+              <CRTStaticCard
+                isDark={isDark}
+                width={cardWidth}
+                height={cardHeight}
+                borderRadius={24}
+              />
 
               {/* 2. FROSTED GLASS BLUR LAYER */}
               <BlurView

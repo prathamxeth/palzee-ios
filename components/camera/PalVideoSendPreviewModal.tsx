@@ -453,7 +453,7 @@ export default function PalVideoSendPreviewModal({
                 </View>
 
                 <View style={{ marginTop: 12 }}>
-                  {/* VLOG BOX (DEFAULT SELECTED RECIPIENT, FILLS WITH RICH LIGHT GREY WHEN CLICKED/SELECTED) */}
+                  {/* VLOG BOX (DEFAULT SELECTED RECIPIENT, FILLS WITH CRISP LIGHT GREY WHEN CLICKED/SELECTED) */}
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => toggleTarget('vlog')}
@@ -463,10 +463,10 @@ export default function PalVideoSendPreviewModal({
                         backgroundColor: selectedTargets.includes('vlog')
                           ? isDark
                             ? 'rgba(255, 255, 255, 0.12)'
-                            : '#E8E8EC'
+                            : '#F2F2F7'
                           : isDark
-                          ? 'rgba(255, 255, 255, 0.06)'
-                          : 'rgba(0, 0, 0, 0.035)',
+                          ? 'rgba(255, 255, 255, 0.05)'
+                          : '#F9F9FB',
                       },
                     ]}
                   >
@@ -506,95 +506,6 @@ export default function PalVideoSendPreviewModal({
                         style={{ width: 22, height: 22, tintColor: iconColor }}
                         resizeMode="contain"
                       />
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* GROUP RECIPIENT BOX (The Boys / Fuck boys) */}
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    onPress={() => toggleTarget('the_boys')}
-                    style={[
-                      styles.targetBoxContainer,
-                      {
-                        backgroundColor: selectedTargets.includes('the_boys')
-                          ? isDark
-                            ? 'rgba(255, 255, 255, 0.12)'
-                            : '#E8E8EC'
-                          : isDark
-                          ? 'rgba(255, 255, 255, 0.06)'
-                          : 'rgba(0, 0, 0, 0.035)',
-                      },
-                    ]}
-                  >
-                    {/* Left Selection Circle */}
-                    <View style={styles.leftCircleWrapper}>
-                      {selectedTargets.includes('the_boys') ? (
-                        <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
-                        </View>
-                      ) : (
-                        <View
-                          style={[
-                            styles.unselectedCircleHollow,
-                            { borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.18)' },
-                          ]}
-                        />
-                      )}
-                    </View>
-
-                    {/* Middle Title & Subtitle */}
-                    <View style={styles.targetTextWrapper}>
-                      <Text style={[styles.targetTitle, { color: titleColor }]}>
-                        {isDark ? 'Fuck boys' : 'The Boys'}
-                      </Text>
-                      <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
-                        Adarsh, Shoolin...
-                      </Text>
-                    </View>
-
-                    {/* Right Member Icons with Light Grey Circular Border Badges */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      {isDark ? (
-                        <>
-                          {[0, 1, 2, 3].map((i) => (
-                            <View
-                              key={i}
-                              style={[
-                                styles.smallSmileyBadgeContainer,
-                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
-                              ]}
-                            >
-                              <Image
-                                source={require('../../assets/images/custom_rotate_smiley.png')}
-                                style={{ width: 17, height: 17, tintColor: iconColor }}
-                                resizeMode="contain"
-                              />
-                            </View>
-                          ))}
-                          <Image
-                            source={require('../../assets/images/camera_list_icon.png')}
-                            style={{ width: 18, height: 18, tintColor: iconColor, marginLeft: 2 }}
-                            resizeMode="contain"
-                          />
-                        </>
-                      ) : (
-                        [0, 1, 2, 3, 4].map((i) => (
-                          <View
-                            key={i}
-                            style={[
-                              styles.smallSmileyBadgeContainer,
-                              { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
-                            ]}
-                          >
-                            <Image
-                              key={i}
-                              source={require('../../assets/images/custom_rotate_smiley.png')}
-                              style={{ width: 17, height: 17, tintColor: iconColor }}
-                              resizeMode="contain"
-                            />
-                          </View>
-                        ))
-                      )}
                     </View>
                   </TouchableOpacity>
                 </View>
