@@ -39,8 +39,8 @@ class VideoExporter: NSObject {
       return
     }
     
-    // Target canvas size: 1080 x 1920 (9:16 portrait)
-    let renderSize = CGSize(width: 1080, height: 1920)
+    // Target canvas size: Native 16:9 Horizontal (1920 x 1080)
+    let renderSize = CGSize(width: 1920, height: 1080)
     let videoComposition = AVMutableVideoComposition()
     videoComposition.renderSize = renderSize
     videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
@@ -50,46 +50,38 @@ class VideoExporter: NSObject {
     
     let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
     
-    // Calculate aspect ratio scaling & centering
+    // Calculate aspect ratio scaling to fill 1920x1080 perfectly
     let naturalSize = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
     let videoWidth = max(abs(naturalSize.width), 1)
     let videoHeight = max(abs(naturalSize.height), 1)
     
-    let targetClipWidth: CGFloat = 1080.0
-    let targetClipHeight: CGFloat = targetClipWidth * (videoHeight / videoWidth) // 607.5px
-    
-    let scaleX = targetClipWidth / videoWidth
-    let scaleY = targetClipHeight / videoHeight
-    let yOffset = (renderSize.height - targetClipHeight) / 2.0 // 656.25px (Centered vertically)
-    
-    let scaleTransform = CGAffineTransform(scaleX: scaleX, y: scaleY)
-    let translateTransform = CGAffineTransform(translationX: 0, y: yOffset)
-    let finalTransform = scaleTransform.concatenating(translateTransform)
+    let scaleX = renderSize.width / videoWidth
+    let scaleY = renderSize.height / videoHeight
+    let finalTransform = CGAffineTransform(scaleX: scaleX, y: scaleY)
     
     layerInstruction.setTransform(finalTransform, at: .zero)
     instruction.layerInstructions = [layerInstruction]
     videoComposition.instructions = [instruction]
     
-    // CoreAnimation Overlay Layers Composition
+    // CoreAnimation Overlay Layers Composition on 1920x1080 16:9 Canvas
     let parentLayer = CALayer()
-    parentLayer.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
-    parentLayer.backgroundColor = UIColor.black.cgColor
+    parentLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
     
     let videoLayer = CALayer()
-    videoLayer.frame = CGRect(x: 0, y: yOffset, width: targetClipWidth, height: targetClipHeight)
+    videoLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
     
     parentLayer.addSublayer(videoLayer)
     
     // Overlay Text 1: "vlog" header tag
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 22, weight: .bold)
-    vlogLayer.fontSize = 22
+    vlogLayer.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+    vlogLayer.fontSize = 28
     vlogLayer.foregroundColor = UIColor.white.withAlphaComponent(0.9).cgColor
     vlogLayer.backgroundColor = UIColor.black.withAlphaComponent(0.4).cgColor
-    vlogLayer.cornerRadius = 8
+    vlogLayer.cornerRadius = 10
     vlogLayer.alignmentMode = .center
-    vlogLayer.frame = CGRect(x: 32, y: yOffset + targetClipHeight - 48, width: 80, height: 32)
+    vlogLayer.frame = CGRect(x: 48, y: 1080 - 80, width: 120, height: 44)
     vlogLayer.contentsScale = 2.0
     parentLayer.addSublayer(vlogLayer)
     
@@ -97,12 +89,12 @@ class VideoExporter: NSObject {
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 28, weight: .semibold)
-      captionLayer.fontSize = 28
+      captionLayer.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
+      captionLayer.fontSize = 36
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 40, y: yOffset + 24, width: 1000, height: 60)
+      captionLayer.frame = CGRect(x: 60, y: 40, width: 1800, height: 80)
       captionLayer.contentsScale = 2.0
       parentLayer.addSublayer(captionLayer)
     }
@@ -111,11 +103,11 @@ class VideoExporter: NSObject {
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 20, weight: .medium)
-      timeLayer.fontSize = 20
+      timeLayer.font = UIFont.systemFont(ofSize: 26, weight: .medium)
+      timeLayer.fontSize = 26
       timeLayer.foregroundColor = UIColor.white.withAlphaComponent(0.75).cgColor
       timeLayer.alignmentMode = .right
-      timeLayer.frame = CGRect(x: 840, y: yOffset + targetClipHeight - 44, width: 200, height: 28)
+      timeLayer.frame = CGRect(x: 1560, y: 1080 - 74, width: 300, height: 38)
       timeLayer.contentsScale = 2.0
       parentLayer.addSublayer(timeLayer)
     }
