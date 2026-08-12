@@ -52,6 +52,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const smileyRotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    smileyRotateAnim.setValue(0);
     const rotateLoop = Animated.loop(
       Animated.timing(smileyRotateAnim, {
         toValue: 1,
@@ -62,7 +63,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     );
     rotateLoop.start();
     return () => rotateLoop.stop();
-  }, []);
+  }, [modalVisible]);
 
   useEffect(() => {
     if (visible) {
@@ -211,6 +212,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     ]}
                     activeOpacity={0.85}
                     onPress={() => {
+                      setModalVisible(false);
                       onClose();
                       if (onOpenCamera) onOpenCamera();
                     }}
@@ -351,15 +353,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   innerSmileyCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   smileyAvatarImg: {
-    width: 27.8,
-    height: 27.8,
+    width: 30.8,
+    height: 30.8,
     tintColor: '#000000',
     resizeMode: 'contain',
   },
