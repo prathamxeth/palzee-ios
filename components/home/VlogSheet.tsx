@@ -34,7 +34,7 @@ export interface VlogSheetProps {
   selectedThemeColor?: string;
   onOpenCamera?: () => void;
   onOpenChat?: () => void;
-  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>;
+  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
   activeVideoUri?: string | null;
   caption?: string;
   timestamp?: string;
@@ -425,6 +425,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   shouldPlay={visible && !showChatDrawer && !isEditingCaption}
                   isLooping
                   isMuted={!visible || showChatDrawer || !!currentIsMuted}
+                  rate={list[currentVlogIndex]?.rate || 1.0}
+                  shouldCorrectPitch={true}
                   onReadyForDisplay={(event) => {
                     if (event?.naturalSize) {
                       const { width, height } = event.naturalSize;

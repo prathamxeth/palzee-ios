@@ -495,7 +495,7 @@ export default function HomeScreen({
     setCameraFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
-  const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>>([]);
+  const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>>([]);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
   const [homeVlogProgress, setHomeVlogProgress] = useState(0);
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
@@ -513,19 +513,20 @@ export default function HomeScreen({
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    rotateAnim.setValue(0);
     const loop = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 2333,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
+      { iterations: -1 }
     );
     loop.start();
-    return () => loop.stop();
   }, []);
 
-  const handleVideoSent = (uri: string, caption?: string, isMuted?: boolean) => {
+  const handleVideoSent = (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -537,6 +538,8 @@ export default function HomeScreen({
       caption: caption || '',
       timestamp,
       isMuted: isMuted ?? false,
+      rate: rate || 1.0,
+      mode: mode || 'off',
     };
 
     setVlogList((prev) => [newLog, ...prev]);
@@ -632,6 +635,7 @@ export default function HomeScreen({
             onToggleTimerMode={toggleTimerMode}
             facing={cameraFacing}
             onToggleFacing={toggleFacing}
+            autoTickVlog={false}
             onCaptureSuccess={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
           />
         </Animated.View>
@@ -734,8 +738,8 @@ export default function HomeScreen({
                   {/* SCALED UP 16:9 VLOG CARD */}
                   <TouchableOpacity
                     style={{
-                      width: screenWidth - 30,
-                      height: (screenWidth - 30) * (9 / 16),
+                      width: '100%',
+                      height: (screenWidth - 20) * (9 / 16),
                       borderRadius: 24,
                       overflow: 'hidden',
                       position: 'relative',
@@ -752,10 +756,10 @@ export default function HomeScreen({
                         isHomeVlogVertical
                           ? {
                               position: 'absolute',
-                              top: ((screenWidth - 30) * (9 / 16) - (screenWidth - 30)) / 2,
-                              left: ((screenWidth - 30) - (screenWidth - 30) * (9 / 16)) / 2,
-                              width: (screenWidth - 30) * (9 / 16),
-                              height: screenWidth - 30,
+                              top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                              left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                              width: (screenWidth - 20) * (9 / 16),
+                              height: screenWidth - 20,
                               transform: [{ rotate: '270deg' }],
                             }
                           : StyleSheet.absoluteFill
@@ -764,6 +768,8 @@ export default function HomeScreen({
                       shouldPlay={activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
                       isLooping={vlogList.length === 1}
                       isMuted={!(activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
+                      rate={vlogList[homeVlogIndex]?.rate || 1.0}
+                      shouldCorrectPitch={true}
                       progressUpdateIntervalMillis={16}
                       onPlaybackStatusUpdate={(status) => {
                         if (status.isLoaded) {
@@ -888,8 +894,9 @@ export default function HomeScreen({
                   style={[
                     styles.vlogCard,
                     {
+                      width: '100%',
+                      alignSelf: 'center',
                       backgroundColor: isDark ? '#161616' : '#EFEFEF',
-                      marginHorizontal: 5,
                       overflow: 'hidden',
                       position: 'relative',
                     },

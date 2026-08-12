@@ -11,7 +11,7 @@ import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton
 type TimerMode = 'off' | '3s' | '5s' | 'timelapse' | 'jump_cut';
 
 interface CameraScreenProps {
-  onCapture?: (uri: string, caption?: string, isMuted?: boolean) => void;
+  onCapture?: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
   onClose?: () => void;
   selectedThemeColor?: string;
 }

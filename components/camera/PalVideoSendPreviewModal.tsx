@@ -81,8 +81,11 @@ interface PalVideoSendPreviewModalProps {
   timeText: string;
   selectedThemeColor?: string;
   isVerticalCapture?: boolean;
+  autoTickVlog?: boolean;
+  playbackRate?: number;
+  timerMode?: string;
   onRetake: () => void;
-  onSend: (uri: string, caption?: string, isMuted?: boolean) => void;
+  onSend: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
 }
 
 const LiquidGlassCircleButton = ({
@@ -159,6 +162,9 @@ export default function PalVideoSendPreviewModal({
   timeText,
   selectedThemeColor = 'cyan',
   isVerticalCapture = true,
+  autoTickVlog = true,
+  playbackRate = 1.0,
+  timerMode = 'off',
   onRetake,
   onSend,
 }: PalVideoSendPreviewModalProps) {
@@ -166,7 +172,15 @@ export default function PalVideoSendPreviewModal({
   const [isMuted, setIsMuted] = useState(false);
   const [captionText, setCaptionText] = useState('');
   const [isVertical, setIsVertical] = useState(isVerticalCapture);
-  const [selectedTargets, setSelectedTargets] = useState<string[]>(['vlog']);
+  const [selectedTargets, setSelectedTargets] = useState<string[]>(
+    autoTickVlog ? ['vlog'] : []
+  );
+
+  useEffect(() => {
+    if (visible) {
+      setSelectedTargets(autoTickVlog ? ['vlog'] : []);
+    }
+  }, [visible, autoTickVlog]);
   const textInputRef = useRef<TextInput>(null);
   const videoPlayerRef = useRef<Video>(null);
   const slideAnim = useRef(new Animated.Value(screenWidth * 0.85)).current;
@@ -283,7 +297,7 @@ export default function PalVideoSendPreviewModal({
       }),
     ]).start(() => {
       if (videoUri) {
-        onSend(videoUri, captionText, isMuted);
+        onSend(videoUri, captionText, isMuted, playbackRate || 1.0, timerMode || 'off');
       }
     });
   };
@@ -391,6 +405,8 @@ export default function PalVideoSendPreviewModal({
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={isMuted}
+                        rate={playbackRate}
+                        shouldCorrectPitch={true}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
                         progressUpdateIntervalMillis={50}
@@ -695,5 +711,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
+  },
+  modeBadgeTopLeft: {
+    position: 'absolute',
+    top: 12,
+    left: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    zIndex: 30,
+  },
+  modeBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.SystemRoundedBold,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });
