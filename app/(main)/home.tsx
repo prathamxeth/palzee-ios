@@ -25,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
+import { Accelerometer } from 'expo-sensors';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
@@ -425,17 +426,22 @@ export default function HomeScreen({
 
   // DEVICE ROTATION / TILT SENSOR: ROTATING SIDEWAYS OPENS CAMERA, UPRIGHT SWITCHES TO PALS
   useEffect(() => {
-    const handleOrientationChange = ({ window }: { window: { width: number; height: number } }) => {
-      if (window.width > window.height) {
-        setActiveTab('camera');
+    const checkOrientation = (w: number, h: number) => {
+      if (w > h) {
+        setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
       } else {
-        setActiveTab('pals');
+        setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
       }
     };
 
-    const subscription = Dimensions.addEventListener('change', handleOrientationChange);
+    checkOrientation(windowWidth, windowHeight);
+
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      checkOrientation(window.width, window.height);
+    });
+
     return () => subscription?.remove();
-  }, []);
+  }, [windowWidth, windowHeight]);
 
   useEffect(() => {
     Animated.spring(tabTransitionAnim, {
@@ -1771,7 +1777,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4FFFB0',
     letterSpacing: 1.5,
-    marginLeft: 5,
+    marginLeft: -5,
   },
   headerRightIcons: {
     flexDirection: 'row',
