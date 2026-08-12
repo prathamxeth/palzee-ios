@@ -498,7 +498,17 @@ export default function HomeScreen({
   const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>>([]);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
   const [homeVlogProgress, setHomeVlogProgress] = useState(0);
+  const homeProgressAnim = useRef(new Animated.Value(0)).current;
   const [isHomeVlogVertical, setIsHomeVlogVertical] = useState(true);
+
+  useEffect(() => {
+    Animated.timing(homeProgressAnim, {
+      toValue: homeVlogProgress,
+      duration: 60,
+      easing: Easing.linear,
+      useNativeDriver: false,
+    }).start();
+  }, [homeVlogProgress]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -736,6 +746,7 @@ export default function HomeScreen({
                     onPress={() => setShowExportSheet(true)}
                   >
                     <Video
+                      key={vlogList[homeVlogIndex]?.id || homeVlogIndex}
                       source={{ uri: vlogList[homeVlogIndex]?.uri || vlogList[0]?.uri }}
                       style={
                         isHomeVlogVertical
@@ -753,14 +764,18 @@ export default function HomeScreen({
                       shouldPlay={activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
                       isLooping={vlogList.length === 1}
                       isMuted={!(activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
+                      progressUpdateIntervalMillis={16}
                       onPlaybackStatusUpdate={(status) => {
                         if (status.isLoaded) {
                           if (status.durationMillis && status.durationMillis > 0) {
-                            setHomeVlogProgress(status.positionMillis / status.durationMillis);
+                            const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
+                            setHomeVlogProgress(p);
                           }
-                          if (status.didJustFinish && vlogList.length > 1) {
-                            setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
+                          if (status.didJustFinish) {
                             setHomeVlogProgress(0);
+                            if (vlogList.length > 1) {
+                              setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
+                            }
                           }
                         }
                       }}
@@ -798,44 +813,49 @@ export default function HomeScreen({
                       </Text>
                     </View>
 
-                    {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESS BARS WITH FILL ANIMATION */}
+                    {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESSIVE SEEK BAR (EXACT VIDEO PLAYBACK SEEK FILL) */}
                     {vlogList.length > 0 && (
                       <View
                         style={{
                           position: 'absolute',
-                          bottom: 12,
-                          left: 18,
-                          right: 18,
+                          bottom: 20,
+                          alignSelf: 'center',
                           flexDirection: 'row',
                           alignItems: 'center',
-                          gap: 4,
+                          justifyContent: 'center',
+                          gap: 6,
+                          zIndex: 15,
                         }}
                         pointerEvents="none"
                       >
                         {vlogList.map((_, index) => {
-                          let segmentFill = 0;
+                          let fillPercent = 0;
                           if (vlogList.length === 1) {
-                            segmentFill = homeVlogProgress;
+                            fillPercent = homeVlogProgress * 100;
                           } else {
-                            if (index < homeVlogIndex) segmentFill = 1;
-                            else if (index === homeVlogIndex) segmentFill = homeVlogProgress;
-                            else segmentFill = 0;
+                            if (index < homeVlogIndex) {
+                              fillPercent = 100;
+                            } else if (index === homeVlogIndex) {
+                              fillPercent = homeVlogProgress * 100;
+                            } else {
+                              fillPercent = 0;
+                            }
                           }
 
                           return (
                             <View
                               key={index}
                               style={{
-                                flex: 1,
+                                width: vlogList.length === 1 ? 30 : 24,
                                 height: 3.5,
                                 borderRadius: 2,
-                                backgroundColor: 'rgba(255, 255, 255, 0.35)',
+                                backgroundColor: 'rgba(255, 255, 255, 0.40)',
                                 overflow: 'hidden',
                               }}
                             >
                               <View
                                 style={{
-                                  width: `${Math.min(Math.max(segmentFill, 0), 1) * 100}%`,
+                                  width: `${Math.min(Math.max(fillPercent, 0), 100)}%`,
                                   height: '100%',
                                   backgroundColor: '#FFFFFF',
                                   borderRadius: 2,

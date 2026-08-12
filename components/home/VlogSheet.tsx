@@ -419,7 +419,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               {!!currentUri ? (
                 <Video
                   key={currentUri}
-                  source={{ uri: currentUri }}
+                  source={{ uri: currentUri || '' }}
                   style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                   resizeMode={ResizeMode.COVER}
                   shouldPlay={visible && !showChatDrawer && !isEditingCaption}
@@ -523,35 +523,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </View>
                 )}
               </View>
-
-              {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESS BARS (WHEN MULTIPLE PALS PRESENT) */}
-              {list.length > 1 && (
-                <View
-                  style={{
-                    position: 'absolute',
-                    bottom: 12,
-                    left: 18,
-                    right: 18,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    zIndex: 25,
-                  }}
-                  pointerEvents="none"
-                >
-                  {list.map((_, idx) => (
-                    <View
-                      key={idx}
-                      style={{
-                        flex: 1,
-                        height: 3.5,
-                        borderRadius: 2,
-                        backgroundColor: idx === currentVlogIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.35)',
-                      }}
-                    />
-                  ))}
-                </View>
-              )}
 
               {/* BOTTOM RIGHT: THREE DOTS BUTTON */}
               <TouchableOpacity
@@ -750,7 +721,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </DynamicGlowContainer>
 
@@ -833,7 +804,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 >
                   {!!currentUri ? (
                     <Video
-                      source={{ uri: currentUri }}
+                      source={{ uri: currentUri || '' }}
                       style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                       resizeMode={ResizeMode.COVER}
                       shouldPlay={isEditingCaption}
