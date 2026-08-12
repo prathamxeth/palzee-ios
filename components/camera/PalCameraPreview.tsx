@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
+import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
 
 const DANCING_COLORS = ['#00F0FF', '#FF007F', '#7F00FF', '#00FF66', '#FFCC00', '#FF3366', '#00E5FF', '#A800FF'];
@@ -51,6 +52,7 @@ export default function PalCameraPreview({
   const [flash, setFlash] = useState<FlashMode>('off');
   const [zoomLevel, setZoomLevel] = useState<number>(1.0); // Default 1x selected
   const [isRecording, setIsRecording] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
   // Video send preview window state
@@ -97,24 +99,26 @@ export default function PalCameraPreview({
 
   const [colorIndex, setColorIndex] = useState(0);
 
-  // Live time state
+  // Live time state (Formated as 7:17 PM)
   const [timeText, setTimeText] = useState('');
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const hours = now.getHours();
+      let hours = now.getHours();
       const minutes = now.getMinutes();
-      const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
       const formattedMin = minutes < 10 ? `0${minutes}` : `${minutes}`;
-      setTimeText(`${formattedHours}:${formattedMin}`);
+      setTimeText(`${hours}:${formattedMin} ${ampm}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Smooth continuous free rotation of smiley button with zero lag, stopping, or interruption
+  // Smooth continuous free rotation of smiley button
   const startIdleRotation = () => {
     idleRotateAnim.setValue(0);
     Animated.loop(
@@ -131,25 +135,21 @@ export default function PalCameraPreview({
     startIdleRotation();
   }, []);
 
-  // Re-kick continuous idle rotation when closing/sending preview modal or finishing recording
   useEffect(() => {
     if (!previewVideoUri && !isRecording && countdown === null) {
       startIdleRotation();
     }
   }, [previewVideoUri, isRecording, countdown]);
 
-  // Floating mode pill auto-hide state (fades out after 2.5s when mode changes)
+  // Floating mode pill auto-hide state
   const [showPill, setShowPill] = useState(false);
   const pillOpacity = useRef(new Animated.Value(0)).current;
   const isInitialMount = useRef(true);
 
   useEffect(() => {
-    // Skip showing 'off' pill on initial camera screen mount
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (timerMode === 'off') {
-        return;
-      }
+      if (timerMode === 'off') return;
     }
 
     setShowPill(true);
@@ -187,7 +187,7 @@ export default function PalCameraPreview({
     };
   }, [isRecording, countdown]);
 
-  // Slow rotation during recording & countdown to match setlog aesthetics
+  // Slow rotation during recording & countdown
   useEffect(() => {
     if (isRecording || countdown !== null) {
       rotationAnim.setValue(0);
@@ -207,18 +207,18 @@ export default function PalCameraPreview({
 
   const sideMargin = 8.5;
   let cameraWidth = Math.max(screenWidth - sideMargin * 2, 320);
-  let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
+  let cameraHeight = (screenWidth + 15) * (16 / 9) + 95;
 
-  const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
+  const maxCameraHeight = screenHeight - (insets.top - 20) - (insets.bottom - 10);
 
   if (cameraHeight > maxCameraHeight && maxCameraHeight > 200) {
     cameraHeight = maxCameraHeight;
   }
   if (cameraHeight < 400 || isNaN(cameraHeight)) {
-    cameraHeight = Math.max(screenHeight * 0.68, 480);
+    cameraHeight = Math.max(screenHeight * 0.86, 580);
   }
 
-  // Theme accent color (Full 100% vibrant brightness)
+  // Theme accent color
   const baseAccentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
     '#11D5F3';
@@ -238,10 +238,6 @@ export default function PalCameraPreview({
       </View>
     );
   }
-
-  const toggleFlash = () => {
-    setFlash((current) => (current === 'off' ? 'on' : 'off'));
-  };
 
   const handleFlashPress = () => {
     if (flash === 'off') {
@@ -269,63 +265,52 @@ export default function PalCameraPreview({
     let count = sec;
     const interval = setInterval(() => {
       count -= 1;
-      if (count <= 0) {
+      if (count > 0) {
+        setCountdown(count);
+      } else {
         clearInterval(interval);
         setCountdown(null);
         executeRecording();
-      } else {
-        setCountdown(count);
       }
     }, 1000);
   };
 
+  const getRecordingDurationSec = () => {
+    if (timerMode === 'off') return 2;
+    if (timerMode === '3s') return 3;
+    if (timerMode === '5s') return 5;
+    if (timerMode === 'timelapse') return 6;
+    if (timerMode === 'jump_cut') return 4;
+    return 2;
+  };
+
   const executeRecording = async () => {
-    if (!cameraRef.current || isRecording) return;
+    if (!cameraRef.current || !isCameraReady || isRecording) return;
     setIsRecording(true);
     progressAnim.setValue(0);
 
-    let durationMs = 2000; // Default 'off' state records 2s video clip
-
-    if (timerMode === '3s') {
-      durationMs = 3000; // 3s clip
-    } else if (timerMode === '5s') {
-      durationMs = 5000; // 5s clip
-    } else if (timerMode === 'timelapse') {
-      durationMs = 10000; // 10s timelapse clip
-    } else if (timerMode === 'jump_cut') {
-      durationMs = 3300; // 3.3s jump cut sequence
-    }
+    const recSec = getRecordingDurationSec();
 
     Animated.timing(progressAnim, {
       toValue: 1,
-      duration: durationMs,
+      duration: recSec * 1000,
       easing: Easing.linear,
       useNativeDriver: false,
     }).start();
 
     try {
-      const videoPromise = cameraRef.current.recordAsync({
-        maxDuration: Math.max(1, Math.round(durationMs / 1000)),
+      const data = await cameraRef.current.recordAsync({
+        maxDuration: recSec,
+        quality: '1080p',
       });
-
-      const video = await videoPromise;
-      setIsRecording(false);
-      progressAnim.setValue(0);
-
-      if (video?.uri) {
-        setPreviewVideoUri(video.uri);
+      if (data && data.uri) {
+        setPreviewVideoUri(data.uri);
       }
     } catch (e) {
-      console.error('Video recording error:', e);
       setIsRecording(false);
       progressAnim.setValue(0);
     }
   };
-
-  const fastSpin = rotationAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   const idleSpin = idleRotateAnim.interpolate({
     inputRange: [0, 1],
@@ -336,95 +321,125 @@ export default function PalCameraPreview({
   const shutterSize = 82;
   const centerShutterLeft = (cameraWidth - shutterSize) / 2;
 
+  const pillHeight =
+    timerMode === 'off'
+      ? 56
+      : timerMode === 'timelapse' || timerMode === 'jump_cut'
+      ? 105
+      : 145;
+
   return (
-    <View style={styles.container}>
-      {/* 1. EXACT CAMERA VIEWPORT CARD */}
-      <View
-        style={[
-          styles.viewportCardContainer,
-          {
-            width: cameraWidth,
-            flex: 1,
-            maxHeight: cameraHeight,
-            marginTop: 8,
-            marginBottom: 8,
-          },
-        ]}
-      >
-        {/* Border Overlay - Dead-Centered 100% Bright Crisp Camera Frame Edge Boundary */}
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: Math.max(insets.top - 24, 0),
+          paddingBottom: Math.max(insets.bottom - 24, 0),
+        },
+      ]}
+    >
+        {/* 1. EXACT CAMERA VIEWPORT CARD MATCHING USER REFERENCE IMAGE */}
         <View
-          style={{
-            position: 'absolute',
-            top: -0.75,
-            bottom: -0.75,
-            left: -0.75,
-            right: -0.75,
-            borderRadius: 32,
-            borderWidth: 1.5,
-            borderColor: baseAccentColor,
-            opacity: 1.0,
-            zIndex: 100,
-          }}
-          pointerEvents="none"
-        />
+          style={[
+            styles.viewportCardContainer,
+            {
+              width: cameraWidth,
+              flex: 1,
+              maxHeight: cameraHeight,
+            },
+          ]}
+        >
+          {/* Border Overlay */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -0.75,
+              bottom: -0.75,
+              left: -0.75,
+              right: -0.75,
+              borderRadius: 32,
+              borderWidth: 1.5,
+              borderColor: baseAccentColor,
+              opacity: 1.0,
+              zIndex: 100,
+            }}
+            pointerEvents="none"
+          />
 
-        {/* Rounded Inner Clip View for Camera Feed */}
-        <View style={styles.innerCameraViewClip}>
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1A1A1E' }]}>
-            <Image
-              source={require('../../assets/images/vhs_static_dark.png')}
-              style={[StyleSheet.absoluteFill, { opacity: 0.15, resizeMode: 'cover' }]}
-            />
+          {/* Rounded Inner Clip View for Camera Feed */}
+          <View style={styles.innerCameraViewClip}>
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1A1A1E' }]}>
+              <Image
+                source={require('../../assets/images/vhs_static_dark.png')}
+                style={[StyleSheet.absoluteFill, { opacity: 0.15, resizeMode: 'cover' }]}
+              />
+            </View>
+            {permission?.granted ? (
+              <CameraView
+                ref={cameraRef}
+                style={StyleSheet.absoluteFill}
+                facing={facing}
+                mode="video"
+                flash={flash}
+                enableTorch={flash === 'on'}
+                zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
+                onCameraReady={() => setIsCameraReady(true)}
+              />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+                <Ionicons name="camera-outline" size={42} color={baseAccentColor} style={{ marginBottom: 10 }} />
+                <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>
+                  Enable camera permissions to view live preview
+                </Text>
+                <TouchableOpacity style={[styles.grantBtn, { backgroundColor: baseAccentColor }]} onPress={requestPermission}>
+                  <Text style={[styles.grantBtnText, { color: '#000000' }]}>Enable Camera</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-          {permission?.granted ? (
-            <CameraView
-              ref={cameraRef}
-              style={StyleSheet.absoluteFill}
-              facing={facing}
-              mode="picture"
-              flash={flash}
-              enableTorch={flash === 'on'}
-              zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-              <Ionicons name="camera-outline" size={42} color={baseAccentColor} style={{ marginBottom: 10 }} />
-              <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>
-                Enable camera permissions to view live preview
-              </Text>
-              <TouchableOpacity style={[styles.grantBtn, { backgroundColor: baseAccentColor }]} onPress={requestPermission}>
-                <Text style={[styles.grantBtnText, { color: '#000000' }]}>Enable Camera</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
 
-        {/* ABSOLUTE OVERLAY CONTAINER FOR CAMERA CONTROLS */}
-        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          {/* VERTICAL CENTER TIME OVERLAY (HIDDEN DURING COUNTDOWN) */}
-          {countdown === null && (
-            <View style={styles.centerTimeContainer} pointerEvents="none">
-              <Text style={styles.verticalTimeText}>{timeText}</Text>
-            </View>
-          )}
+          {/* ABSOLUTE OVERLAY CONTAINER FOR CAMERA CONTROLS */}
+          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            {/* VERTICAL CENTER TIME OVERLAY */}
+            {countdown === null && (
+              <View style={styles.centerTimeContainer} pointerEvents="none">
+                <Text style={styles.verticalTimeText}>{timeText}</Text>
+              </View>
+            )}
 
-          {/* COUNTDOWN OVERLAY */}
-          {countdown !== null && (
-            <View style={styles.countdownContainer} pointerEvents="none">
-              <Text style={styles.countdownText}>{countdown}</Text>
-            </View>
-          )}
+            {/* COUNTDOWN OVERLAY */}
+            {countdown !== null && (
+              <View style={styles.countdownContainer} pointerEvents="none">
+                <Text style={styles.countdownText}>{countdown}</Text>
+              </View>
+            )}
 
-          {/* RIGHT SIDE FLOATING MODE PILL INDICATOR WITH LIQUID GLASS BLUR & SPECULAR HIGHLIGHT */}
-          {showPill && (
-            <Animated.View style={[styles.modePillContainer, { opacity: pillOpacity }]} pointerEvents="none">
+            {/* FLOATING MODE PILL INDICATOR WITH DYNAMIC ADAPTIVE HEIGHT */}
+            {showPill && (
+              <Animated.View
+                style={[
+                  styles.modePillContainer,
+                  {
+                    height: pillHeight,
+                    marginTop: -pillHeight / 2,
+                    opacity: pillOpacity,
+                  },
+                ]}
+                pointerEvents="none"
+              >
               <BlurView
                 intensity={Platform.OS === 'ios' ? 55 : 80}
                 tint="light"
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.specularBorderHighlight} pointerEvents="none" />
-              <Text style={styles.modePillText}>
+              <Text
+                style={[
+                  styles.modePillText,
+                  timerMode !== 'off' && { marginTop: -5 },
+                ]}
+                numberOfLines={1}
+              >
                 {timerMode === 'off'
                   ? 'off'
                   : timerMode === '3s'
@@ -438,7 +453,7 @@ export default function PalCameraPreview({
             </Animated.View>
           )}
 
-          {/* ZOOM NUMBERS (.5, 1) - EXACT MATCH TO USER SCREENSHOT: BARE TEXT ROTATED 90° WITH YELLOW ACTIVE COLOR */}
+          {/* ZOOM NUMBERS (.5, 1) */}
           <View
             style={{
               position: 'absolute',
@@ -478,7 +493,7 @@ export default function PalCameraPreview({
             })}
           </View>
 
-          {/* FLASH ICON - FILLED SOLID YELLOW INSIDE WITH ZERO OUTSIDE BOX GLOW */}
+          {/* FLASH ICON */}
           <TouchableOpacity
             style={[styles.flashBtnAbsolute, { left: centerShutterLeft - 68, zIndex: 1000 }]}
             activeOpacity={0.8}
@@ -496,13 +511,12 @@ export default function PalCameraPreview({
             />
           </TouchableOpacity>
 
-          {/* SMILEY CAPTURE SHUTTER BUTTON - EXACT MATCH TO USER SCREENSHOT */}
+          {/* SMILEY CAPTURE SHUTTER BUTTON */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={startRecordSequence}
             style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
           >
-            {/* Outer Concentric Deep Blue Border Ring */}
             <Svg width={83} height={83} style={StyleSheet.absoluteFill}>
               <Circle cx="41.5" cy="41.5" r="39.5" stroke="#1000E5" strokeWidth="3.5" fill="none" />
             </Svg>
@@ -542,9 +556,11 @@ export default function PalCameraPreview({
                 styles.progressBarGapCentered,
                 {
                   width: 5,
-                  top: 32, // straight boundary top offset
-                  height: cameraHeight - 64, // straight boundary height
-                  right: -5.25, // moved left by 0.25dp
+                  top: 32,
+                  bottom: 32,
+                  right: -5.0,
+                  zIndex: 999999,
+                  elevation: 9999,
                 },
               ]}
               pointerEvents="none"
@@ -598,30 +614,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
-  permissionContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  permissionText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  grantBtn: {
-    backgroundColor: '#11D5F3',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  grantBtnText: {
-    color: '#000000',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
   viewportCardContainer: {
     borderRadius: 32,
     backgroundColor: '#000000',
@@ -634,174 +626,109 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#161618',
   },
-  statusBarRow: {
-    position: 'absolute',
-    top: 14,
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 10,
+  grantBtn: {
+    backgroundColor: '#11D5F3',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
   },
-  clockText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+  grantBtnText: {
+    color: '#000000',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   centerTimeContainer: {
     position: 'absolute',
-    top: '50%',
+    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    marginTop: -20,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 10,
-  },
-  previewCenterTimeContainer: {
-    position: 'absolute',
-    top: '40%', // Slightly above exact center (50%)
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 20,
   },
   verticalTimeText: {
     color: '#FFFFFF',
+    fontSize: 26,
     fontFamily: Fonts.DelaGothicOne,
-    fontSize: 24,
-    fontWeight: 'bold',
     transform: [{ rotate: '90deg' }],
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
   },
   countdownContainer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    zIndex: 300,
   },
   countdownText: {
+    fontSize: 90,
+    fontWeight: '900',
     color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'System' : undefined,
-    fontSize: 44,
-    fontWeight: '700',
-    transform: [{ rotate: '90deg' }],
-    textShadowColor: 'rgba(0, 0, 0, 0.6)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
   },
   modePillContainer: {
     position: 'absolute',
-    right: -41,
-    top: '45%',
-    marginTop: 5,
-    width: 140,
-    paddingVertical: 9,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
+    top: '50%',
+    right: 16,
+    width: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
-    transform: [{ rotate: '90deg' }],
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 400,
   },
   specularBorderHighlight: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.55)',
   },
   modePillText: {
     color: '#000000',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-    letterSpacing: 0.2,
-  },
-  zoomRowCentered: {
-    position: 'absolute',
-    left: 20,
-    top: '50%',
-    marginTop: -25,
-    flexDirection: 'column',
-    gap: 8,
-    zIndex: 15,
-  },
-  zoomPillItem: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeZoomPillItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  },
-  activeYellowZoomPill: {
-    backgroundColor: '#FFCC00',
-    shadowColor: '#FFCC00',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  zoomText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     transform: [{ rotate: '90deg' }],
   },
-  activeZoomText: {
-    color: '#000000',
-    fontWeight: '700',
+  progressBarGapCentered: {
+    position: 'absolute',
+    borderRadius: 2.5,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    zIndex: 99999,
+    elevation: 999,
   },
-  activeYellowZoomText: {
-    color: '#000000',
-    fontWeight: '800',
+  progressBarFill: {
+    width: '100%',
+    borderRadius: 2.5,
   },
   flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 45,
+    bottom: 30,
     width: 44,
     height: 44,
-    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
   shutterWrapperAbsolute: {
     position: 'absolute',
-    bottom: 26,
+    bottom: 12,
     width: 83,
     height: 83,
     justifyContent: 'center',
     alignItems: 'center',
   },
   smileyInnerCircle: {
-    width: 71,
-    height: 71,
-    borderRadius: 35.5,
+    width: 71.7,
+    height: 71.7,
+    borderRadius: 35.85,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  progressBarGapCentered: {
-    position: 'absolute',
-    borderRadius: 2.5,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-    zIndex: 10000,
-    elevation: 20,
-  },
-  progressBarFill: {
-    width: '100%',
-    borderRadius: 2.5,
   },
 });
