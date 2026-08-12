@@ -7,7 +7,6 @@ import {
   View,
   Image,
   useColorScheme,
-  Platform,
   Animated,
   Easing,
 } from 'react-native';
@@ -525,7 +524,7 @@ const styles = StyleSheet.create({
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cameraDotRing: {
     width: 10,
@@ -594,7 +593,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#636366',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cardMiddleRow: {
     position: 'absolute',
@@ -612,7 +611,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: '#3A3A3C',
-    fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+    fontFamily: 'SF Pro Rounded',
     marginTop: -2,
   },
   tapToCaptureBtnCenter: {
@@ -635,13 +634,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     color: '#000000',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   timestampText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#8E8E93',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cardBottomRightDotsBtn: {
     position: 'absolute',
@@ -680,7 +679,7 @@ const styles = StyleSheet.create({
   zeroLogsText: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cardBottomRightPill: {
     position: 'absolute',
@@ -714,7 +713,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.5,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   textCursorIBar: {
     width: 2,
@@ -725,6 +724,6 @@ const styles = StyleSheet.create({
   editCaptionLabel: {
     fontSize: 15,
     fontWeight: '400',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
 });

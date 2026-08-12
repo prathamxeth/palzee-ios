@@ -6,7 +6,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -197,8 +196,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
               {/* 3. BOTTOM FLOATING MESSAGE INPUT BAR WITH KEYBOARD AVOIDING */}
               <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+                behavior="padding"
+                keyboardVerticalOffset={8}
               >
                 <View style={styles.bottomInputBarRow}>
                   {/* LEFT: LIQUID GLASS PILL BUTTON WITH ROTATING SMILEY AVATAR (OPENS CAMERA INSTANTLY) */}
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   bodyContainer: {
     flex: 1,
@@ -381,7 +380,7 @@ const styles = StyleSheet.create({
   textInputStyle: {
     flex: 1,
     fontSize: 17,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     paddingVertical: 0,
     paddingRight: 8,
   },

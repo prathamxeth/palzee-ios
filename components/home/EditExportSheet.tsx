@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   View,
   useColorScheme,
-  Platform,
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -222,7 +221,7 @@ const styles = StyleSheet.create({
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cameraDotWrapper: {
     alignItems: 'center',
@@ -286,7 +285,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#555555',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cardMiddleRow: {
     flexDirection: 'row',
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#4A4A4A',
-    fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+    fontFamily: 'SF Pro Rounded',
   },
   tapToCaptureBtn: {
     height: 40,
@@ -317,13 +316,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   timestampText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#8E8E93',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   cardBottomRow: {
     alignItems: 'flex-end',
@@ -346,13 +345,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#3A3A3C',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   editCaptionText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#1C1C1E',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
 });
 

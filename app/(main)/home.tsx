@@ -6,7 +6,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -39,62 +38,24 @@ import { User } from '../../types';
 const LucidePlus = ({
   size = 26,
   color = '#FFFFFF',
-  strokeWidth = 2,
 }: {
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) =>
-  Platform.OS === 'ios' ? (
-    <SymbolView name="plus" size={size} tintColor={color} />
-  ) : (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M5 12h14" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M12 5v14" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
+}) => <SymbolView name="plus" size={size} tintColor={color} />;
 
 const LucideBell = ({
   size = 25,
   color = '#FFFFFF',
-  strokeWidth = 2,
 }: {
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) =>
-  Platform.OS === 'ios' ? (
-    <SymbolView name="bell" size={size} tintColor={color} />
-  ) : (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M10.3 21a1.94 1.94 0 0 0 3.4 0"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
+}) => <SymbolView name="bell" size={size} tintColor={color} />;
 
-const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) =>
-  Platform.OS === 'ios' ? (
-    <SymbolView name="person" size={size} tintColor={color} />
-  ) : (
-    <Svg width={size} height={size} viewBox="0 -960 960 960">
-      <Path
-        d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T225-378q62-31 126-46.5T480-440q64 0 128 15.5T735-378q30 16 47.5 44.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-54 0-109 13.5T260-306q-9 5-14.5 14t-5.5 20v32Z"
-        fill={color}
-      />
-    </Svg>
-  );
+const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) => (
+  <SymbolView name="person" size={size} tintColor={color} />
+);
 
 const LiquidGlassPillButton = ({
   onPress,
@@ -736,7 +697,7 @@ export default function HomeScreen({
                     fontWeight="bold"
                     fill={iconColor}
                     textAnchor="middle"
-                    fontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif'}
+                    fontFamily="System"
                   >
                     3
                   </SvgText>
@@ -751,7 +712,7 @@ export default function HomeScreen({
                     fontWeight="bold"
                     fill={iconColor}
                     textAnchor="middle"
-                    fontFamily={Platform.OS === 'ios' ? 'System' : 'sans-serif'}
+                    fontFamily="System"
                   >
                     5
                   </SvgText>
@@ -919,7 +880,7 @@ export default function HomeScreen({
                 </Svg>
 
                 <BlurView
-                  intensity={Platform.OS === 'ios' ? 70 : 95}
+                  intensity={70}
                   tint={isDark ? 'dark' : 'light'}
                   style={StyleSheet.absoluteFill}
                 />
@@ -1092,7 +1053,7 @@ export default function HomeScreen({
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
                   </Svg>
 
-                  <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={75} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   {/* SOFT SPECULAR HIGHLIGHT (NO HARD BRIGHT BORDER STROKE) */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -1206,7 +1167,7 @@ export default function HomeScreen({
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
                   </Svg>
 
-                  <BlurView intensity={Platform.OS === 'ios' ? 75 : 95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={75} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
@@ -1311,7 +1272,7 @@ export default function HomeScreen({
             onPress={() => setShowEditNameModal(false)}
           >
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior="padding"
               style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
             >
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -1340,7 +1301,7 @@ export default function HomeScreen({
                       color: isDark ? '#FFFFFF' : '#1C1C1E',
                       marginBottom: 4,
                       letterSpacing: -0.2,
-                      fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                      fontFamily: 'System',
                     }}
                   >
                     edit name
@@ -1352,7 +1313,7 @@ export default function HomeScreen({
                       color: isDark ? 'rgba(255, 255, 255, 0.60)' : 'rgba(0, 0, 0, 0.55)',
                       marginBottom: 16,
                       letterSpacing: -0.1,
-                      fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                      fontFamily: 'System',
                     }}
                   >
                     enter your name
@@ -1375,7 +1336,7 @@ export default function HomeScreen({
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
                         paddingVertical: 7,
                         letterSpacing: -0.1,
-                        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                        fontFamily: 'System',
                       }}
                       value={editFirstName}
                       onChangeText={setEditFirstName}
@@ -1394,7 +1355,7 @@ export default function HomeScreen({
                         color: isDark ? '#FFFFFF' : '#1C1C1E',
                         paddingVertical: 7,
                         letterSpacing: -0.1,
-                        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                        fontFamily: 'System',
                       }}
                       value={editLastName}
                       onChangeText={setEditLastName}
@@ -1424,7 +1385,7 @@ export default function HomeScreen({
                           fontWeight: '600',
                           color: isDark ? '#FFFFFF' : '#1C1C1E',
                           letterSpacing: -0.1,
-                          fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                          fontFamily: 'System',
                         }}
                       >
                         cancel
@@ -1457,7 +1418,7 @@ export default function HomeScreen({
                           fontWeight: '600',
                           color: '#FFFFFF',
                           letterSpacing: -0.1,
-                          fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+                          fontFamily: 'System',
                         }}
                       >
                         save
@@ -1590,7 +1551,7 @@ const styles = StyleSheet.create({
   hiCardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   hiCardIconsRow: {
     flexDirection: 'row',
@@ -1602,14 +1563,14 @@ const styles = StyleSheet.create({
   },
   vlogTitle: {
     color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+    fontFamily: 'SF Pro Rounded',
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 4,
   },
   vlogSubtext: {
     color: '#8E8E93',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     fontSize: 15,
     fontWeight: '400',
     lineHeight: 21,
@@ -1661,7 +1622,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stepTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
@@ -1690,19 +1651,19 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionPillText: {
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   actionHintText: {
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   stepSubtext: {
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
@@ -1800,13 +1761,13 @@ const styles = StyleSheet.create({
   },
   inactiveSegmentText: {
     color: '#8E8E93',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     fontSize: 16,
     fontWeight: '400',
   },
   activeSegmentText: {
     color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1963,7 +1924,7 @@ const styles = StyleSheet.create({
     fontSize: 19.0,
     fontWeight: '600',
     letterSpacing: 0.2,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   dropdownMenuList: {
     paddingHorizontal: 12,
@@ -1986,7 +1947,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginLeft: 13,
     letterSpacing: 0.1,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
   profileSubDropdownCard: {
     position: 'absolute',
@@ -2037,6 +1998,6 @@ const styles = StyleSheet.create({
     fontSize: 18.0,
     fontWeight: '400',
     letterSpacing: 0.1,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    fontFamily: 'System',
   },
 });

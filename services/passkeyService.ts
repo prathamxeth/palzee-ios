@@ -1,5 +1,4 @@
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 
 let PasskeyModule: any = null;
 try {
@@ -11,7 +10,6 @@ try {
 
 export const passkeyService = {
   isSupported(): boolean {
-    if (Platform.OS !== 'ios') return false;
     try {
       return !!PasskeyModule && typeof PasskeyModule.isSupported === 'function' && PasskeyModule.isSupported();
     } catch {

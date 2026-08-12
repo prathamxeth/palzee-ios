@@ -9,7 +9,6 @@ import {
   useColorScheme,
   TextInput,
   KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
   LogBox,
@@ -322,7 +321,7 @@ export default function PalVideoSendPreviewModal({
       <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={false}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior="padding"
             style={[styles.modalContainer, { backgroundColor: containerBg }]}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

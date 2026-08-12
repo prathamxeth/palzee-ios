@@ -3,7 +3,6 @@ import {
   Animated,
   Easing,
   Image,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -325,8 +324,8 @@ export default function PalCameraPreview({
     timerMode === 'off'
       ? 56
       : timerMode === 'timelapse' || timerMode === 'jump_cut'
-      ? 105
-      : 145;
+      ? 120
+      : 165;
 
   return (
     <View
@@ -428,7 +427,7 @@ export default function PalCameraPreview({
                 pointerEvents="none"
               >
               <BlurView
-                intensity={Platform.OS === 'ios' ? 55 : 80}
+                intensity={55}
                 tint="light"
                 style={StyleSheet.absoluteFill}
               />
@@ -436,9 +435,9 @@ export default function PalCameraPreview({
               <Text
                 style={[
                   styles.modePillText,
-                  timerMode !== 'off' && { marginTop: -5 },
+                  { width: pillHeight },
+                  timerMode !== 'off' && { fontSize: 15 },
                 ]}
-                numberOfLines={1}
               >
                 {timerMode === 'off'
                   ? 'off'
@@ -693,7 +692,8 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    textAlign: 'center',
+    fontFamily: 'System',
     transform: [{ rotate: '90deg' }],
   },
   progressBarGapCentered: {

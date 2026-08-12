@@ -8,7 +8,6 @@ import {
   View,
   useColorScheme,
   KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -76,7 +75,7 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior="padding"
             style={styles.keyboardContainer}
           >
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
@@ -174,7 +173,7 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
   );
 };
 
-const SystemFont = Platform.OS === 'ios' ? 'System' : 'sans-serif';
+const SystemFont = 'System';
 
 const styles = StyleSheet.create({
   overlay: {

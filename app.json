@@ -3,6 +3,7 @@
     "name": "Palzee",
     "slug": "palzee-ios",
     "version": "1.0.0",
+    "platforms": ["ios"],
     "orientation": "portrait",
     "icon": "./assets/images/pal_logo.png",
     "userInterfaceStyle": "automatic",
@@ -21,9 +22,6 @@
         "NSPhotoLibraryUsageDescription": "Palzee needs access to your photo library to pick images and videos.",
         "NSPhotoLibraryAddUsageDescription": "Palzee needs access to save captured media to your photo library."
       }
-    },
-    "web": {
-      "favicon": "./assets/images/pal_logo.png"
     },
     "plugins": [
       "expo-router",
@@ -54,13 +52,6 @@
       ],
       "expo-secure-store"
     ],
-    "scheme": "io.supabase.pals",
-    "android": {
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
-      "package": "com.pratham.palzee"
-    }
+    "scheme": "io.supabase.pals"
   }
 }

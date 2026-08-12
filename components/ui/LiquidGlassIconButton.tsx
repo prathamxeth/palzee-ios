@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
 export interface LiquidGlassIconButtonProps {
-  onPress: () => void;
+  onPress?: () => void;
   children: React.ReactNode;
   isDark?: boolean;
   idPrefix?: string;
