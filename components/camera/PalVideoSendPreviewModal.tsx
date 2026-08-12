@@ -177,7 +177,6 @@ export default function PalVideoSendPreviewModal({
       allowsRecordingIOS: false,
       playsInSilentModeIOS: true,
       staysActiveInBackground: false,
-      shouldDuckAndroid: true,
     }).catch(() => {});
   }, []);
 
