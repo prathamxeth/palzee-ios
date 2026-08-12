@@ -11,7 +11,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +20,7 @@ import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 
 import { CRTStaticCard } from './CRTStaticCard';
+import { ChatDrawer } from './ChatDrawer';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -34,7 +35,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   visible,
   onClose,
   user,
-  selectedThemeColor = 'orange',
+  selectedThemeColor = 'cyan',
   onOpenCamera,
   onOpenChat,
 }) => {
@@ -45,14 +46,56 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
+  const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
+  const [show0Logs, setShow0Logs] = useState(false);
+  const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
   const noiseAnimX = useRef(new Animated.Value(0)).current;
   const noiseAnimY = useRef(new Animated.Value(0)).current;
   const scanlineAnim = useRef(new Animated.Value(-50)).current;
 
+  const logsRotateAnim = useRef(new Animated.Value(0)).current;
+  const logsOpacityAnim = useRef(new Animated.Value(1)).current;
+
+  const rotateLoopRef = useRef<Animated.CompositeAnimation | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const trigger0PalsEffect = () => {
+    if (rotateLoopRef.current) rotateLoopRef.current.stop();
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    setShow0Logs(true);
+    logsOpacityAnim.setValue(1);
+    logsRotateAnim.setValue(0);
+
+    rotateLoopRef.current = Animated.loop(
+      Animated.timing(logsRotateAnim, {
+        toValue: 1,
+        duration: 1600,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    rotateLoopRef.current.start();
+
+    timerRef.current = setTimeout(() => {
+      Animated.timing(logsOpacityAnim, {
+        toValue: 0,
+        duration: 450,
+        useNativeDriver: true,
+      }).start(() => {
+        setShow0Logs(false);
+        if (rotateLoopRef.current) rotateLoopRef.current.stop();
+      });
+    }, 3000);
+  };
+
   useEffect(() => {
     if (!visible) return;
+
+    // Reset 0 pals to hidden on initial Vlog screen open
+    setShow0Logs(false);
 
     const noiseLoop = Animated.loop(
       Animated.sequence([
@@ -76,6 +119,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     scanlineLoop.start();
 
     return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (rotateLoopRef.current) rotateLoopRef.current.stop();
       noiseLoop.stop();
       scanlineLoop.stop();
     };
@@ -84,7 +129,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="none"
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
@@ -97,10 +142,72 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         >
           {/* 1. TOP NAVIGATION HEADER BAR */}
           <View style={styles.headerBar}>
-            {/* LEFT: BACK BUTTON */}
-            <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
-              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
-            </LiquidGlassIconButton>
+            {/* LEFT: ROTATING 0 LOGS PILL (DISAPPEARS AFTER 2S) OR BACK CHEVRON */}
+            <View style={{ width: 100, height: 44, justifyContent: 'center' }}>
+              {show0Logs ? (
+                <Animated.View style={{ opacity: logsOpacityAnim }}>
+                  <TouchableOpacity
+                    style={styles.zeroLogsPillBtn}
+                    activeOpacity={0.8}
+                    onPress={onClose}
+                  >
+                    <BlurView
+                      intensity={35}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width={96} height={42} style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="logsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.90} />
+                          <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.70} />
+                        </LinearGradient>
+                        <LinearGradient id="logsPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="94.5"
+                        height="40.5"
+                        rx="20.25"
+                        fill="url(#logsPillGrad)"
+                        stroke="url(#logsPillBdr)"
+                        strokeWidth="1.5"
+                      />
+                    </Svg>
+                    <View style={[styles.logsSmileyCircle, { backgroundColor: '#FF3B30' }]}>
+                      <Animated.Image
+                        source={require('../../assets/images/custom_rotate_smiley.png')}
+                        style={[
+                          styles.logsSmileyImg,
+                          {
+                            tintColor: '#000000',
+                            transform: [
+                              {
+                                rotate: logsRotateAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: ['180deg', '540deg'],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.zeroLogsText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      0 pals
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              ) : (
+                <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={onClose}>
+                  <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+                </LiquidGlassIconButton>
+              )}
+            </View>
 
             {/* CENTER: VLOG DROPDOWN PILL (EXACT HORIZONTAL CENTER & INLINE WITH ICONS) */}
             <View style={styles.centerHeaderGroup} pointerEvents="box-none">
@@ -178,7 +285,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
             {/* RIGHT: SHARE & CHAT BUTTONS */}
             <View style={styles.headerRightIcons}>
-              <LiquidGlassIconButton idPrefix="btnVlogShare" isDark={isDark} onPress={() => {}}>
+              <LiquidGlassIconButton
+                idPrefix="btnVlogShare"
+                isDark={isDark}
+                onPress={trigger0PalsEffect}
+              >
                 <Ionicons name="share-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
               </LiquidGlassIconButton>
 
@@ -186,7 +297,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 idPrefix="btnVlogChat"
                 isDark={isDark}
                 onPress={() => {
-                  onClose();
+                  setShowChatDrawer(true);
                   if (onOpenChat) onOpenChat();
                 }}
               >
@@ -295,14 +406,83 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 <Text style={[styles.timestampText, { color: isDark ? '#48484A' : '#BEBEC2' }]}>0:00</Text>
               </View>
 
-              {/* BOTTOM RIGHT THREE DOTS ICON AS PER DARK MODE IMAGE */}
-              <View style={styles.cardBottomRightDots} pointerEvents="none">
-                <Text style={[styles.dotsText, { color: isDark ? '#636366' : '#8E8E93' }]}>...</Text>
-              </View>
+              {/* BOTTOM RIGHT: TRIPLE DOTS BUTTON OR TOGGLED EDIT CAPTION BOX */}
+              {showEditCaptionBox ? (
+                <TouchableOpacity
+                  style={styles.cardBottomRightPill}
+                  activeOpacity={0.85}
+                  onPress={() => setShowEditCaptionBox(false)}
+                >
+                  <BlurView
+                    intensity={35}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Svg width={180} height={48} style={StyleSheet.absoluteFill}>
+                    <Defs>
+                      <LinearGradient id="captionPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.88 : 0.95} />
+                        <Stop offset="100%" stopColor={isDark ? '#141416' : '#F2EFF4'} stopOpacity={isDark ? 0.80 : 0.90} />
+                      </LinearGradient>
+                      <LinearGradient id="captionPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width="178.5"
+                      height="46.5"
+                      rx="23.25"
+                      fill="url(#captionPillGrad)"
+                      stroke="url(#captionPillBdr)"
+                      strokeWidth="1.5"
+                    />
+                  </Svg>
+                  <View style={styles.editCaptionInnerRow}>
+                    <View style={styles.aCursorGroup}>
+                      <Text style={[styles.editCaptionIconText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                        A
+                      </Text>
+                      {/* EXACT I-BEAM TEXT SELECTION CURSOR ICON WITH SERIFS */}
+                      <Svg width={7} height={14} viewBox="0 0 7 14" style={{ marginLeft: 2.5 }}>
+                        <Line x1={0.5} y1={0.75} x2={6.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                        <Line x1={3.5} y1={0.75} x2={3.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                        <Line x1={0.5} y1={13.25} x2={6.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                      </Svg>
+                    </View>
+                    <Text style={[styles.editCaptionLabel, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      edit caption
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.cardBottomRightDotsBtn}
+                  activeOpacity={0.7}
+                  onPress={() => setShowEditCaptionBox(true)}
+                >
+                  <Text style={[styles.dotsText, { color: isDark ? '#636366' : '#8E8E93' }]}>...</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
       </DynamicGlowContainer>
+
+      <ChatDrawer
+        visible={showChatDrawer}
+        onClose={() => setShowChatDrawer(false)}
+        onOpenCamera={() => {
+          setShowChatDrawer(false);
+          onClose();
+          if (onOpenCamera) onOpenCamera();
+        }}
+        user={user}
+        isDark={isDark}
+        selectedThemeColor={selectedThemeColor}
+      />
     </Modal>
   );
 };
@@ -463,14 +643,88 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
-  cardBottomRightDots: {
+  cardBottomRightDotsBtn: {
     position: 'absolute',
-    bottom: 14,
+    bottom: 12,
     right: 18,
+    padding: 6,
+    zIndex: 10,
   },
   dotsText: {
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 1.5,
+  },
+  zeroLogsPillBtn: {
+    width: 96,
+    height: 42,
+    borderRadius: 21,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    gap: 6,
+  },
+  logsSmileyCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logsSmileyImg: {
+    width: 23.7,
+    height: 23.7,
+    resizeMode: 'contain',
+  },
+  zeroLogsText: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  cardBottomRightPill: {
+    position: 'absolute',
+    bottom: 2,
+    right: 1.5,
+    width: 176,
+    height: 46,
+    borderRadius: 23,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    zIndex: 10,
+  },
+  editCaptionInnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  aCursorGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 2,
+  },
+  editCaptionIconText: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  textCursorIBar: {
+    width: 2,
+    height: 16,
+    borderRadius: 1,
+    marginLeft: 2.5,
+  },
+  editCaptionLabel: {
+    fontSize: 15,
+    fontWeight: '400',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
 });

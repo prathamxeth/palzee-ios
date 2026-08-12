@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
@@ -41,7 +42,9 @@ export default function PalCameraPreview({
   facing = 'back',
   onToggleFacing,
 }: PalCameraPreviewProps) {
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const screenWidth = windowWidth > 0 ? windowWidth : 390;
+  const screenHeight = windowHeight > 0 ? windowHeight : 844;
   const insets = useSafeAreaInsets();
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -57,6 +60,41 @@ export default function PalCameraPreview({
   const progressAnim = useRef(new Animated.Value(0)).current;
   const rotationAnim = useRef(new Animated.Value(0)).current;
   const idleRotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Low-light iPhone selfie camera glitch & ISO sensor noise animations
+  const lowLightNoiseX = useRef(new Animated.Value(0)).current;
+  const lowLightNoiseY = useRef(new Animated.Value(0)).current;
+  const lowLightFlicker = useRef(new Animated.Value(0.18)).current;
+
+  useEffect(() => {
+    const noiseSequence = Animated.loop(
+      Animated.sequence([
+        Animated.timing(lowLightNoiseX, { toValue: -6, duration: 200, useNativeDriver: true }),
+        Animated.timing(lowLightNoiseX, { toValue: 5, duration: 235, useNativeDriver: true }),
+        Animated.timing(lowLightNoiseY, { toValue: -5, duration: 165, useNativeDriver: true }),
+        Animated.timing(lowLightNoiseX, { toValue: -4, duration: 235, useNativeDriver: true }),
+        Animated.timing(lowLightNoiseY, { toValue: 3, duration: 165, useNativeDriver: true }),
+      ])
+    );
+
+    const flickerSequence = Animated.loop(
+      Animated.sequence([
+        Animated.timing(lowLightFlicker, { toValue: 0.28, duration: 120, useNativeDriver: true }),
+        Animated.timing(lowLightFlicker, { toValue: 0.14, duration: 180, useNativeDriver: true }),
+        Animated.timing(lowLightFlicker, { toValue: 0.24, duration: 150, useNativeDriver: true }),
+        Animated.timing(lowLightFlicker, { toValue: 0.16, duration: 220, useNativeDriver: true }),
+      ])
+    );
+
+    noiseSequence.start();
+    flickerSequence.start();
+
+    return () => {
+      noiseSequence.stop();
+      flickerSequence.stop();
+    };
+  }, []);
+
   const [colorIndex, setColorIndex] = useState(0);
 
   // Live time state
@@ -168,13 +206,16 @@ export default function PalCameraPreview({
   }, [isRecording, countdown]);
 
   const sideMargin = 8.5;
-  let cameraWidth = screenWidth - sideMargin * 2; // Increased camera width by another 0.25dp
+  let cameraWidth = Math.max(screenWidth - sideMargin * 2, 320);
   let cameraHeight = (screenWidth + 15) * (16 / 9) - 5;
 
   const maxCameraHeight = screenHeight - (insets.top + 20) - (insets.bottom + 80);
 
-  if (cameraHeight > maxCameraHeight) {
+  if (cameraHeight > maxCameraHeight && maxCameraHeight > 200) {
     cameraHeight = maxCameraHeight;
+  }
+  if (cameraHeight < 400 || isNaN(cameraHeight)) {
+    cameraHeight = Math.max(screenHeight * 0.68, 480);
   }
 
   // Theme accent color (Full 100% vibrant brightness)
@@ -184,17 +225,16 @@ export default function PalCameraPreview({
   const logoTextColor =
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
-  if (!permission) {
-    return <View style={styles.container} />;
-  }
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission]);
 
-  if (!permission.granted) {
+  if (!permission) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>We need camera permissions to take photos and videos</Text>
-        <TouchableOpacity style={styles.grantBtn} onPress={requestPermission}>
-          <Text style={styles.grantBtnText}>Grant Permission</Text>
-        </TouchableOpacity>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#8E8E93', fontSize: 16 }}>Loading camera...</Text>
       </View>
     );
   }
@@ -328,15 +368,33 @@ export default function PalCameraPreview({
 
         {/* Rounded Inner Clip View for Camera Feed */}
         <View style={styles.innerCameraViewClip}>
-          <CameraView
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            mode="video"
-            flash={flash}
-            enableTorch={flash === 'on'}
-            zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
-          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1A1A1E' }]}>
+            <Image
+              source={require('../../assets/images/vhs_static_dark.png')}
+              style={[StyleSheet.absoluteFill, { opacity: 0.15, resizeMode: 'cover' }]}
+            />
+          </View>
+          {permission?.granted ? (
+            <CameraView
+              ref={cameraRef}
+              style={StyleSheet.absoluteFill}
+              facing={facing}
+              mode="video"
+              flash={flash}
+              enableTorch={flash === 'on'}
+              zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
+            />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+              <Ionicons name="camera-outline" size={42} color={baseAccentColor} style={{ marginBottom: 10 }} />
+              <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>
+                Enable camera permissions to view live preview
+              </Text>
+              <TouchableOpacity style={[styles.grantBtn, { backgroundColor: baseAccentColor }]} onPress={requestPermission}>
+                <Text style={[styles.grantBtnText, { color: '#000000' }]}>Enable Camera</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* ABSOLUTE OVERLAY CONTAINER FOR CAMERA CONTROLS */}
@@ -533,7 +591,9 @@ export default function PalCameraPreview({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   permissionContainer: {
@@ -570,6 +630,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 32,
     overflow: 'hidden',
+    backgroundColor: '#161618',
   },
   statusBarRow: {
     position: 'absolute',

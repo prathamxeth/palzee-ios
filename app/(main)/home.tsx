@@ -28,6 +28,7 @@ import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
+import { ActivityDrawer } from '../../components/home/ActivityDrawer';
 import { VlogSheet } from '../../components/home/VlogSheet';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
@@ -364,6 +365,7 @@ export default function HomeScreen({
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [createModalInitialTab, setCreateModalInitialTab] = useState<'create' | 'join'>('create');
   const [showChatDrawer, setShowChatDrawer] = useState(false);
+  const [showActivityDrawer, setShowActivityDrawer] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -509,7 +511,7 @@ export default function HomeScreen({
               </LiquidGlassIconButton>
 
               {/* 2. NOTIFICATION BELL ICON */}
-              <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowChatDrawer(true)}>
+              <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowActivityDrawer(true)}>
                 <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
@@ -1472,6 +1474,13 @@ export default function HomeScreen({
           initialTab={createModalInitialTab}
         />
 
+        <ActivityDrawer
+          visible={showActivityDrawer}
+          onClose={() => setShowActivityDrawer(false)}
+          isDark={isDark}
+          selectedThemeColor={selectedThemeColor}
+        />
+
         <ChatDrawer
           visible={showChatDrawer}
           onClose={() => setShowChatDrawer(false)}
@@ -1485,12 +1494,13 @@ export default function HomeScreen({
           visible={showExportSheet}
           onClose={() => setShowExportSheet(false)}
           user={user}
+          selectedThemeColor={selectedThemeColor}
           onOpenCamera={() => {
+            setShowChatDrawer(false);
             setShowExportSheet(false);
             setActiveTab('camera');
           }}
           onOpenChat={() => {
-            setShowExportSheet(false);
             setShowChatDrawer(true);
           }}
         />
