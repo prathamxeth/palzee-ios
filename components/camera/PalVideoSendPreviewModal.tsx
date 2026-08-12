@@ -173,18 +173,17 @@ export default function PalVideoSendPreviewModal({
   }, [isVerticalCapture, videoUri]);
 
   useEffect(() => {
-    Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-    }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
     if (visible && videoUri) {
+      Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+
       const timer = setTimeout(() => {
+        videoPlayerRef.current?.setPositionAsync(0).catch(() => {});
         videoPlayerRef.current?.playAsync().catch(() => {});
-      }, 100);
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [visible, videoUri]);
@@ -364,6 +363,11 @@ export default function PalVideoSendPreviewModal({
                         isMuted={isMuted}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
+                        onLoad={() => {
+                          videoPlayerRef.current?.playFromPositionAsync(0).catch(() => {
+                            videoPlayerRef.current?.playAsync().catch(() => {});
+                          });
+                        }}
                         onReadyForDisplay={(event) => {
                           videoPlayerRef.current?.playAsync().catch(() => {});
                           if (event?.naturalSize) {

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   AppState,
   Image,
   ImageBackground,
@@ -14,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   View,
   useColorScheme,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop, Text as SvgText } from 'react-native-svg';
@@ -408,8 +410,24 @@ export default function HomeScreen({
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] ||
     '#310BED';
 
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const screenWidth = windowWidth > 0 ? windowWidth : 390;
+  const screenHeight = windowHeight > 0 ? windowHeight : 844;
+
   const [cameraTimerMode, setCameraTimerMode] = useState<'off' | '3s' | '5s' | 'timelapse' | 'jump_cut'>('off');
   const [cameraFacing, setCameraFacing] = useState<'back' | 'front'>('back');
+
+  const tabTransitionAnim = useRef(new Animated.Value(activeTab === 'camera' ? 0 : 1)).current;
+
+  useEffect(() => {
+    Animated.spring(tabTransitionAnim, {
+      toValue: activeTab === 'camera' ? 0 : 1,
+      damping: 24,
+      stiffness: 220,
+      mass: 0.8,
+      useNativeDriver: true,
+    }).start();
+  }, [activeTab]);
 
   const toggleTimerMode = () => {
     setCameraTimerMode((current) => {
@@ -459,8 +477,58 @@ export default function HomeScreen({
           },
         ]}
       >
-        {/* 1. TOP HEADER: PALZEE LOGO & RIGHT CIRCLE ICONS (ONLY SHOWN IN PALS FEED TAB) */}
-        {activeTab !== 'camera' && (
+        {/* 1. PERSISTENT LIVE CAMERA PREVIEW LAYER (ALWAYS MOUNTED & READY) */}
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              paddingTop: Math.max(insets.top, 8),
+              paddingBottom: Math.max(insets.bottom, 8) + 60,
+              opacity: tabTransitionAnim.interpolate({
+                inputRange: [0, 0.8, 1],
+                outputRange: [1, 0.2, 0],
+              }),
+              transform: [
+                {
+                  scale: tabTransitionAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0.94],
+                  }),
+                },
+              ],
+            },
+          ]}
+          pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
+        >
+          <PalCameraPreview
+            selectedThemeColor={selectedThemeColor}
+            timerMode={cameraTimerMode}
+            onToggleTimerMode={toggleTimerMode}
+            facing={cameraFacing}
+            onToggleFacing={toggleFacing}
+          />
+        </Animated.View>
+
+        {/* 2. PALS MENU / FEED SLIDING OVERLAY LAYER */}
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: tabTransitionAnim.interpolate({
+              inputRange: [0, 0.25, 1],
+              outputRange: [0, 0.5, 1],
+            }),
+            transform: [
+              {
+                translateX: tabTransitionAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [screenWidth, 0],
+                }),
+              },
+            ],
+          }}
+          pointerEvents={activeTab === 'pals' ? 'auto' : 'none'}
+        >
+          {/* TOP HEADER: PALZEE LOGO & RIGHT CIRCLE ICONS */}
           <View style={styles.topHeader}>
             <Text
               style={[
@@ -484,7 +552,7 @@ export default function HomeScreen({
                 <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
-              {/* 3. USER PROFILE PERSON ICON OR CHOSEN PFP (FILLS COMPLETELY IN CIRCLE, ZERO SPACING) */}
+              {/* 3. USER PROFILE PERSON ICON OR CHOSEN PFP */}
               <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
                 {profilePhotoUri ? (
                   <Image
@@ -498,18 +566,7 @@ export default function HomeScreen({
               </LiquidGlassIconButton>
             </View>
           </View>
-        )}
 
-        {/* 2. MAIN FEED OR CAMERA PREVIEW SECTION */}
-        {activeTab === 'camera' ? (
-          <PalCameraPreview
-            selectedThemeColor={selectedThemeColor}
-            timerMode={cameraTimerMode}
-            onToggleTimerMode={toggleTimerMode}
-            facing={cameraFacing}
-            onToggleFacing={toggleFacing}
-          />
-        ) : (
           <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
             <View style={styles.vlogFeedSection}>
               {/* 1. DEFAULT VLOG CARD (MATCHING SETLOG DESIGN EXACTLY) */}
@@ -678,12 +735,20 @@ export default function HomeScreen({
                   <View style={styles.groundLine} />
                 </View>
           </ScrollView>
-        )}
+        </Animated.View>
 
         {/* 3. UNIFIED BOTTOM LIQUID GLASS NAVIGATION BAR */}
         <View style={styles.unifiedBottomRow}>
-          {/* LEFT TIMER BUTTON (CAMERA TAB ONLY) */}
-          {activeTab === 'camera' ? (
+          {/* LEFT TIMER BUTTON (CAMERA TAB ONLY, SMOOTH FADE) */}
+          <Animated.View
+            style={{
+              opacity: tabTransitionAnim.interpolate({
+                inputRange: [0, 0.4, 1],
+                outputRange: [1, 0.2, 0],
+              }),
+            }}
+            pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
+          >
             <LiquidGlassIconButton
               idPrefix="btnCameraTimer"
               isDark={isDark}
@@ -748,9 +813,7 @@ export default function HomeScreen({
                 />
               )}
             </LiquidGlassIconButton>
-          ) : (
-            <View style={{ width: 44 }} />
-          )}
+          </Animated.View>
 
           {/* CENTER TAB SWITCHER (CAMERA / PALS) */}
           <LiquidGlassNavPillBar
@@ -761,8 +824,16 @@ export default function HomeScreen({
             isDark={isDark}
           />
 
-          {/* RIGHT CAMERA ROTATE BUTTON (CAMERA TAB ONLY) */}
-          {activeTab === 'camera' ? (
+          {/* RIGHT CAMERA ROTATE BUTTON (CAMERA TAB ONLY, SMOOTH FADE) */}
+          <Animated.View
+            style={{
+              opacity: tabTransitionAnim.interpolate({
+                inputRange: [0, 0.4, 1],
+                outputRange: [1, 0.2, 0],
+              }),
+            }}
+            pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
+          >
             <LiquidGlassIconButton
               idPrefix="btnCameraFlip"
               isDark={isDark}
@@ -774,9 +845,7 @@ export default function HomeScreen({
                 resizeMode="contain"
               />
             </LiquidGlassIconButton>
-          ) : (
-            <View style={{ width: 44 }} />
-          )}
+          </Animated.View>
         </View>
 
         {/* EXACT LIQUID GLASS ADD DROPDOWN MENU MATCHING ATTACHED REFERENCE IMAGE */}

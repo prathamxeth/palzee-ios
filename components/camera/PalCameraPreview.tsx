@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useColorScheme,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -13,10 +14,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import Svg, { Circle } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
+import { SymbolView } from 'expo-symbols';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
 import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
 
@@ -46,6 +49,9 @@ export default function PalCameraPreview({
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const screenWidth = windowWidth > 0 ? windowWidth : 390;
   const screenHeight = windowHeight > 0 ? windowHeight : 844;
+  const systemScheme = useColorScheme();
+  const isDark = systemScheme === 'dark';
+  const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
   const insets = useSafeAreaInsets();
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -284,12 +290,12 @@ export default function PalCameraPreview({
   };
 
   const getRecordingDurationSec = () => {
-    if (timerMode === 'off') return 2;
+    if (timerMode === 'off') return 3.5;
     if (timerMode === '3s') return 3;
     if (timerMode === '5s') return 5;
-    if (timerMode === 'timelapse') return 6;
-    if (timerMode === 'jump_cut') return 4;
-    return 2;
+    if (timerMode === 'timelapse') return 10;
+    if (timerMode === 'jump_cut') return 10;
+    return 3.5;
   };
 
   const executeRecording = async () => {
@@ -317,6 +323,8 @@ export default function PalCameraPreview({
     } catch (e) {
       setIsRecording(false);
       progressAnim.setValue(0);
+    } finally {
+      setFlash('off');
     }
   };
 
@@ -376,13 +384,7 @@ export default function PalCameraPreview({
 
           {/* Rounded Inner Clip View for Camera Feed */}
           <View style={styles.innerCameraViewClip}>
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1A1A1E' }]}>
-              <Image
-                source={require('../../assets/images/vhs_static_dark.png')}
-                style={[StyleSheet.absoluteFill, { opacity: 0.15, resizeMode: 'cover' }]}
-              />
-            </View>
-            {hasPermission ? (
+            {hasPermission && !previewVideoUri ? (
               <CameraView
                 ref={cameraRef}
                 style={StyleSheet.absoluteFill}
@@ -393,7 +395,7 @@ export default function PalCameraPreview({
                 zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
                 onCameraReady={() => setIsCameraReady(true)}
               />
-            ) : (
+            ) : hasPermission ? null : (
               <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
                 <Ionicons name="camera-outline" size={42} color={baseAccentColor} style={{ marginBottom: 10 }} />
                 <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>
@@ -408,6 +410,19 @@ export default function PalCameraPreview({
 
           {/* ABSOLUTE OVERLAY CONTAINER FOR CAMERA CONTROLS */}
           <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            {/* TOP-LEFT CLOSE BUTTON OVERLAY */}
+            {onClose && (
+              <View style={styles.topLeftCloseBtnWrapper}>
+                <LiquidGlassIconButton
+                  idPrefix="btnCloseCameraPreview"
+                  isDark={isDark}
+                  onPress={onClose}
+                >
+                  <SymbolView name="xmark" size={20} tintColor={iconColor} />
+                </LiquidGlassIconButton>
+              </View>
+            )}
+
             {/* VERTICAL CENTER TIME OVERLAY */}
             {countdown === null && (
               <View style={styles.centerTimeContainer} pointerEvents="none">
@@ -673,7 +688,8 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     fontSize: 90,
-    fontWeight: '900',
+    fontFamily: 'System',
+    fontWeight: '400',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 4 },
@@ -739,5 +755,11 @@ const styles = StyleSheet.create({
     borderRadius: 35.85,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  topLeftCloseBtnWrapper: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    zIndex: 9999,
   },
 });

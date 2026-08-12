@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, useColorScheme, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, Image, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraType } from 'expo-camera';
+import Svg, { Circle, Path, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
@@ -13,6 +14,77 @@ interface CameraScreenProps {
   onCapture?: (uri: string) => void;
   onClose?: () => void;
   selectedThemeColor?: string;
+}
+
+function CameraTimerIcon({ timerMode, iconColor }: { timerMode: TimerMode; iconColor: string }) {
+  if (timerMode === '3s') {
+    return (
+      <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
+        <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
+        <SvgText
+          x="12"
+          y="15.8"
+          fontSize="11"
+          fontWeight="bold"
+          fill={iconColor}
+          textAnchor="middle"
+          fontFamily="System"
+        >
+          3
+        </SvgText>
+      </Svg>
+    );
+  }
+  if (timerMode === '5s') {
+    return (
+      <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
+        <Circle cx="12" cy="12" r="9.5" stroke={iconColor} strokeWidth="1.8" fill="none" />
+        <SvgText
+          x="12"
+          y="15.8"
+          fontSize="11"
+          fontWeight="bold"
+          fill={iconColor}
+          textAnchor="middle"
+          fontFamily="System"
+        >
+          5
+        </SvgText>
+      </Svg>
+    );
+  }
+  if (timerMode === 'timelapse') {
+    return (
+      <Svg width={30} height={30} viewBox="0 0 24 24" style={{ transform: [{ rotate: '90deg' }] }}>
+        {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => {
+          const rad = (deg * Math.PI) / 180;
+          const x1 = 12 + 5.5 * Math.cos(rad);
+          const y1 = 12 + 5.5 * Math.sin(rad);
+          const x2 = 12 + 9 * Math.cos(rad);
+          const y2 = 12 + 9 * Math.sin(rad);
+          return (
+            <Path
+              key={i}
+              d={`M${x1},${y1} L${x2},${y2}`}
+              stroke={iconColor}
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          );
+        })}
+      </Svg>
+    );
+  }
+  if (timerMode === 'jump_cut') {
+    return <Ionicons name="cut-outline" size={22} color={iconColor} style={{ transform: [{ rotate: '90deg' }] }} />;
+  }
+  return (
+    <Image
+      source={require('../../assets/images/custom_timer_icon.png')}
+      style={{ width: 28, height: 28, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
+      resizeMode="contain"
+    />
+  );
 }
 
 export default function CameraScreen({ onCapture, onClose, selectedThemeColor = 'cyan' }: CameraScreenProps) {
@@ -62,33 +134,20 @@ export default function CameraScreen({ onCapture, onClose, selectedThemeColor = 
             facing={facing}
             onToggleFacing={toggleFacing}
           />
-
-          {/* TOP-LEFT CLOSE CROSS BUTTON OVERLAY (INSIDE CAMERA FRAME MATCHING REFERENCE IMAGE & APP GLASS ICON SPECS) */}
-          <View style={styles.topLeftCloseBtnWrapper}>
-            <LiquidGlassIconButton
-              idPrefix="btnCloseCameraFrame"
-              isDark={isDark}
-              onPress={onClose}
-            >
-              <Ionicons name="close" size={24} color={iconColor} />
-            </LiquidGlassIconButton>
-          </View>
         </View>
 
-        {/* BOTTOM CONTROLS ROW BELOW CAMERA FRAME MATCHING APP LIQUID GLASS ICON SPECS */}
+        {/* BOTTOM CONTROLS ROW: TIMER & FLIP ICONS CENTERED AND EXACTLY 20DP APART FROM CENTER */}
         <View style={[styles.bottomControlsRow, { width: cameraWidth }]}>
-          {/* LEFT: TIMER BUTTON */}
+          {/* LEFT OF CENTER (10DP LEFT): TIMER BUTTON */}
           <LiquidGlassIconButton
             idPrefix="btnCameraTimer"
             isDark={isDark}
             onPress={toggleTimerMode}
           >
-            <Text style={[styles.bottomControlTimerText, { color: iconColor }]}>
-              {timerMode === '3s' ? '3' : timerMode === '5s' ? '5' : timerMode === 'timelapse' ? 'T' : timerMode === 'jump_cut' ? 'J' : '5'}
-            </Text>
+            <CameraTimerIcon timerMode={timerMode} iconColor={iconColor} />
           </LiquidGlassIconButton>
 
-          {/* RIGHT: FLIP CAMERA VIEW BUTTON */}
+          {/* RIGHT OF CENTER (10DP RIGHT): FLIP CAMERA VIEW BUTTON */}
           <LiquidGlassIconButton
             idPrefix="btnCameraFlip"
             isDark={isDark}
@@ -118,22 +177,11 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
   },
-  topLeftCloseBtnWrapper: {
-    position: 'absolute',
-    top: 24,
-    left: 24,
-    zIndex: 99999,
-  },
   bottomControlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingLeft: 38,
-    paddingRight: 18,
+    justifyContent: 'center',
+    gap: 45,
     paddingVertical: 12,
-  },
-  bottomControlTimerText: {
-    fontSize: 18,
-    fontWeight: '800',
   },
 });
