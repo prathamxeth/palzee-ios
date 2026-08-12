@@ -670,7 +670,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         selectedThemeColor={selectedThemeColor}
       />
 
-      {/* EDIT CAPTION SLIDE-UP PREVIEW MODAL (MATCHING IMAGE 2 REFERENCE EXACTLY) */}
+      {/* EDIT CAPTION SLIDE-UP PREVIEW MODAL (MATCHING REFERENCE IMAGE EXACTLY) */}
       <Modal
         visible={isEditingCaption}
         animationType="slide"
@@ -680,44 +680,50 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
           <View style={[styles.container, { backgroundColor: '#000000' }]}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-              {/* TOP HEADER: CLOSE (LEFT) | TIMESTAMP (CENTER) | PINK SEND/SAVE ARROW BUTTON (RIGHT) */}
-              <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 12), paddingHorizontal: 16 }]}>
-                <TouchableOpacity
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
-                    justifyContent: 'center',
+              {/* TOP HEADER ROW: LIQUID GLASS CLOSE (X) (LEFT) | LIQUID GLASS SEND ARROW WITH SCREEN EDGE COLOR (RIGHT) */}
+              <View
+                style={[
+                  styles.headerBar,
+                  {
+                    paddingTop: Math.max(insets.top, 12),
+                    paddingHorizontal: 16,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                  }}
+                  },
+                ]}
+              >
+                <LiquidGlassIconButton
+                  idPrefix="editCloseBtn"
+                  isDark={isDark}
                   onPress={() => setIsEditingCaption(false)}
                 >
-                  <Ionicons name="close" size={26} color={isDark ? '#FFFFFF' : '#000000'} />
-                </TouchableOpacity>
-
-                <Text style={{ fontSize: 22, fontFamily: Fonts.DelaGothicOne, color: isDark ? '#FFFFFF' : '#000000' }}>
-                  {timestamp || '19:00'}
-                </Text>
+                  <Ionicons name="close" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+                </LiquidGlassIconButton>
 
                 <TouchableOpacity
                   style={{
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    backgroundColor: '#FA2D65',
+                    backgroundColor: edgeColor,
                     justifyContent: 'center',
                     alignItems: 'center',
+                    shadowColor: '#000000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 2,
+                    elevation: 1,
                   }}
                   activeOpacity={0.8}
                   onPress={handleSaveCaption}
                 >
-                  <Ionicons name="arrow-up" size={24} color="#FFFFFF" />
+                  <Ionicons name="arrow-up" size={24} color="#FFFFFF" strokeWidth={2.5} />
                 </TouchableOpacity>
               </View>
 
-              {/* CENTER 16:9 PREVIEW CARD WITH LIVE CAPTION INPUT */}
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              {/* CENTER 16:9 PREVIEW VIDEO CARD (SLIGHTLY BELOW TOP BUTTONS) */}
+              <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', paddingTop: 8 }}>
                 <View
                   style={{
                     width: cardWidth,
@@ -731,7 +737,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   {!!activeVideoUri ? (
                     <Video
                       source={{ uri: activeVideoUri }}
-                      style={isVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                      style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                       resizeMode={ResizeMode.COVER}
                       shouldPlay={isEditingCaption}
                       isLooping
@@ -747,21 +753,42 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   )}
                   <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.2)' }]} pointerEvents="none" />
 
-                  {/* CENTER CAPTION OVERLAY INPUT */}
+                  {/* TIME TEXT ROUNDED TO NEAREST HOUR SLIGHTLY ABOVE CENTER + BLINKING CURSOR CAPTION INPUT DIRECTLY BELOW IT */}
                   <View
                     style={{
                       position: 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      left: 18,
-                      right: 18,
-                      flexDirection: 'row',
+                      top: '50%',
+                      left: 0,
+                      right: 0,
+                      transform: [{ translateY: -38 }],
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                      justifyContent: 'center',
+                      zIndex: 20,
                     }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontSize: 24, fontFamily: Fonts.SystemRoundedBold }}>
-                      vlog
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        fontFamily: Fonts.DelaGothicOne,
+                        color: '#FFFFFF',
+                        textAlign: 'center',
+                        textShadowColor: 'rgba(0, 0, 0, 0.4)',
+                        textShadowOffset: { width: 0, height: 2 },
+                        textShadowRadius: 4,
+                      }}
+                    >
+                      {(() => {
+                        const t = timestamp || '19:00';
+                        const parts = t.split(':');
+                        if (parts.length === 2) {
+                          let h = parseInt(parts[0], 10);
+                          const m = parseInt(parts[1], 10);
+                          if (isNaN(h)) h = 19;
+                          if (!isNaN(m) && m >= 30) h = (h + 1) % 24;
+                          return `${String(h).padStart(2, '0')}:00`;
+                        }
+                        return t;
+                      })()}
                     </Text>
 
                     <TextInput
@@ -771,21 +798,24 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         if (onUpdateCaption) onUpdateCaption(t);
                       }}
                       autoFocus={true}
-                      placeholder="Type caption..."
-                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                      blurOnSubmit={false}
+                      placeholder=""
+                      placeholderTextColor="transparent"
+                      selectionColor={edgeColor}
+                      cursorColor={edgeColor}
                       style={{
                         color: '#FFFFFF',
                         fontSize: 18,
                         fontFamily: Fonts.SystemRoundedSemibold,
                         textAlign: 'center',
-                        minWidth: 100,
+                        minWidth: 120,
                         paddingHorizontal: 8,
+                        marginTop: 4,
+                        textShadowColor: 'rgba(0, 0, 0, 0.4)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 3,
                       }}
                     />
-
-                    <Text style={{ color: '#FFFFFF', fontSize: 17, fontFamily: Fonts.SystemRoundedSemibold }}>
-                      {timestamp || '19:00'}
-                    </Text>
                   </View>
                 </View>
               </View>
