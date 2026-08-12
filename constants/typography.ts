@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 export const Fonts = {
   Bricolage: 'bricolage_grotesque_variable',
   CourierPrime: 'courier_prime',
@@ -11,6 +13,10 @@ export const Fonts = {
   RobotoSlab: 'roboto_slab_regular',
   SpaceMono: 'space_mono_regular',
   Unpack: 'unpack',
+  SystemRounded: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Regular' : 'sans-serif-rounded',
+  SystemRoundedBold: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Bold' : 'sans-serif-rounded',
+  SystemRoundedMedium: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Medium' : 'sans-serif-rounded',
+  SystemRoundedSemibold: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Semibold' : 'sans-serif-rounded',
 };
 
 export const Typography = {

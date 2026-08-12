@@ -173,7 +173,7 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
   );
 };
 
-const SystemFont = 'System';
+const SystemFont = Fonts.SystemRounded;
 
 const styles = StyleSheet.create({
   overlay: {

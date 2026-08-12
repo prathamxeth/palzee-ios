@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   cameraDotWrapper: {
     alignItems: 'center',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#555555',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
   },
   cardMiddleRow: {
     flexDirection: 'row',
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#4A4A4A',
-    fontFamily: 'SF Pro Rounded',
+    fontFamily: Fonts.SystemRoundedBold,
   },
   tapToCaptureBtn: {
     height: 40,
@@ -316,13 +316,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   timestampText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#8E8E93',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
   },
   cardBottomRow: {
     alignItems: 'flex-end',
@@ -345,13 +345,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#3A3A3C',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedBold,
   },
   editCaptionText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#1C1C1E',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedMedium,
   },
 });
 

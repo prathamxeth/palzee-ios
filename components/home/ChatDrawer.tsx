@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import { Colors } from '../../constants/colors';
+import { Fonts } from '../../constants/typography';
 import { User } from '../../types';
 
 interface ChatDrawerProps {
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
   vlogPillText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   bodyContainer: {
     flex: 1,
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
   textInputStyle: {
     flex: 1,
     fontSize: 17,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRounded,
     paddingVertical: 0,
     paddingRight: 8,
   },

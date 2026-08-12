@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     fontSize: 90,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRounded,
     fontWeight: '400',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -720,7 +720,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedSemibold,
     transform: [{ rotate: '90deg' }],
   },
   progressBarGapCentered: {

@@ -3,6 +3,7 @@ import {
   Modal,
   View,
   Text,
+  Image,
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
@@ -14,6 +15,7 @@ import {
   LogBox,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -89,12 +91,14 @@ const LiquidGlassCircleButton = ({
   idPrefix = 'circle',
   isDark = false,
   size = 44,
+  accentColor,
 }: {
   onPress: () => void;
   children: React.ReactNode;
   idPrefix?: string;
   isDark?: boolean;
   size?: number;
+  accentColor?: string;
 }) => (
   <TouchableOpacity
     style={[styles.liquidCircleBtn, { width: size, height: size, borderRadius: size / 2 }]}
@@ -107,30 +111,30 @@ const LiquidGlassCircleButton = ({
         <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
-            stopColor={isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.75 : 0.88}
+            stopColor={accentColor ? accentColor : isDark ? '#28282E' : '#FFFFFF'}
+            stopOpacity={accentColor ? 0.72 : isDark ? 0.75 : 0.88}
           />
           <Stop
             offset="50%"
-            stopColor={isDark ? '#18181B' : '#F7F6F3'}
-            stopOpacity={isDark ? 0.6 : 0.75}
+            stopColor={accentColor ? accentColor : isDark ? '#18181B' : '#F7F6F3'}
+            stopOpacity={accentColor ? 0.55 : isDark ? 0.6 : 0.75}
           />
           <Stop
             offset="100%"
-            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.85 : 0.65}
+            stopColor={accentColor ? accentColor : isDark ? '#0E0E10' : '#EAE8E3'}
+            stopOpacity={accentColor ? 0.82 : isDark ? 0.85 : 0.65}
           />
         </LinearGradient>
         <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.35 : 0.95}
+            stopOpacity={isDark ? 0.45 : 0.95}
           />
           <Stop
             offset="100%"
             stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.08 : 0.08}
+            stopOpacity={isDark ? 0.12 : 0.12}
           />
         </LinearGradient>
       </Defs>
@@ -162,11 +166,23 @@ export default function PalVideoSendPreviewModal({
   const [isMuted, setIsMuted] = useState(false);
   const [captionText, setCaptionText] = useState('');
   const [isVertical, setIsVertical] = useState(isVerticalCapture);
+  const [selectedTargets, setSelectedTargets] = useState<string[]>(['vlog']);
   const textInputRef = useRef<TextInput>(null);
   const videoPlayerRef = useRef<Video>(null);
   const slideAnim = useRef(new Animated.Value(screenWidth * 0.85)).current;
   const scaleAnim = useRef(new Animated.Value(0.96)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleTarget = (id: string) => {
+    if (selectedTargets.includes(id)) {
+      setSelectedTargets(selectedTargets.filter((t) => t !== id));
+    } else {
+      setSelectedTargets([...selectedTargets, id]);
+    }
+  };
+
+  const isSendActive = selectedTargets.length > 0;
+  const primaryTarget = selectedTargets.includes('vlog') ? 'vlog' : selectedTargets[0] || 'send';
 
   useEffect(() => {
     setIsVertical(isVerticalCapture);
@@ -180,6 +196,9 @@ export default function PalVideoSendPreviewModal({
         staysActiveInBackground: false,
       }).catch(() => {});
     }
+    return () => {
+      videoPlayerRef.current?.unloadAsync().catch(() => {});
+    };
   }, [visible, videoUri]);
 
   useEffect(() => {
@@ -216,6 +235,7 @@ export default function PalVideoSendPreviewModal({
   }, [visible]);
 
   const handleClose = () => {
+    videoPlayerRef.current?.unloadAsync().catch(() => {});
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: screenWidth * 0.85,
@@ -241,6 +261,7 @@ export default function PalVideoSendPreviewModal({
   };
 
   const handleSend = () => {
+    videoPlayerRef.current?.unloadAsync().catch(() => {});
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: screenWidth * 0.85,
@@ -310,7 +331,7 @@ export default function PalVideoSendPreviewModal({
       supportedOrientations={['portrait']}
       onRequestClose={handleClose}
     >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={false}>
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
             behavior="padding"
@@ -318,19 +339,34 @@ export default function PalVideoSendPreviewModal({
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: 50, paddingBottom: 20 }}>
-                {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X) & ARROW UP (↑) */}
+                {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
                   <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
                     <Ionicons name="close" size={24} color={iconColor} />
                   </LiquidGlassCircleButton>
 
-                  {/* Title Text "send" */}
-                  <Text style={[styles.headerTitle, { color: titleColor }]}>send</Text>
+                  {/* Header Title Text: "vlog >" when vlog box is clicked/selected, "send" when unselected */}
+                  <Text style={[styles.headerTitle, { color: titleColor }]}>
+                    {selectedTargets.includes('vlog') ? 'vlog >' : 'send'}
+                  </Text>
 
-                  {/* Exact Home Screen Liquid Glass Send Arrow Button (↑) */}
-                  <LiquidGlassCircleButton onPress={handleSend} idPrefix="sendBtn" isDark={isDark}>
-                    <Ionicons name="arrow-up" size={24} color={iconColor} />
+                  {/* Top Right Liquid Glass Send Arrow Button (Liquid Screen Edge Accent Color when Selected, Unfilled Liquid Glass when Unselected) */}
+                  <LiquidGlassCircleButton
+                    idPrefix={isSendActive ? 'sendBtnActive' : 'sendBtnInactive'}
+                    isDark={isDark}
+                    accentColor={isSendActive ? baseAccentColor : undefined}
+                    onPress={() => {
+                      if (isSendActive) {
+                        handleSend();
+                      }
+                    }}
+                  >
+                    <Ionicons
+                      name="arrow-up"
+                      size={24}
+                      color={isSendActive ? '#FFFFFF' : isDark ? '#8E8E93' : '#636366'}
+                    />
                   </LiquidGlassCircleButton>
                 </View>
 
@@ -345,7 +381,7 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Dynamic Video Player: Rotates 270° for Vertical Captures; Unrotated for Horizontal Captures */}
+                    {/* Dynamic Video Player */}
                     {visible && !!videoUri && (
                       <Video
                         key={videoUri}
@@ -411,9 +447,156 @@ export default function PalVideoSendPreviewModal({
                   </View>
                 </View>
 
-                {/* 3. CLEAN "send to:" SUBTITLE (NO INPUT OR CURSOR BELOW "send to:", ONLY BELOW TIME TEXT) */}
+                {/* 3. "send to:" SUBTITLE & RECIPIENT TARGET BOXES (VLOG BOX DEFAULT SELECTED) */}
                 <View style={styles.captionSection}>
                   <Text style={[styles.sendToLabel, { color: sendToColor }]}>send to:</Text>
+                </View>
+
+                <View style={{ marginTop: 12 }}>
+                  {/* VLOG BOX (DEFAULT SELECTED RECIPIENT, FILLS WITH RICH LIGHT GREY WHEN CLICKED/SELECTED) */}
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => toggleTarget('vlog')}
+                    style={[
+                      styles.targetBoxContainer,
+                      {
+                        backgroundColor: selectedTargets.includes('vlog')
+                          ? isDark
+                            ? 'rgba(255, 255, 255, 0.12)'
+                            : '#E8E8EC'
+                          : isDark
+                          ? 'rgba(255, 255, 255, 0.06)'
+                          : 'rgba(0, 0, 0, 0.035)',
+                      },
+                    ]}
+                  >
+                    {/* Left Selection Circle: Solid Screen Edge Accent when Selected, Hollow Outline when Unselected */}
+                    <View style={styles.leftCircleWrapper}>
+                      {selectedTargets.includes('vlog') ? (
+                        <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
+                          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                        </View>
+                      ) : (
+                        <View
+                          style={[
+                            styles.unselectedCircleHollow,
+                            { borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.18)' },
+                          ]}
+                        />
+                      )}
+                    </View>
+
+                    {/* Middle Title & User Handle */}
+                    <View style={styles.targetTextWrapper}>
+                      <Text style={[styles.targetTitle, { color: titleColor }]}>vlog</Text>
+                      <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
+                        apple_user
+                      </Text>
+                    </View>
+
+                    {/* Right Smiley Icon with Light Grey Circular Border Badge as per reference image */}
+                    <View
+                      style={[
+                        styles.smileyBadgeContainer,
+                        { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
+                      ]}
+                    >
+                      <Image
+                        source={require('../../assets/images/custom_rotate_smiley.png')}
+                        style={{ width: 22, height: 22, tintColor: iconColor }}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* GROUP RECIPIENT BOX (The Boys / Fuck boys) */}
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => toggleTarget('the_boys')}
+                    style={[
+                      styles.targetBoxContainer,
+                      {
+                        backgroundColor: selectedTargets.includes('the_boys')
+                          ? isDark
+                            ? 'rgba(255, 255, 255, 0.12)'
+                            : '#E8E8EC'
+                          : isDark
+                          ? 'rgba(255, 255, 255, 0.06)'
+                          : 'rgba(0, 0, 0, 0.035)',
+                      },
+                    ]}
+                  >
+                    {/* Left Selection Circle */}
+                    <View style={styles.leftCircleWrapper}>
+                      {selectedTargets.includes('the_boys') ? (
+                        <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
+                          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                        </View>
+                      ) : (
+                        <View
+                          style={[
+                            styles.unselectedCircleHollow,
+                            { borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.18)' },
+                          ]}
+                        />
+                      )}
+                    </View>
+
+                    {/* Middle Title & Subtitle */}
+                    <View style={styles.targetTextWrapper}>
+                      <Text style={[styles.targetTitle, { color: titleColor }]}>
+                        {isDark ? 'Fuck boys' : 'The Boys'}
+                      </Text>
+                      <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
+                        Adarsh, Shoolin...
+                      </Text>
+                    </View>
+
+                    {/* Right Member Icons with Light Grey Circular Border Badges */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      {isDark ? (
+                        <>
+                          {[0, 1, 2, 3].map((i) => (
+                            <View
+                              key={i}
+                              style={[
+                                styles.smallSmileyBadgeContainer,
+                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
+                              ]}
+                            >
+                              <Image
+                                source={require('../../assets/images/custom_rotate_smiley.png')}
+                                style={{ width: 17, height: 17, tintColor: iconColor }}
+                                resizeMode="contain"
+                              />
+                            </View>
+                          ))}
+                          <Image
+                            source={require('../../assets/images/camera_list_icon.png')}
+                            style={{ width: 18, height: 18, tintColor: iconColor, marginLeft: 2 }}
+                            resizeMode="contain"
+                          />
+                        </>
+                      ) : (
+                        [0, 1, 2, 3, 4].map((i) => (
+                          <View
+                            key={i}
+                            style={[
+                              styles.smallSmileyBadgeContainer,
+                              { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
+                            ]}
+                          >
+                            <Image
+                              key={i}
+                              source={require('../../assets/images/custom_rotate_smiley.png')}
+                              style={{ width: 17, height: 17, tintColor: iconColor }}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        ))
+                      )}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -469,6 +652,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.65)',
   },
   headerTitle: {
+    fontFamily: Fonts.SystemRoundedBold,
     fontSize: 18,
     fontWeight: '700',
     color: '#000000',
@@ -530,8 +714,75 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sendToLabel: {
+    fontFamily: Fonts.SystemRoundedSemibold,
     fontSize: 18,
     fontWeight: '600',
     color: '#909090',
+  },
+  sendArrowBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  targetBoxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 24,
+    marginBottom: 10,
+    minHeight: 70,
+  },
+  leftCircleWrapper: {
+    marginRight: 14,
+  },
+  selectedCircleFilled: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FF2A85',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unselectedCircleHollow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2.5,
+    backgroundColor: 'transparent',
+  },
+  targetTextWrapper: {
+    flex: 1,
+  },
+  targetTitle: {
+    fontFamily: Fonts.SystemRoundedBold,
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  targetSubtitle: {
+    fontFamily: Fonts.SystemRoundedMedium,
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  smileyBadgeContainer: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  smallSmileyBadgeContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
 });

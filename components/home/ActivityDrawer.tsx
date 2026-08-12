@@ -12,6 +12,7 @@ import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { Fonts } from '../../constants/typography';
 
 interface ActivityDrawerProps {
   visible: boolean;
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     letterSpacing: -0.3,
-    fontFamily: 'System',
+    fontFamily: Fonts.SystemRoundedBold,
     textAlign: 'center',
   },
   closeButtonPill: {
