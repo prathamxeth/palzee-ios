@@ -82,7 +82,7 @@ interface PalVideoSendPreviewModalProps {
   selectedThemeColor?: string;
   isVerticalCapture?: boolean;
   onRetake: () => void;
-  onSend: (uri: string, caption?: string) => void;
+  onSend: (uri: string, caption?: string, isMuted?: boolean) => void;
 }
 
 const LiquidGlassCircleButton = ({
@@ -283,7 +283,7 @@ export default function PalVideoSendPreviewModal({
       }),
     ]).start(() => {
       if (videoUri) {
-        onSend(videoUri, captionText);
+        onSend(videoUri, captionText, isMuted);
       }
     });
   };

@@ -29,7 +29,7 @@ type TimerMode = 'off' | '3s' | '5s' | 'timelapse' | 'jump_cut';
 
 interface PalCameraPreviewProps {
   selectedThemeColor?: string;
-  onCaptureSuccess?: (uri: string, caption?: string) => void;
+  onCaptureSuccess?: (uri: string, caption?: string, isMuted?: boolean) => void;
   onClose?: () => void;
   timerMode?: TimerMode;
   onToggleTimerMode?: () => void;
@@ -618,12 +618,12 @@ export default function PalCameraPreview({
           setIsRecording(false);
           progressAnim.setValue(0);
         }}
-        onSend={(uri, caption) => {
+        onSend={(uri, caption, isMuted) => {
           setPreviewVideoUri(null);
           setIsRecording(false);
           progressAnim.setValue(0);
           if (onCaptureSuccess) {
-            onCaptureSuccess(uri, caption);
+            onCaptureSuccess(uri, caption, isMuted);
           }
         }}
       />

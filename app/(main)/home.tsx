@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   AppState,
+  Dimensions,
+  Easing,
   Image,
   ImageBackground,
   Keyboard,
@@ -31,6 +33,8 @@ import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { ActivityDrawer } from '../../components/home/ActivityDrawer';
 import { VlogSheet } from '../../components/home/VlogSheet';
+import { Video, ResizeMode } from 'expo-av';
+import { CRTStaticCard } from '../../components/home/CRTStaticCard';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
@@ -419,6 +423,20 @@ export default function HomeScreen({
 
   const tabTransitionAnim = useRef(new Animated.Value(activeTab === 'camera' ? 0 : 1)).current;
 
+  // DEVICE ROTATION / TILT SENSOR: ROTATING SIDEWAYS OPENS CAMERA, UPRIGHT SWITCHES TO PALS
+  useEffect(() => {
+    const handleOrientationChange = ({ window }: { window: { width: number; height: number } }) => {
+      if (window.width > window.height) {
+        setActiveTab('camera');
+      } else {
+        setActiveTab('pals');
+      }
+    };
+
+    const subscription = Dimensions.addEventListener('change', handleOrientationChange);
+    return () => subscription?.remove();
+  }, []);
+
   useEffect(() => {
     Animated.spring(tabTransitionAnim, {
       toValue: activeTab === 'camera' ? 0 : 1,
@@ -443,6 +461,43 @@ export default function HomeScreen({
     setCameraFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
+  const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>>([]);
+  const [activeVlogIndex, setActiveVlogIndex] = useState(0);
+
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  const handleVideoSent = (uri: string, caption?: string, isMuted?: boolean) => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const timestamp = `${hours}:${minutes}`;
+
+    const newLog = {
+      id: Date.now().toString(),
+      uri,
+      caption: caption || '',
+      timestamp,
+      isMuted: isMuted ?? false,
+    };
+
+    setVlogList((prev) => [newLog, ...prev]);
+    setActiveVlogIndex(0);
+    setShowCamera(false);
+  };
+
   if (showGroupsView) {
     return (
       <PalGroupGridScreen
@@ -458,7 +513,7 @@ export default function HomeScreen({
     return (
       <CameraScreen
         selectedThemeColor={selectedThemeColor}
-        onCapture={() => setShowCamera(false)}
+        onCapture={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
         onClose={() => setShowCamera(false)}
       />
     );
@@ -472,8 +527,8 @@ export default function HomeScreen({
           styles.container,
           {
             backgroundColor: screenBg,
-            paddingTop: activeTab === 'camera' ? Math.max(insets.top, 8) : Math.max(insets.top, 20) + 8,
-            paddingBottom: Math.max(insets.bottom, 8) + 4,
+            paddingTop: activeTab === 'camera' ? Math.max(insets.top, 8) : insets.top,
+            paddingBottom: 0,
           },
         ]}
       >
@@ -567,32 +622,171 @@ export default function HomeScreen({
             </View>
           </View>
 
-          <ScrollView style={styles.scrollBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={StyleSheet.absoluteFill} contentContainerStyle={{ paddingTop: 60, paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
             <View style={styles.vlogFeedSection}>
-              {/* 1. DEFAULT VLOG CARD (MATCHING SETLOG DESIGN EXACTLY) */}
-              <TouchableOpacity
-                style={[
-                  styles.vlogCard,
-                  { backgroundColor: isDark ? '#161616' : '#EFEFEF' },
-                ]}
-                activeOpacity={0.9}
-                onPress={() => setShowExportSheet(true)}
-              >
-                <View style={styles.vlogTextSection}>
-                  <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                    vlog
-                  </Text>
-                  <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
-                    your space. Each day runs 4am{'\n'}to 4am.
-                  </Text>
-                </View>
+              {/* ROTATE TO CAPTURE HEADER ROW (DISPLAYED BY DEFAULT ON HOMESCREEN ALWAYS ABOVE VLOG BOX) */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -5, marginBottom: 6, paddingLeft: 4 }}>
+                <Animated.View
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    transform: [
+                      {
+                        rotate: rotateAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <Image
+                    source={require('../../assets/images/custom_rotate_smiley.png')}
+                    style={{ width: 15.5, height: 15.5, tintColor: '#000000' }}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
+                <Text style={{ fontSize: 16, color: isDark ? '#8E8E93' : '#636366', fontFamily: Fonts.SystemRoundedMedium }}>
+                  rotate to capture
+                </Text>
+              </View>
 
-                <Image
-                  source={require('../../assets/images/dm_star_4.png')}
-                  style={styles.starDoodleImage}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
+              {/* IF VIDEO IS SENT TO VLOG: ENLARGED 16:9 VLOG CARD */}
+              {vlogList.length > 0 && !!vlogList[activeVlogIndex]?.uri ? (
+                <View style={{ width: '100%', marginBottom: 16 }}>
+                  {/* SCALED UP 16:9 VLOG CARD */}
+                  <TouchableOpacity
+                    style={{
+                      width: screenWidth - 20,
+                      height: (screenWidth - 20) * (9 / 16),
+                      borderRadius: 24,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      backgroundColor: '#000000',
+                      alignSelf: 'center',
+                    }}
+                    activeOpacity={0.9}
+                    onPress={() => setShowExportSheet(true)}
+                  >
+                    <Video
+                      source={{ uri: vlogList[activeVlogIndex].uri }}
+                      style={{
+                        position: 'absolute',
+                        top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                        left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                        width: (screenWidth - 20) * (9 / 16),
+                        height: screenWidth - 20,
+                        transform: [{ rotate: '270deg' }],
+                      }}
+                      resizeMode={ResizeMode.COVER}
+                      shouldPlay={activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
+                      isLooping
+                      isMuted={!(activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[activeVlogIndex]?.isMuted ?? false)}
+                    />
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
+
+                    {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: 20,
+                        right: 20,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                      pointerEvents="none"
+                    >
+                      <Text style={{ color: '#FFFFFF', fontSize: 24, fontFamily: Fonts.SystemRoundedBold }}>
+                        vlog
+                      </Text>
+                      <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
+                        {vlogList[activeVlogIndex]?.caption || 'Hi'}
+                      </Text>
+                      <Text style={{ color: '#FFFFFF', fontSize: 17, fontFamily: Fonts.SystemRoundedSemibold }}>
+                        {vlogList[activeVlogIndex]?.timestamp || '18:33'}
+                      </Text>
+                    </View>
+
+                    {/* BOTTOM CENTER: HORIZONTAL PROGRESS BARS */}
+                    <View
+                      style={{
+                        position: 'absolute',
+                        bottom: 14,
+                        left: 0,
+                        right: 0,
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                      pointerEvents="none"
+                    >
+                      {vlogList.map((_, index) => (
+                        <View
+                          key={index}
+                          style={{
+                            width: 30,
+                            height: 3.5,
+                            borderRadius: 2,
+                            backgroundColor: index === activeVlogIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.40)',
+                          }}
+                        />
+                      ))}
+                    </View>
+
+                    {/* BOTTOM RIGHT: EXPORT BUTTON */}
+                    <TouchableOpacity
+                      style={{
+                        position: 'absolute',
+                        bottom: 12,
+                        right: 14,
+                        padding: 6,
+                      }}
+                      activeOpacity={0.7}
+                      onPress={() => setShowExportSheet(true)}
+                    >
+                      <Ionicons name="share-outline" size={22} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                /* DEFAULT STAR-DOODLE VLOG CARD (WHEN NO VIDEO SENT) */
+                <TouchableOpacity
+                  style={[
+                    styles.vlogCard,
+                    {
+                      backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    },
+                  ]}
+                  activeOpacity={0.9}
+                  onPress={() => setShowExportSheet(true)}
+                >
+                  <View style={styles.vlogTextSection}>
+                    <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      vlog
+                    </Text>
+                    <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
+                      your space. Each day runs 4am{'\n'}to 4am.
+                    </Text>
+                  </View>
+
+                  <Image
+                    source={require('../../assets/images/dm_star_4.png')}
+                    style={styles.starDoodleImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
 
               {/* 2. ADDITIONAL PAL ROOM CARDS IF ANY */}
               {userPalRooms.map((room) => (
@@ -618,122 +812,126 @@ export default function HomeScreen({
                 </TouchableOpacity>
               ))}
             </View>
-                {/* INSTRUCTION STEPS */}
-                <View style={styles.instructionsContainer}>
-                  <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
-                    your day, side by side.
-                  </Text>
-
-                  {/* STEP 1 */}
-                  <View style={styles.stepRow}>
-                    <View
-                      style={[
-                        styles.stepBadge,
-                        { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.stepBadgeText,
-                          { color: isDark ? '#000000' : '#FFFFFF' },
-                        ]}
-                      >
-                        1
-                      </Text>
-                    </View>
-                    <View style={styles.stepContent}>
-                      <Text style={[styles.stepTitle, { color: mainTextColor }]}>
-                        tap <Text style={styles.plusSymbolText}>⊕</Text> to start
+                {/* INSTRUCTION STEPS, DAY RESET BLOB & DOODLE FOOTER (DISAPPEARS WHEN VIDEO SENT TO VLOG) */}
+                {vlogList.length === 0 && (
+                  <>
+                    <View style={styles.instructionsContainer}>
+                      <Text style={[styles.sideBySideHeader, { color: mainTextColor }]}>
+                        your day, side by side.
                       </Text>
 
-                      <View style={styles.pillActionRow}>
-                        <LiquidGlassPillButton
-                          idPrefix="pillCreate"
-                          text="create pal"
-                          isDark={isDark}
-                          textColor={mainTextColor}
-                          onPress={() => setShowCreateModal(true)}
-                        />
-                        <Text style={[styles.actionHintText, { color: mainTextColor }]}>
-                          (new group)
-                        </Text>
+                      {/* STEP 1 */}
+                      <View style={styles.stepRow}>
+                        <View
+                          style={[
+                            styles.stepBadge,
+                            { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.stepBadgeText,
+                              { color: isDark ? '#000000' : '#FFFFFF' },
+                            ]}
+                          >
+                            1
+                          </Text>
+                        </View>
+                        <View style={styles.stepContent}>
+                          <Text style={[styles.stepTitle, { color: mainTextColor }]}>
+                            tap <Text style={styles.plusSymbolText}>⊕</Text> to start
+                          </Text>
+
+                          <View style={styles.pillActionRow}>
+                            <LiquidGlassPillButton
+                              idPrefix="pillCreate"
+                              text="create pal"
+                              isDark={isDark}
+                              textColor={mainTextColor}
+                              onPress={() => setShowCreateModal(true)}
+                            />
+                            <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                              (new group)
+                            </Text>
+                          </View>
+
+                          <View style={[styles.pillActionRow, { marginTop: 8 }]}>
+                            <LiquidGlassPillButton
+                              idPrefix="pillJoin"
+                              text="join pal"
+                              isDark={isDark}
+                              textColor={mainTextColor}
+                              onPress={() => setShowCreateModal(true)}
+                            />
+                            <Text style={[styles.actionHintText, { color: mainTextColor }]}>
+                              (with a code)
+                            </Text>
+                          </View>
+                        </View>
                       </View>
 
-                      <View style={[styles.pillActionRow, { marginTop: 8 }]}>
-                        <LiquidGlassPillButton
-                          idPrefix="pillJoin"
-                          text="join pal"
-                          isDark={isDark}
-                          textColor={mainTextColor}
-                          onPress={() => setShowCreateModal(true)}
-                        />
-                        <Text style={[styles.actionHintText, { color: mainTextColor }]}>
-                          (with a code)
-                        </Text>
+                      {/* STEP 2 */}
+                      <View style={[styles.stepRow, { marginTop: 24 }]}>
+                        <View
+                          style={[
+                            styles.stepBadge,
+                            { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.stepBadgeText,
+                              { color: isDark ? '#000000' : '#FFFFFF' },
+                            ]}
+                          >
+                            2
+                          </Text>
+                        </View>
+                        <View style={styles.stepContent}>
+                          <Text style={[styles.stepTitle, { color: mainTextColor }]}>
+                            add a 2s clip every hour.
+                          </Text>
+                          <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                            see everyone's day come together.
+                          </Text>
+                          <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
+                            solo pals don't have limits.
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
 
-                  {/* STEP 2 */}
-                  <View style={[styles.stepRow, { marginTop: 24 }]}>
-                    <View
-                      style={[
-                        styles.stepBadge,
-                        { backgroundColor: isDark ? '#FFFFFF' : '#1A1A1A' },
-                      ]}
+                    {/* DAY RESET PAINTED BLOB CONTAINER */}
+                    <ImageBackground
+                      source={
+                        isDark
+                          ? require('../../assets/images/blob_dark.png')
+                          : require('../../assets/images/blob_light.png')
+                      }
+                      style={styles.blobContainer}
+                      resizeMode="contain"
                     >
-                      <Text
-                        style={[
-                          styles.stepBadgeText,
-                          { color: isDark ? '#000000' : '#FFFFFF' },
-                        ]}
-                      >
-                        2
+                      <Text style={[styles.resetTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                        day resets at{' '}
+                        <Text style={{ fontFamily: Fonts.DelaGothicOne, fontSize: 20 }}>4</Text>
+                        AM.
                       </Text>
-                    </View>
-                    <View style={styles.stepContent}>
-                      <Text style={[styles.stepTitle, { color: mainTextColor }]}>
-                        add a 2s clip every hour.
+                      <Text style={[styles.resetSubtext, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
+                        find past days in history.
                       </Text>
-                      <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
-                        see everyone's day come together.
-                      </Text>
-                      <Text style={[styles.stepSubtext, { color: mainTextColor }]}>
-                        solo pals don't have limits.
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                    </ImageBackground>
 
-                {/* DAY RESET PAINTED BLOB CONTAINER */}
-                <ImageBackground
-                  source={
-                    isDark
-                      ? require('../../assets/images/blob_dark.png')
-                      : require('../../assets/images/blob_light.png')
-                  }
-                  style={styles.blobContainer}
-                  resizeMode="contain"
-                >
-                  <Text style={[styles.resetTitle, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                    day resets at{' '}
-                    <Text style={{ fontFamily: Fonts.DelaGothicOne, fontSize: 20 }}>4</Text>
-                    AM.
-                  </Text>
-                  <Text style={[styles.resetSubtext, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>
-                    find past days in history.
-                  </Text>
-                </ImageBackground>
-
-                {/* BOTTOM UFO & TURTLE DOODLE */}
-                <View style={styles.doodleFooter}>
-                  <Image
-                    source={require('../../assets/images/ufo_turtle.png')}
-                    style={styles.ufoTurtleImage}
-                    resizeMode="contain"
-                  />
-                  <View style={styles.groundLine} />
-                </View>
+                    {/* BOTTOM UFO & TURTLE DOODLE */}
+                    <View style={styles.doodleFooter}>
+                      <Image
+                        source={require('../../assets/images/ufo_turtle.png')}
+                        style={styles.ufoTurtleImage}
+                        resizeMode="contain"
+                      />
+                      <View style={styles.groundLine} />
+                    </View>
+                  </>
+                )}
           </ScrollView>
         </Animated.View>
 
@@ -1533,6 +1731,10 @@ export default function HomeScreen({
           onClose={() => setShowExportSheet(false)}
           user={user}
           selectedThemeColor={selectedThemeColor}
+          activeVideoUri={vlogList.length > 0 ? vlogList[activeVlogIndex]?.uri : null}
+          caption={vlogList.length > 0 ? vlogList[activeVlogIndex]?.caption : ''}
+          timestamp={vlogList.length > 0 ? vlogList[activeVlogIndex]?.timestamp : ''}
+          isMuted={vlogList.length > 0 ? vlogList[activeVlogIndex]?.isMuted : false}
           onOpenCamera={() => {
             setShowChatDrawer(false);
             setShowExportSheet(false);
@@ -1554,11 +1756,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   topHeader: {
+    position: 'absolute',
+    top: 4,
+    left: 10,
+    right: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 12,
+    zIndex: 100,
   },
   palzeeLogoText: {
     fontFamily: Fonts.Unpack,
@@ -1777,14 +1982,15 @@ const styles = StyleSheet.create({
   },
   /* 3. BOTTOM LIQUID GLASS TAB SWITCHER */
   unifiedBottomRow: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 0,
-    marginTop: 10,
-    marginBottom: -10,
+    zIndex: 100,
   },
   extControlBtn: {
     width: 44,

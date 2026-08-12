@@ -7,9 +7,11 @@ import {
   View,
   Image,
   useColorScheme,
+  useWindowDimensions,
   Animated,
   Easing,
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -28,6 +30,11 @@ export interface VlogSheetProps {
   selectedThemeColor?: string;
   onOpenCamera?: () => void;
   onOpenChat?: () => void;
+  activeVideoUri?: string | null;
+  caption?: string;
+  timestamp?: string;
+  isVertical?: boolean;
+  isMuted?: boolean;
 }
 
 export const VlogSheet: React.FC<VlogSheetProps> = ({
@@ -37,22 +44,40 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   selectedThemeColor = 'cyan',
   onOpenCamera,
   onOpenChat,
+  activeVideoUri,
+  caption = 'Hi',
+  timestamp = '18:33',
+  isVertical = true,
+  isMuted = false,
 }) => {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = screenWidth - 20;
+  const cardHeight = cardWidth * (9 / 16);
   const isDark = colorScheme === 'dark';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
+
+  // Exact 90°/270° Rotated Dimensions for Vertical Captures to Fill 16:9 Frame
+  const videoWidth = cardHeight;
+  const videoHeight = cardWidth;
+  const videoTop = (cardHeight - videoHeight) / 2;
+  const videoLeft = (cardWidth - videoWidth) / 2;
+
+  const rotatedStyle = {
+    position: 'absolute' as const,
+    top: videoTop,
+    left: videoLeft,
+    width: videoWidth,
+    height: videoHeight,
+    transform: [{ rotate: '270deg' }],
+  };
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
   const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
   const [show0Logs, setShow0Logs] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
-  const [cardLayout, setCardLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
-
-  const noiseAnimX = useRef(new Animated.Value(0)).current;
-  const noiseAnimY = useRef(new Animated.Value(0)).current;
-  const scanlineAnim = useRef(new Animated.Value(-50)).current;
 
   const logsRotateAnim = useRef(new Animated.Value(0)).current;
   const logsOpacityAnim = useRef(new Animated.Value(1)).current;
@@ -102,6 +127,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     };
   }, [visible]);
 
+  // Demo fallback video URI if no live capture URI is passed
+  const videoSourceUri = activeVideoUri || 'https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-makeup-39875-large.mp4';
+
   return (
     <Modal
       visible={visible}
@@ -110,14 +138,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       onRequestClose={onClose}
     >
       <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
-        <View
-          style={[
-            styles.container,
-            { backgroundColor: isDark ? '#000000' : '#F5F5F7', paddingTop: Math.max(insets.top, 12) },
-          ]}
-        >
+        <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
           {/* 1. TOP NAVIGATION HEADER BAR */}
-          <View style={styles.headerBar}>
+          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 12) }]}>
             {/* LEFT: ROTATING 0 LOGS PILL (DISAPPEARS AFTER 2S) OR BACK CHEVRON */}
             <View style={{ width: 100, height: 44, justifyContent: 'center' }}>
               {show0Logs ? (
@@ -185,7 +208,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            {/* CENTER: VLOG DROPDOWN PILL (EXACT HORIZONTAL CENTER & INLINE WITH ICONS) */}
+            {/* CENTER: VLOG DROPDOWN PILL */}
             <View style={styles.centerHeaderGroup} pointerEvents="box-none">
               <TouchableOpacity
                 style={styles.vlogLiquidPillBtn}
@@ -284,28 +307,41 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
           {/* 2. CENTER CONTENT SECTION (EXACT GEOMETRIC CENTER OF SCREEN) */}
           <View style={styles.centerContent}>
-            {/* TV GLITCH / NOISE PREVIEW CARD (SKIA GPU CANVAS CRT STATIC NOISE) */}
+            {/* TV GLITCH / NOISE PREVIEW CARD */}
             <View
               style={[
                 styles.glitchCard,
-                { backgroundColor: isDark ? '#0A0A0C' : '#D2D2D8' },
+                { backgroundColor: isDark ? '#0A0A0C' : '#D2D2D8', overflow: 'hidden' },
               ]}
             >
-              {/* 1. INSTANT CAMERA LOW-LIGHT ISO NOISE GLITCH CARD (ZERO FLICKER, DIRECT FRAME 0 RENDER) */}
-              <CRTStaticCard
-                isDark={isDark}
-                width={cardWidth}
-                height={cardHeight}
-                borderRadius={24}
-              />
+              {/* VIDEO PLAYER WHEN VIDEO SENT, ELSE CRT STATIC CARD */}
+              {!!activeVideoUri ? (
+                <Video
+                  source={{ uri: activeVideoUri }}
+                  style={isVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                  resizeMode={ResizeMode.COVER}
+                  shouldPlay={visible && !showChatDrawer}
+                  isLooping
+                  isMuted={!visible || showChatDrawer || !!isMuted}
+                />
+              ) : (
+                <CRTStaticCard
+                  isDark={isDark}
+                  width={cardWidth}
+                  height={cardHeight}
+                  borderRadius={24}
+                />
+              )}
 
-              {/* 2. FROSTED GLASS BLUR LAYER */}
-              <BlurView
-                intensity={12}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-                pointerEvents="none"
-              />
+              {/* FROSTED GLASS BLUR LAYER WHEN NO VIDEO */}
+              {!activeVideoUri && (
+                <BlurView
+                  intensity={12}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                  pointerEvents="none"
+                />
+              )}
 
               {/* TOP LEFT USER ROW INSIDE CARD */}
               <View style={styles.cardUserRow}>
@@ -316,123 +352,210 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={[styles.usernameText, { color: isDark ? '#8E8E93' : '#636366' }]}>{username}</Text>
+                <Text style={[styles.usernameText, { color: activeVideoUri ? '#FFFFFF' : isDark ? '#8E8E93' : '#636366' }]}>{username}</Text>
               </View>
 
-              {/* MIDDLE ROW: VLOG TEXT (LEFT) | TAP TO CAPTURE (CENTER) | 0:00 (RIGHT) */}
+              {/* MIDDLE ROW: TAP TO CAPTURE ONLY WHEN NO VIDEO, ELSE VLOG TEXT (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
-                <Text style={[styles.cardVlogTitle, { color: isDark ? '#8E8E93' : '#5C5C60' }]}>Vlog</Text>
-
-                <TouchableOpacity
-                  style={styles.tapToCaptureBtnCenter}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    onClose();
-                    if (onOpenCamera) onOpenCamera();
-                  }}
-                >
-                  <BlurView
-                    intensity={35}
-                    tint={isDark ? 'dark' : 'light'}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Svg width="100%" height={40} style={StyleSheet.absoluteFill}>
-                    <Defs>
-                      <LinearGradient id="tapPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop
-                          offset="0%"
-                          stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                          stopOpacity={isDark ? 0.85 : 0.95}
+                {!!activeVideoUri ? (
+                  <>
+                    <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>Vlog</Text>
+                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>{caption}</Text>
+                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{timestamp}</Text>
+                  </>
+                ) : (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <TouchableOpacity
+                      style={styles.tapToCaptureBtnCenter}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        onClose();
+                        if (onOpenCamera) onOpenCamera();
+                      }}
+                    >
+                      <BlurView
+                        intensity={35}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Svg width="100%" height={40} style={StyleSheet.absoluteFill}>
+                        <Defs>
+                          <LinearGradient id="tapPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop
+                              offset="0%"
+                              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                              stopOpacity={isDark ? 0.85 : 0.95}
+                            />
+                            <Stop
+                              offset="100%"
+                              stopColor={isDark ? '#141416' : '#F2EFF4'}
+                              stopOpacity={isDark ? 0.75 : 0.90}
+                            />
+                          </LinearGradient>
+                          <LinearGradient id="tapPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
+                            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                          </LinearGradient>
+                        </Defs>
+                        <Rect
+                          x="0.75"
+                          y="0.75"
+                          width="100%"
+                          height="38.5"
+                          rx="19.25"
+                          fill="url(#tapPillGrad)"
+                          stroke="url(#tapPillBdr)"
+                          strokeWidth="1.5"
                         />
-                        <Stop
-                          offset="100%"
-                          stopColor={isDark ? '#141416' : '#F2EFF4'}
-                          stopOpacity={isDark ? 0.75 : 0.90}
-                        />
-                      </LinearGradient>
-                      <LinearGradient id="tapPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
-                      </LinearGradient>
-                    </Defs>
-                    <Rect
-                      x="0.75"
-                      y="0.75"
-                      width="100%"
-                      height="38.5"
-                      rx="19.25"
-                      fill="url(#tapPillGrad)"
-                      stroke="url(#tapPillBdr)"
-                      strokeWidth="1.5"
-                    />
-                  </Svg>
-                  <Text style={[styles.tapToCaptureText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                    tap to capture
-                  </Text>
-                </TouchableOpacity>
-
-                <Text style={[styles.timestampText, { color: isDark ? '#48484A' : '#BEBEC2' }]}>0:00</Text>
+                      </Svg>
+                      <Text style={[styles.tapToCaptureText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                        tap to capture
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
 
-              {/* BOTTOM RIGHT: TRIPLE DOTS BUTTON OR TOGGLED EDIT CAPTION BOX */}
-              {showEditCaptionBox ? (
-                <TouchableOpacity
-                  style={styles.cardBottomRightPill}
-                  activeOpacity={0.85}
-                  onPress={() => setShowEditCaptionBox(false)}
-                >
-                  <BlurView
-                    intensity={35}
-                    tint={isDark ? 'dark' : 'light'}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Svg width={180} height={48} style={StyleSheet.absoluteFill}>
-                    <Defs>
-                      <LinearGradient id="captionPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.88 : 0.95} />
-                        <Stop offset="100%" stopColor={isDark ? '#141416' : '#F2EFF4'} stopOpacity={isDark ? 0.80 : 0.90} />
-                      </LinearGradient>
-                      <LinearGradient id="captionPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
-                      </LinearGradient>
-                    </Defs>
-                    <Rect
-                      x="0.75"
-                      y="0.75"
-                      width="178.5"
-                      height="46.5"
-                      rx="23.25"
-                      fill="url(#captionPillGrad)"
-                      stroke="url(#captionPillBdr)"
-                      strokeWidth="1.5"
+              {/* BOTTOM RIGHT: THREE DOTS BUTTON */}
+              <TouchableOpacity
+                style={styles.cardBottomRightDotsBtn}
+                activeOpacity={0.7}
+                onPress={() => setShowEditCaptionBox(!showEditCaptionBox)}
+              >
+                <Ionicons name="ellipsis-horizontal" size={24} color={activeVideoUri ? '#FFFFFF' : isDark ? '#636366' : '#8E8E93'} />
+              </TouchableOpacity>
+
+              {/* TRIPLE DOTS POPOVER / PILL RENDERING */}
+              {showEditCaptionBox && (
+                !!activeVideoUri ? (
+                  /* FULL 3-OPTION MENU BOX WHEN VIDEO IS PRESENT */
+                  <View style={styles.tripleDotPopoverMenu}>
+                    <BlurView
+                      intensity={40}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
                     />
-                  </Svg>
-                  <View style={styles.editCaptionInnerRow}>
-                    <View style={styles.aCursorGroup}>
-                      <Text style={[styles.editCaptionIconText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                        A
-                      </Text>
-                      {/* EXACT I-BEAM TEXT SELECTION CURSOR ICON WITH SERIFS */}
-                      <Svg width={7} height={14} viewBox="0 0 7 14" style={{ marginLeft: 2.5 }}>
-                        <Line x1={0.5} y1={0.75} x2={6.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
-                        <Line x1={3.5} y1={0.75} x2={3.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
-                        <Line x1={0.5} y1={13.25} x2={6.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
-                      </Svg>
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="popoverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.95 : 0.98} />
+                          <Stop offset="100%" stopColor={isDark ? '#1C1C1E' : '#F7F7F8'} stopOpacity={isDark ? 0.92 : 0.95} />
+                        </LinearGradient>
+                        <LinearGradient id="popoverBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.1 : 0.12} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="99%"
+                        height="99%"
+                        rx="21.25"
+                        fill="url(#popoverGrad)"
+                        stroke="url(#popoverBdr)"
+                        strokeWidth="1.5"
+                      />
+                    </Svg>
+
+                    <View style={styles.popoverContentColumn}>
+                      {/* 1. DELETE OPTION (RED TRASH ICON & RED TEXT) */}
+                      <TouchableOpacity
+                        style={styles.popoverOptionRow}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setShowEditCaptionBox(false);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={21} color="#FF3B30" />
+                        <Text style={styles.popoverDeleteText}>delete</Text>
+                      </TouchableOpacity>
+
+                      {/* 2. EDIT CAPTION OPTION (A| SELECTION CURSOR ICON & TEXT) */}
+                      <TouchableOpacity
+                        style={styles.popoverOptionRow}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setShowEditCaptionBox(false);
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', width: 22, justifyContent: 'center' }}>
+                          <Text style={[styles.editCaptionIconLetter, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                            A
+                          </Text>
+                          <Svg width={6} height={14} viewBox="0 0 6 14" style={{ marginLeft: 2 }}>
+                            <Line x1={0.5} y1={0.75} x2={5.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                            <Line x1={3} y1={0.75} x2={3} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                            <Line x1={0.5} y1={13.25} x2={5.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                          </Svg>
+                        </View>
+                        <Text style={[styles.popoverOptionText, { color: isDark ? '#FFFFFF' : '#000000' }]}>edit caption</Text>
+                      </TouchableOpacity>
+
+                      {/* 3. SAVE OPTION (SAVE SHARE ICON & TEXT) */}
+                      <TouchableOpacity
+                        style={styles.popoverOptionRow}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setShowEditCaptionBox(false);
+                        }}
+                      >
+                        <Ionicons name="share-outline" size={21} color={isDark ? '#FFFFFF' : '#000000'} />
+                        <Text style={[styles.popoverOptionText, { color: isDark ? '#FFFFFF' : '#000000' }]}>save</Text>
+                      </TouchableOpacity>
                     </View>
-                    <Text style={[styles.editCaptionLabel, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                      edit caption
-                    </Text>
                   </View>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={styles.cardBottomRightDotsBtn}
-                  activeOpacity={0.7}
-                  onPress={() => setShowEditCaptionBox(true)}
-                >
-                  <Text style={[styles.dotsText, { color: isDark ? '#636366' : '#8E8E93' }]}>...</Text>
-                </TouchableOpacity>
+                ) : (
+                  /* SINGLE EDIT CAPTION PILL WHEN NO VIDEO IS PRESENT */
+                  <TouchableOpacity
+                    style={styles.cardBottomRightPill}
+                    activeOpacity={0.85}
+                    onPress={() => setShowEditCaptionBox(false)}
+                  >
+                    <BlurView
+                      intensity={35}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width={180} height={48} style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="captionPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.88 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#141416' : '#F2EFF4'} stopOpacity={isDark ? 0.80 : 0.90} />
+                        </LinearGradient>
+                        <LinearGradient id="captionPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="178.5"
+                        height="46.5"
+                        rx="23.25"
+                        fill="url(#captionPillGrad)"
+                        stroke="url(#captionPillBdr)"
+                        strokeWidth="1.5"
+                      />
+                    </Svg>
+                    <View style={styles.editCaptionInnerRow}>
+                      <View style={styles.aCursorGroup}>
+                        <Text style={[styles.editCaptionIconText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                          A
+                        </Text>
+                        <Svg width={7} height={14} viewBox="0 0 7 14" style={{ marginLeft: 2.5 }}>
+                          <Line x1={0.5} y1={0.75} x2={6.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                          <Line x1={3.5} y1={0.75} x2={3.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                          <Line x1={0.5} y1={13.25} x2={6.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                        </Svg>
+                      </View>
+                      <Text style={[styles.editCaptionLabel, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                        edit caption
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )
               )}
             </View>
           </View>
@@ -473,7 +596,7 @@ const styles = StyleSheet.create({
   },
   centerHeaderGroup: {
     position: 'absolute',
-    top: 0,
+    top: 45,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -694,5 +817,42 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
     fontFamily: Fonts.SystemRounded,
+  },
+  tripleDotPopoverMenu: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 200,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 10,
+    zIndex: 100,
+  },
+  popoverContentColumn: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 14,
+  },
+  popoverOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  popoverDeleteText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    fontFamily: Fonts.SystemRoundedMedium,
+  },
+  popoverOptionText: {
+    fontSize: 16,
+    fontFamily: Fonts.SystemRoundedMedium,
+  },
+  editCaptionIconLetter: {
+    fontSize: 16,
+    fontFamily: Fonts.SystemRoundedMedium,
   },
 });
