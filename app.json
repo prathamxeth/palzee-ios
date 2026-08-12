@@ -4,7 +4,7 @@
     "slug": "palzee-ios",
     "version": "1.0.0",
     "platforms": ["ios"],
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/pal_logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {

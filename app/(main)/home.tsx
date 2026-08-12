@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   AppState,
+  DeviceEventEmitter,
   Dimensions,
   Easing,
   Image,
@@ -25,7 +26,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
-import { Accelerometer } from 'expo-sensors';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
@@ -424,23 +424,43 @@ export default function HomeScreen({
 
   const tabTransitionAnim = useRef(new Animated.Value(activeTab === 'camera' ? 0 : 1)).current;
 
-  // DEVICE ROTATION / TILT SENSOR: ROTATING SIDEWAYS OPENS CAMERA, UPRIGHT SWITCHES TO PALS
+  // DEVICE TILT / ORIENTATION SENSOR: TILTING OPENS CAMERA, UPRIGHT SWITCHES TO PALS
   useEffect(() => {
-    const checkOrientation = (w: number, h: number) => {
-      if (w > h) {
-        setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
-      } else {
-        setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
+    const handleOrientation = (orientation: string) => {
+      const o = (orientation || '').toUpperCase();
+      if (o.includes('LANDSCAPE')) {
+        setActiveTab('camera');
+      } else if (o.includes('PORTRAIT')) {
+        setActiveTab('pals');
       }
     };
 
-    checkOrientation(windowWidth, windowHeight);
+    const handleDimensions = ({ window }: { window: { width: number; height: number } }) => {
+      if (window.width > window.height) {
+        setActiveTab('camera');
+      } else {
+        setActiveTab('pals');
+      }
+    };
 
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      checkOrientation(window.width, window.height);
+    if (windowWidth > windowHeight) {
+      setActiveTab('camera');
+    }
+
+    const sub1 = Dimensions.addEventListener('change', handleDimensions);
+    const sub2 = DeviceEventEmitter.addListener('namedOrientationDidChange', (data) => {
+      if (data && data.orientation) handleOrientation(data.orientation);
+    });
+    const sub3 = DeviceEventEmitter.addListener('orientationDidChange', (data) => {
+      if (typeof data === 'string') handleOrientation(data);
+      else if (data && data.orientation) handleOrientation(data.orientation);
     });
 
-    return () => subscription?.remove();
+    return () => {
+      sub1?.remove();
+      sub2?.remove();
+      sub3?.remove();
+    };
   }, [windowWidth, windowHeight]);
 
   useEffect(() => {
