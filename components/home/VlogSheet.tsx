@@ -10,6 +10,10 @@ import {
   useWindowDimensions,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  TextInput,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
@@ -35,6 +39,8 @@ export interface VlogSheetProps {
   timestamp?: string;
   isVertical?: boolean;
   isMuted?: boolean;
+  onDeleteVideo?: () => void;
+  onUpdateCaption?: (newCaption: string) => void;
 }
 
 export const VlogSheet: React.FC<VlogSheetProps> = ({
@@ -49,6 +55,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   timestamp = '18:33',
   isVertical = true,
   isMuted = false,
+  onDeleteVideo,
+  onUpdateCaption,
 }) => {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -76,8 +84,27 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
   const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [editingCaptionText, setEditingCaptionText] = useState(caption);
   const [show0Logs, setShow0Logs] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
+  const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
+
+  useEffect(() => {
+    setEditingCaptionText(caption);
+  }, [caption]);
+
+  const handleConfirmDelete = () => {
+    setShowDeleteDialog(false);
+    setShowEditCaptionBox(false);
+    if (onDeleteVideo) onDeleteVideo();
+  };
+
+  const handleSaveCaption = () => {
+    setIsEditingCaption(false);
+    if (onUpdateCaption) onUpdateCaption(editingCaptionText);
+  };
 
   const logsRotateAnim = useRef(new Animated.Value(0)).current;
   const logsOpacityAnim = useRef(new Animated.Value(1)).current;
@@ -266,18 +293,25 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 />
               </TouchableOpacity>
 
-              {/* CAMERA LENS INDICATOR DOT BELOW VLOG PILL */}
+              {/* CUSTOM ROTATE SMILEY ICON BELOW CENTER PILL (MATCHING REFERENCE SCREENSHOT EXACTLY) */}
               <View
-                style={[
-                  styles.cameraDotRing,
-                  { backgroundColor: isDark ? '#2C2C2E' : '#D6D6D8' },
-                ]}
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 11,
+                  backgroundColor: edgeColor,
+                  borderWidth: 1.5,
+                  borderColor: isDark ? '#2C2C2E' : '#E5E5EA',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                  marginTop: 6,
+                }}
               >
-                <View
-                  style={[
-                    styles.cameraDotInner,
-                    { backgroundColor: isDark ? '#FFFFFF' : '#000000' },
-                  ]}
+                <Image
+                  source={require('../../assets/images/custom_rotate_smiley.png')}
+                  style={{ width: 15, height: 15, tintColor: '#000000' }}
+                  resizeMode="contain"
                 />
               </View>
             </View>
@@ -318,11 +352,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               {!!activeVideoUri ? (
                 <Video
                   source={{ uri: activeVideoUri }}
-                  style={isVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                  style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                   resizeMode={ResizeMode.COVER}
                   shouldPlay={visible && !showChatDrawer}
                   isLooping
                   isMuted={!visible || showChatDrawer || !!isMuted}
+                  onReadyForDisplay={(event) => {
+                    if (event?.naturalSize) {
+                      const { width, height } = event.naturalSize;
+                      setIsSheetVideoVertical(height > width);
+                    }
+                  }}
                 />
               ) : (
                 <CRTStaticCard
@@ -359,7 +399,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
                 {!!activeVideoUri ? (
                   <>
-                    <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>Vlog</Text>
+                    <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
                     <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>{caption}</Text>
                     <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{timestamp}</Text>
                   </>
@@ -425,25 +465,41 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 <Ionicons name="ellipsis-horizontal" size={24} color={activeVideoUri ? '#FFFFFF' : isDark ? '#636366' : '#8E8E93'} />
               </TouchableOpacity>
 
+              {/* BACKDROP TAP DISMISSER TO HIDE TRIPLE DOT MENU ON OUTSIDE TAP */}
+              {showEditCaptionBox && (
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: -400,
+                    bottom: -400,
+                    left: -400,
+                    right: -400,
+                    zIndex: 90,
+                  }}
+                  activeOpacity={1}
+                  onPress={() => setShowEditCaptionBox(false)}
+                />
+              )}
+
               {/* TRIPLE DOTS POPOVER / PILL RENDERING */}
               {showEditCaptionBox && (
                 !!activeVideoUri ? (
                   /* FULL 3-OPTION MENU BOX WHEN VIDEO IS PRESENT */
                   <View style={styles.tripleDotPopoverMenu}>
                     <BlurView
-                      intensity={40}
+                      intensity={45}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
                     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                       <Defs>
                         <LinearGradient id="popoverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.95 : 0.98} />
-                          <Stop offset="100%" stopColor={isDark ? '#1C1C1E' : '#F7F7F8'} stopOpacity={isDark ? 0.92 : 0.95} />
+                          <Stop offset="0%" stopColor={isDark ? '#17171A' : '#F2F2F7'} stopOpacity={isDark ? 0.98 : 0.98} />
+                          <Stop offset="100%" stopColor={isDark ? '#141416' : '#E5E5EA'} stopOpacity={isDark ? 0.96 : 0.96} />
                         </LinearGradient>
                         <LinearGradient id="popoverBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.1 : 0.12} />
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.20 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.12} />
                         </LinearGradient>
                       </Defs>
                       <Rect
@@ -465,6 +521,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         activeOpacity={0.7}
                         onPress={() => {
                           setShowEditCaptionBox(false);
+                          setShowDeleteDialog(true);
                         }}
                       >
                         <Ionicons name="trash-outline" size={21} color="#FF3B30" />
@@ -477,6 +534,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         activeOpacity={0.7}
                         onPress={() => {
                           setShowEditCaptionBox(false);
+                          setIsEditingCaption(true);
                         }}
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', width: 22, justifyContent: 'center' }}>
@@ -510,7 +568,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <TouchableOpacity
                     style={styles.cardBottomRightPill}
                     activeOpacity={0.85}
-                    onPress={() => setShowEditCaptionBox(false)}
+                    onPress={() => {
+                      setShowEditCaptionBox(false);
+                      setIsEditingCaption(true);
+                    }}
                   >
                     <BlurView
                       intensity={35}
@@ -519,13 +580,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     />
                     <Svg width={180} height={48} style={StyleSheet.absoluteFill}>
                       <Defs>
-                        <LinearGradient id="captionPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.88 : 0.95} />
-                          <Stop offset="100%" stopColor={isDark ? '#141416' : '#F2EFF4'} stopOpacity={isDark ? 0.80 : 0.90} />
+                        <LinearGradient id="singlePillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.85 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#1C1C1E' : '#F2F2F7'} stopOpacity={isDark ? 0.90 : 0.85} />
                         </LinearGradient>
-                        <LinearGradient id="captionPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.1} />
+                        <LinearGradient id="singlePillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
                         </LinearGradient>
                       </Defs>
                       <Rect
@@ -534,28 +595,62 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         width="178.5"
                         height="46.5"
                         rx="23.25"
-                        fill="url(#captionPillGrad)"
-                        stroke="url(#captionPillBdr)"
+                        fill="url(#singlePillGrad)"
+                        stroke="url(#singlePillBdr)"
                         strokeWidth="1.5"
                       />
                     </Svg>
-                    <View style={styles.editCaptionInnerRow}>
-                      <View style={styles.aCursorGroup}>
-                        <Text style={[styles.editCaptionIconText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', width: 22, justifyContent: 'center' }}>
+                        <Text style={[styles.editCaptionIconLetter, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                           A
                         </Text>
-                        <Svg width={7} height={14} viewBox="0 0 7 14" style={{ marginLeft: 2.5 }}>
-                          <Line x1={0.5} y1={0.75} x2={6.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
-                          <Line x1={3.5} y1={0.75} x2={3.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
-                          <Line x1={0.5} y1={13.25} x2={6.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                        <Svg width={6} height={14} viewBox="0 0 6 14" style={{ marginLeft: 2 }}>
+                          <Line x1={0.5} y1={0.75} x2={5.5} y2={0.75} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
+                          <Line x1={3} y1={0.75} x2={3} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                          <Line x1={0.5} y1={13.25} x2={5.5} y2={13.25} stroke={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} strokeLinecap="round" />
                         </Svg>
                       </View>
-                      <Text style={[styles.editCaptionLabel, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                        edit caption
-                      </Text>
+                      <Text style={[styles.editCaptionLabel, { color: isDark ? '#FFFFFF' : '#000000' }]}>edit caption</Text>
                     </View>
                   </TouchableOpacity>
                 )
+              )}
+
+              {/* DELETE CONFIRMATION DIALOG BOX */}
+              {showDeleteDialog && (
+                <View style={styles.deleteDialogOverlay} pointerEvents="auto">
+                  <View style={[styles.deleteDialogCard, { backgroundColor: isDark ? '#17171A' : '#EFEFF4' }]}>
+                    <Text style={[styles.dialogTitleText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      You can't get it back once it's deleted or take a new one once the hour has passed.
+                    </Text>
+                    <Text style={[styles.dialogSubtitleText, { color: isDark ? '#8E8E93' : '#636366' }]}>
+                      Are you sure you want to delete this clip?
+                    </Text>
+
+                    <View style={styles.dialogButtonsRow}>
+                      <TouchableOpacity
+                        style={[styles.dialogBtn, { backgroundColor: isDark ? '#26262B' : '#E0E0E6' }]}
+                        activeOpacity={0.75}
+                        onPress={() => setShowDeleteDialog(false)}
+                      >
+                        <Text style={[styles.dialogCancelBtnText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                          cancel
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.dialogBtn, { backgroundColor: isDark ? '#26262B' : '#E0E0E6' }]}
+                        activeOpacity={0.75}
+                        onPress={handleConfirmDelete}
+                      >
+                        <Text style={styles.dialogDeleteBtnText}>
+                          delete
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
               )}
             </View>
           </View>
@@ -574,6 +669,130 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         isDark={isDark}
         selectedThemeColor={selectedThemeColor}
       />
+
+      {/* EDIT CAPTION SLIDE-UP PREVIEW MODAL (MATCHING IMAGE 2 REFERENCE EXACTLY) */}
+      <Modal
+        visible={isEditingCaption}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setIsEditingCaption(false)}
+      >
+        <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+          <View style={[styles.container, { backgroundColor: '#000000' }]}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+              {/* TOP HEADER: CLOSE (LEFT) | TIMESTAMP (CENTER) | PINK SEND/SAVE ARROW BUTTON (RIGHT) */}
+              <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 12), paddingHorizontal: 16 }]}>
+                <TouchableOpacity
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  onPress={() => setIsEditingCaption(false)}
+                >
+                  <Ionicons name="close" size={26} color={isDark ? '#FFFFFF' : '#000000'} />
+                </TouchableOpacity>
+
+                <Text style={{ fontSize: 22, fontFamily: Fonts.DelaGothicOne, color: isDark ? '#FFFFFF' : '#000000' }}>
+                  {timestamp || '19:00'}
+                </Text>
+
+                <TouchableOpacity
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: '#FA2D65',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  activeOpacity={0.8}
+                  onPress={handleSaveCaption}
+                >
+                  <Ionicons name="arrow-up" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              {/* CENTER 16:9 PREVIEW CARD WITH LIVE CAPTION INPUT */}
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View
+                  style={{
+                    width: cardWidth,
+                    height: cardHeight,
+                    borderRadius: 24,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    backgroundColor: '#000000',
+                  }}
+                >
+                  {!!activeVideoUri ? (
+                    <Video
+                      source={{ uri: activeVideoUri }}
+                      style={isVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                      resizeMode={ResizeMode.COVER}
+                      shouldPlay={isEditingCaption}
+                      isLooping
+                      isMuted={isMuted}
+                    />
+                  ) : (
+                    <CRTStaticCard
+                      isDark={isDark}
+                      width={cardWidth}
+                      height={cardHeight}
+                      borderRadius={24}
+                    />
+                  )}
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.2)' }]} pointerEvents="none" />
+
+                  {/* CENTER CAPTION OVERLAY INPUT */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      bottom: 0,
+                      left: 18,
+                      right: 18,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 24, fontFamily: Fonts.SystemRoundedBold }}>
+                      vlog
+                    </Text>
+
+                    <TextInput
+                      value={editingCaptionText}
+                      onChangeText={(t) => {
+                        setEditingCaptionText(t);
+                        if (onUpdateCaption) onUpdateCaption(t);
+                      }}
+                      autoFocus={true}
+                      placeholder="Type caption..."
+                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                      style={{
+                        color: '#FFFFFF',
+                        fontSize: 18,
+                        fontFamily: Fonts.SystemRoundedSemibold,
+                        textAlign: 'center',
+                        minWidth: 100,
+                        paddingHorizontal: 8,
+                      }}
+                    />
+
+                    <Text style={{ color: '#FFFFFF', fontSize: 17, fontFamily: Fonts.SystemRoundedSemibold }}>
+                      {timestamp || '19:00'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </DynamicGlowContainer>
+      </Modal>
     </Modal>
   );
 };
@@ -700,7 +919,7 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   cardVlogTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
     color: '#3A3A3C',
     fontFamily: Fonts.SystemRoundedBold,
@@ -729,10 +948,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SystemRounded,
   },
   timestampText: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '500',
     color: '#8E8E93',
-    fontFamily: Fonts.SystemRoundedMedium,
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   cardBottomRightDotsBtn: {
     position: 'absolute',
@@ -853,6 +1072,62 @@ const styles = StyleSheet.create({
   },
   editCaptionIconLetter: {
     fontSize: 16,
+    fontFamily: Fonts.SystemRoundedMedium,
+  },
+  deleteDialogOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 150,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  deleteDialogCard: {
+    width: '90%',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  dialogTitleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.SystemRoundedBold,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  dialogSubtitleText: {
+    fontSize: 14.5,
+    fontFamily: Fonts.SystemRoundedMedium,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 18,
+  },
+  dialogButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 12,
+  },
+  dialogBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dialogCancelBtnText: {
+    fontSize: 16,
+    fontFamily: Fonts.SystemRoundedMedium,
+  },
+  dialogDeleteBtnText: {
+    fontSize: 16,
+    color: '#FF3B30',
     fontFamily: Fonts.SystemRoundedMedium,
   },
 });

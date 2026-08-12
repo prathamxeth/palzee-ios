@@ -424,28 +424,37 @@ export default function HomeScreen({
 
   const tabTransitionAnim = useRef(new Animated.Value(activeTab === 'camera' ? 0 : 1)).current;
 
-  // DEVICE TILT / ORIENTATION SENSOR: TILTING OPENS CAMERA, UPRIGHT SWITCHES TO PALS
+  // DEVICE TILT / ORIENTATION SENSOR: SLIGHT TILT OPENS CAMERA, UPRIGHT SWITCHES TO PALS
   useEffect(() => {
+    const isTilted = insets.left > 0 || insets.right > 0 || windowWidth > windowHeight;
+    if (isTilted) {
+      setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
+    } else {
+      setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
+    }
+
     const handleOrientation = (orientation: string) => {
       const o = (orientation || '').toUpperCase();
       if (o.includes('LANDSCAPE')) {
-        setActiveTab('camera');
+        setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
       } else if (o.includes('PORTRAIT')) {
-        setActiveTab('pals');
+        setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
       }
     };
 
-    const handleDimensions = ({ window }: { window: { width: number; height: number } }) => {
-      if (window.width > window.height) {
-        setActiveTab('camera');
-      } else {
-        setActiveTab('pals');
+    const handleDimensions = (data: any) => {
+      const win = data?.window || data;
+      const scr = data?.screen;
+      const w = win?.width || scr?.width || 0;
+      const h = win?.height || scr?.height || 0;
+      if (w > 0 && h > 0) {
+        if (w > h) {
+          setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
+        } else {
+          setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
+        }
       }
     };
-
-    if (windowWidth > windowHeight) {
-      setActiveTab('camera');
-    }
 
     const sub1 = Dimensions.addEventListener('change', handleDimensions);
     const sub2 = DeviceEventEmitter.addListener('namedOrientationDidChange', (data) => {
@@ -461,7 +470,7 @@ export default function HomeScreen({
       sub2?.remove();
       sub3?.remove();
     };
-  }, [windowWidth, windowHeight]);
+  }, [insets.left, insets.right, windowWidth, windowHeight]);
 
   useEffect(() => {
     Animated.spring(tabTransitionAnim, {
@@ -489,6 +498,7 @@ export default function HomeScreen({
 
   const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>>([]);
   const [activeVlogIndex, setActiveVlogIndex] = useState(0);
+  const [isHomeVlogVertical, setIsHomeVlogVertical] = useState(true);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -496,7 +506,7 @@ export default function HomeScreen({
     const loop = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
-        duration: 3500,
+        duration: 2333,
         easing: Easing.linear,
         useNativeDriver: true,
       })
@@ -522,6 +532,22 @@ export default function HomeScreen({
     setVlogList((prev) => [newLog, ...prev]);
     setActiveVlogIndex(0);
     setShowCamera(false);
+    setActiveTab('pals');
+  };
+
+  const handleDeleteVideo = () => {
+    setVlogList([]);
+    setActiveVlogIndex(0);
+    setShowExportSheet(false);
+  };
+
+  const handleUpdateCaption = (newCaption: string) => {
+    setVlogList((prev) => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[activeVlogIndex] = { ...updated[activeVlogIndex], caption: newCaption };
+      return updated;
+    });
   };
 
   if (showGroupsView) {
@@ -587,6 +613,7 @@ export default function HomeScreen({
             onToggleTimerMode={toggleTimerMode}
             facing={cameraFacing}
             onToggleFacing={toggleFacing}
+            onCaptureSuccess={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
           />
         </Animated.View>
 
@@ -688,8 +715,8 @@ export default function HomeScreen({
                   {/* SCALED UP 16:9 VLOG CARD */}
                   <TouchableOpacity
                     style={{
-                      width: screenWidth - 20,
-                      height: (screenWidth - 20) * (9 / 16),
+                      width: screenWidth - 30,
+                      height: (screenWidth - 30) * (9 / 16),
                       borderRadius: 24,
                       overflow: 'hidden',
                       position: 'relative',
@@ -701,18 +728,28 @@ export default function HomeScreen({
                   >
                     <Video
                       source={{ uri: vlogList[activeVlogIndex].uri }}
-                      style={{
-                        position: 'absolute',
-                        top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                        left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                        width: (screenWidth - 20) * (9 / 16),
-                        height: screenWidth - 20,
-                        transform: [{ rotate: '270deg' }],
-                      }}
+                      style={
+                        isHomeVlogVertical
+                          ? {
+                              position: 'absolute',
+                              top: ((screenWidth - 30) * (9 / 16) - (screenWidth - 30)) / 2,
+                              left: ((screenWidth - 30) - (screenWidth - 30) * (9 / 16)) / 2,
+                              width: (screenWidth - 30) * (9 / 16),
+                              height: screenWidth - 30,
+                              transform: [{ rotate: '270deg' }],
+                            }
+                          : StyleSheet.absoluteFill
+                      }
                       resizeMode={ResizeMode.COVER}
                       shouldPlay={activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
                       isLooping
                       isMuted={!(activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[activeVlogIndex]?.isMuted ?? false)}
+                      onReadyForDisplay={(event) => {
+                        if (event?.naturalSize) {
+                          const { width, height } = event.naturalSize;
+                          setIsHomeVlogVertical(height > width);
+                        }
+                      }}
                     />
                     <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
@@ -790,6 +827,7 @@ export default function HomeScreen({
                     styles.vlogCard,
                     {
                       backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                      marginHorizontal: 5,
                       overflow: 'hidden',
                       position: 'relative',
                     },
@@ -1761,6 +1799,8 @@ export default function HomeScreen({
           caption={vlogList.length > 0 ? vlogList[activeVlogIndex]?.caption : ''}
           timestamp={vlogList.length > 0 ? vlogList[activeVlogIndex]?.timestamp : ''}
           isMuted={vlogList.length > 0 ? vlogList[activeVlogIndex]?.isMuted : false}
+          onDeleteVideo={handleDeleteVideo}
+          onUpdateCaption={handleUpdateCaption}
           onOpenCamera={() => {
             setShowChatDrawer(false);
             setShowExportSheet(false);
