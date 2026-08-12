@@ -18,6 +18,7 @@ import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
+import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
 
 const DANCING_COLORS = ['#00F0FF', '#FF007F', '#7F00FF', '#00FF66', '#FFCC00', '#FF3366', '#00E5FF', '#A800FF'];
 
@@ -48,11 +49,27 @@ export default function PalCameraPreview({
   const insets = useSafeAreaInsets();
 
   const [permission, requestPermission] = useCameraPermissions();
+  const [storeGranted, setStoreGranted] = useState(cameraWarmupStore.isCameraGranted());
+  const hasPermission = Boolean(permission?.granted || storeGranted);
+
   const [flash, setFlash] = useState<FlashMode>('off');
   const [zoomLevel, setZoomLevel] = useState<number>(1.0); // Default 1x selected
   const [isRecording, setIsRecording] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    const unsub = cameraWarmupStore.subscribe(() => {
+      setStoreGranted(cameraWarmupStore.isCameraGranted());
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (permission?.granted) {
+      cameraWarmupStore.setCameraGranted(true);
+    }
+  }, [permission]);
 
   // Video send preview window state
   const [previewVideoUri, setPreviewVideoUri] = useState<string | null>(null);
@@ -225,18 +242,10 @@ export default function PalCameraPreview({
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
   useEffect(() => {
-    if (!permission?.granted && requestPermission) {
+    if (!hasPermission && requestPermission) {
       requestPermission();
     }
-  }, [permission]);
-
-  if (!permission) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#8E8E93', fontSize: 16 }}>Loading camera...</Text>
-      </View>
-    );
-  }
+  }, [hasPermission]);
 
   const handleFlashPress = () => {
     if (flash === 'off') {
@@ -373,7 +382,7 @@ export default function PalCameraPreview({
                 style={[StyleSheet.absoluteFill, { opacity: 0.15, resizeMode: 'cover' }]}
               />
             </View>
-            {permission?.granted ? (
+            {hasPermission ? (
               <CameraView
                 ref={cameraRef}
                 style={StyleSheet.absoluteFill}

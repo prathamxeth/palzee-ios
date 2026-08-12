@@ -32,6 +32,7 @@ import { VlogSheet } from '../../components/home/VlogSheet';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
+import { CameraPrewarmer } from '../../components/camera/CameraPrewarmer';
 import PalGroupGridScreen from './groups';
 import { User } from '../../types';
 
@@ -447,6 +448,7 @@ export default function HomeScreen({
 
   return (
     <DynamicGlowContainer selectedThemeColor={selectedThemeColor || 'cyan'} showBorder={true}>
+      <CameraPrewarmer />
       <View
         style={[
           styles.container,

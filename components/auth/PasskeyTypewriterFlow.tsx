@@ -18,6 +18,7 @@ import * as Notifications from 'expo-notifications';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { passkeyService } from '../../services/passkeyService';
 import { authService } from '../../services/authService';
+import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
 import { User } from '../../types';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -277,6 +278,9 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
         console.log('[PERMISSIONS] Requesting iOS Camera permission...');
         const res = await requestCameraPermission();
         console.log('[PERMISSIONS] Camera response:', res);
+        if (res?.granted) {
+          cameraWarmupStore.setCameraGranted(true);
+        }
       } catch (e) {
         console.warn('[PERMISSIONS] Camera permission error:', e);
       }
@@ -288,6 +292,9 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
         console.log('[PERMISSIONS] Requesting iOS Microphone permission...');
         const res = await requestMicPermission();
         console.log('[PERMISSIONS] Mic response:', res);
+        if (res?.granted) {
+          cameraWarmupStore.setMicGranted(true);
+        }
       } catch (e) {
         console.warn('[PERMISSIONS] Microphone permission error:', e);
       }

@@ -4,6 +4,7 @@ import OnboardingScreen from './(auth)/onboarding';
 import HomeScreen from './(main)/home';
 import { sessionStore } from '../utils/sessionStore';
 import { authService } from '../services/authService';
+import { cameraWarmupStore } from '../utils/cameraWarmupStore';
 import { User } from '../types';
 
 export default function Index() {
@@ -14,6 +15,9 @@ export default function Index() {
 
   useEffect(() => {
     async function initSession() {
+      // Check and pre-warm camera & microphone permissions on follow-up app openings
+      cameraWarmupStore.checkAndWarmupPermissions();
+
       const user = await sessionStore.getUser();
       // Pick a fresh random theme color every time app opens
       const randomColor = sessionStore.getRandomThemeColor();
