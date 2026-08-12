@@ -179,12 +179,6 @@ export default function PalVideoSendPreviewModal({
         playsInSilentModeIOS: true,
         staysActiveInBackground: false,
       }).catch(() => {});
-
-      const timer = setTimeout(() => {
-        videoPlayerRef.current?.setPositionAsync(0).catch(() => {});
-        videoPlayerRef.current?.playAsync().catch(() => {});
-      }, 50);
-      return () => clearTimeout(timer);
     }
   }, [visible, videoUri]);
 
@@ -367,6 +361,11 @@ export default function PalVideoSendPreviewModal({
                           videoPlayerRef.current?.playFromPositionAsync(0).catch(() => {
                             videoPlayerRef.current?.playAsync().catch(() => {});
                           });
+                        }}
+                        onPlaybackStatusUpdate={(status) => {
+                          if (status.isLoaded && !status.isPlaying && visible) {
+                            videoPlayerRef.current?.playAsync().catch(() => {});
+                          }
                         }}
                         onReadyForDisplay={(event) => {
                           videoPlayerRef.current?.playAsync().catch(() => {});
