@@ -580,7 +580,7 @@ export default function PalCameraPreview({
               style={[
                 styles.progressBarGapCentered,
                 {
-                  width: 4.8,
+                  width: 4.25,
                   top: 32,
                   bottom: 32,
                   right: -5.0,

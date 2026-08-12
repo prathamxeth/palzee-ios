@@ -34,13 +34,14 @@ export interface VlogSheetProps {
   selectedThemeColor?: string;
   onOpenCamera?: () => void;
   onOpenChat?: () => void;
+  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>;
   activeVideoUri?: string | null;
   caption?: string;
   timestamp?: string;
   isVertical?: boolean;
   isMuted?: boolean;
-  onDeleteVideo?: () => void;
-  onUpdateCaption?: (newCaption: string) => void;
+  onDeleteVideo?: (id?: string) => void;
+  onUpdateCaption?: (newCaption: string, id?: string) => void;
 }
 
 export const VlogSheet: React.FC<VlogSheetProps> = ({
@@ -50,6 +51,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   selectedThemeColor = 'cyan',
   onOpenCamera,
   onOpenChat,
+  vlogList = [],
   activeVideoUri,
   caption = 'Hi',
   timestamp = '18:33',
@@ -86,24 +88,70 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
-  const [editingCaptionText, setEditingCaptionText] = useState(caption);
   const [show0Logs, setShow0Logs] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
+  const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
+
+  const list = vlogList && vlogList.length > 0 ? vlogList : (activeVideoUri ? [{ id: 'default', uri: activeVideoUri, caption, timestamp, isMuted }] : []);
+  const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
+  const currentUri = currentClip ? currentClip.uri : activeVideoUri;
+  const currentCaption = currentClip ? (currentClip.caption || '') : caption;
+  const currentTimestamp = currentClip ? (currentClip.timestamp || '18:33') : timestamp;
+  const currentIsMuted = currentClip ? (currentClip.isMuted ?? false) : isMuted;
+
+  const [editingCaptionText, setEditingCaptionText] = useState(currentCaption);
 
   useEffect(() => {
-    setEditingCaptionText(caption);
-  }, [caption]);
+    if (visible) {
+      setCurrentVlogIndex(0);
+    }
+  }, [visible, vlogList?.length]);
+
+  useEffect(() => {
+    setEditingCaptionText(currentCaption);
+  }, [currentCaption]);
 
   const handleConfirmDelete = () => {
     setShowDeleteDialog(false);
     setShowEditCaptionBox(false);
-    if (onDeleteVideo) onDeleteVideo();
+    if (onDeleteVideo) {
+      if (currentClip?.id && currentClip.id !== 'default') {
+        onDeleteVideo(currentClip.id);
+      } else {
+        onDeleteVideo();
+      }
+    }
   };
 
   const handleSaveCaption = () => {
     setIsEditingCaption(false);
-    if (onUpdateCaption) onUpdateCaption(editingCaptionText);
+    if (onUpdateCaption) {
+      if (currentClip?.id && currentClip.id !== 'default') {
+        onUpdateCaption(editingCaptionText, currentClip.id);
+      } else {
+        onUpdateCaption(editingCaptionText);
+      }
+    }
+  };
+
+  const handleScreenTap = (evt: any) => {
+    if (showEditCaptionBox) {
+      setShowEditCaptionBox(false);
+      return;
+    }
+    if (showDeleteDialog || isEditingCaption || showVlogDropdown) return;
+
+    if (list.length <= 1) return;
+
+    const touchX = evt.nativeEvent.locationX;
+    if (touchX < screenWidth / 2) {
+      // Tap Left half -> Previous (older) pal clip
+      setCurrentVlogIndex((prev) => (prev < list.length - 1 ? prev + 1 : 0));
+    } else {
+      // Tap Right half -> Successive (newer) pal clip
+      setCurrentVlogIndex((prev) => (prev > 0 ? prev - 1 : list.length - 1));
+    }
   };
 
   const logsRotateAnim = useRef(new Animated.Value(0)).current;
@@ -347,7 +395,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 isDark={isDark}
                 onPress={() => {
                   setShowChatDrawer(true);
-                  if (onOpenChat) onOpenChat();
                 }}
               >
                 <Ionicons name="chatbubble-outline" size={24.5} color={isDark ? '#FFFFFF' : '#000000'} />
@@ -356,7 +403,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           </View>
 
           {/* 2. CENTER CONTENT SECTION (EXACT GEOMETRIC CENTER OF SCREEN) */}
-          <View style={styles.centerContent}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleScreenTap}
+            style={styles.centerContent}
+          >
             {/* TV GLITCH / NOISE PREVIEW CARD */}
             <View
               style={[
@@ -365,14 +416,15 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               ]}
             >
               {/* VIDEO PLAYER WHEN VIDEO SENT, ELSE CRT STATIC CARD */}
-              {!!activeVideoUri ? (
+              {!!currentUri ? (
                 <Video
-                  source={{ uri: activeVideoUri }}
+                  key={currentUri}
+                  source={{ uri: currentUri }}
                   style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                   resizeMode={ResizeMode.COVER}
-                  shouldPlay={visible && !showChatDrawer}
+                  shouldPlay={visible && !showChatDrawer && !isEditingCaption}
                   isLooping
-                  isMuted={!visible || showChatDrawer || !!isMuted}
+                  isMuted={!visible || showChatDrawer || !!currentIsMuted}
                   onReadyForDisplay={(event) => {
                     if (event?.naturalSize) {
                       const { width, height } = event.naturalSize;
@@ -390,7 +442,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
 
               {/* FROSTED GLASS BLUR LAYER WHEN NO VIDEO */}
-              {!activeVideoUri && (
+              {!currentUri && (
                 <BlurView
                   intensity={12}
                   tint={isDark ? 'dark' : 'light'}
@@ -400,7 +452,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
 
               {/* TOP LEFT USER ROW INSIDE CARD */}
-              <View style={styles.cardUserRow}>
+              <View style={styles.cardUserRow} pointerEvents="none">
                 <View style={[styles.avatarCircleFilled, { backgroundColor: edgeColor }]}>
                   <Image
                     source={require('../../assets/images/capture_smile.png')}
@@ -408,16 +460,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={[styles.usernameText, { color: activeVideoUri ? '#FFFFFF' : isDark ? '#8E8E93' : '#636366' }]}>{username}</Text>
+                <Text style={[styles.usernameText, { color: currentUri ? '#FFFFFF' : isDark ? '#8E8E93' : '#636366' }]}>{username}</Text>
               </View>
 
               {/* MIDDLE ROW: TAP TO CAPTURE ONLY WHEN NO VIDEO, ELSE VLOG TEXT (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
-                {!!activeVideoUri ? (
+                {!!currentUri ? (
                   <>
                     <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
-                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>{caption}</Text>
-                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{timestamp}</Text>
+                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>{currentCaption}</Text>
+                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{currentTimestamp}</Text>
                   </>
                 ) : (
                   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -472,13 +524,42 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 )}
               </View>
 
+              {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESS BARS (WHEN MULTIPLE PALS PRESENT) */}
+              {list.length > 1 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 12,
+                    left: 18,
+                    right: 18,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    zIndex: 25,
+                  }}
+                  pointerEvents="none"
+                >
+                  {list.map((_, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flex: 1,
+                        height: 3.5,
+                        borderRadius: 2,
+                        backgroundColor: idx === currentVlogIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0.35)',
+                      }}
+                    />
+                  ))}
+                </View>
+              )}
+
               {/* BOTTOM RIGHT: THREE DOTS BUTTON */}
               <TouchableOpacity
                 style={styles.cardBottomRightDotsBtn}
                 activeOpacity={0.7}
                 onPress={() => setShowEditCaptionBox(!showEditCaptionBox)}
               >
-                <Ionicons name="ellipsis-horizontal" size={24} color={activeVideoUri ? '#FFFFFF' : isDark ? '#636366' : '#8E8E93'} />
+                <Ionicons name="ellipsis-horizontal" size={24} color={currentUri ? '#FFFFFF' : isDark ? '#636366' : '#8E8E93'} />
               </TouchableOpacity>
 
               {/* BACKDROP TAP DISMISSER TO HIDE TRIPLE DOT MENU ON OUTSIDE TAP */}
@@ -499,7 +580,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
               {/* TRIPLE DOTS POPOVER / PILL RENDERING */}
               {showEditCaptionBox && (
-                !!activeVideoUri ? (
+                !!currentUri ? (
                   /* FULL 3-OPTION MENU BOX WHEN VIDEO IS PRESENT */
                   <View style={styles.tripleDotPopoverMenu}>
                     <BlurView
@@ -750,9 +831,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     backgroundColor: '#000000',
                   }}
                 >
-                  {!!activeVideoUri ? (
+                  {!!currentUri ? (
                     <Video
-                      source={{ uri: activeVideoUri }}
+                      source={{ uri: currentUri }}
                       style={isSheetVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                       resizeMode={ResizeMode.COVER}
                       shouldPlay={isEditingCaption}
@@ -794,7 +875,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       }}
                     >
                       {(() => {
-                        const t = timestamp || '19:00';
+                        const t = currentTimestamp || '19:00';
                         const parts = t.split(':');
                         if (parts.length === 2) {
                           let h = parseInt(parts[0], 10);
