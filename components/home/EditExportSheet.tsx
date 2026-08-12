@@ -13,15 +13,18 @@ import {
   ViewStyle,
   ActivityIndicator,
   Share,
+  NativeModules,
 } from 'react-native';
 import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
+
+const { VideoExporter } = NativeModules;
 
 // Final Export Output Canvas Geometry: 9:16 Portrait (1080x1920)
 export const EXPORT_CANVAS_WIDTH = 1080;
@@ -65,42 +68,32 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
   const currentClip = list.length > 0 ? list[Math.min(currentIndex, list.length - 1)] : null;
 
-  // Real FFmpeg Video Processing & Re-encoding to 1080x1920 9:16 Portrait Canvas
+  // Native AVFoundation Video Processing to 1080x1920 9:16 Portrait Canvas
   const processAndSaveVideo = async (): Promise<string> => {
+    if (!currentClip || !currentClip.uri) return '';
+
     const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
     const outputUri = `${cacheDir}collection_export.mp4`;
 
     try {
-      await FileSystem.deleteAsync(outputUri, { idempotent: true });
-    } catch (e) {}
-
-    // FFmpeg execution command for 1080x1920 (9:16) letterboxed output
-    const ffmpegCommand = `-y -i "${currentClip?.uri}" -vf "scale=1080:607:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -c:a copy "${outputUri}"`;
-
-    try {
-      // Dynamic import of FFmpegKit for runtime compatibility
-      const { FFmpegKit, ReturnCode } = require('ffmpeg-kit-react-native');
-      const session = await FFmpegKit.execute(ffmpegCommand);
-      const returnCode = await session.getReturnCode();
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        return outputUri;
-      } else {
-        console.log('FFmpeg re-encoding non-success, fallback to copy');
+      if (VideoExporter && VideoExporter.exportPortraitVideo) {
+        const exportedUri = await VideoExporter.exportPortraitVideo(
+          currentClip.uri,
+          currentClip.caption || '',
+          currentClip.timestamp || ''
+        );
+        return exportedUri;
       }
-    } catch (ffmpegErr) {
-      console.log('FFmpeg native execution fallback:', ffmpegErr);
+    } catch (nativeErr) {
+      console.log('Native VideoExporter error:', nativeErr);
     }
 
-    // Fallback file copy if FFmpeg kit native binary is not compiled in active app build
     try {
       await FileSystem.copyAsync({
-        from: currentClip!.uri,
+        from: currentClip.uri,
         to: outputUri,
       });
-    } catch (copyErr) {
-      console.log('Copy file fallback error:', copyErr);
-    }
+    } catch (copyErr) {}
 
     return outputUri;
   };
