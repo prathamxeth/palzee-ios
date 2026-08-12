@@ -148,7 +148,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             },
           ]}
         >
-          <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+          <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
             <View
               style={[
                 styles.container,

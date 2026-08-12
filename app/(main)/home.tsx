@@ -475,7 +475,13 @@ export default function HomeScreen({
   }
 
   if (showCamera) {
-    return <CameraScreen onCapture={() => setShowCamera(false)} onClose={() => setShowCamera(false)} />;
+    return (
+      <CameraScreen
+        selectedThemeColor={selectedThemeColor}
+        onCapture={() => setShowCamera(false)}
+        onClose={() => setShowCamera(false)}
+      />
+    );
   }
 
   return (
@@ -1498,7 +1504,7 @@ export default function HomeScreen({
           onOpenCamera={() => {
             setShowChatDrawer(false);
             setShowExportSheet(false);
-            setActiveTab('camera');
+            setShowCamera(true);
           }}
           onOpenChat={() => {
             setShowChatDrawer(true);

@@ -226,7 +226,7 @@ export default function PalCameraPreview({
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
   useEffect(() => {
-    if (permission && !permission.granted && permission.canAskAgain) {
+    if (!permission?.granted && requestPermission) {
       requestPermission();
     }
   }, [permission]);
@@ -344,8 +344,10 @@ export default function PalCameraPreview({
           styles.viewportCardContainer,
           {
             width: cameraWidth,
-            height: cameraHeight,
-            marginTop: 20,
+            flex: 1,
+            maxHeight: cameraHeight,
+            marginTop: 8,
+            marginBottom: 8,
           },
         ]}
       >
@@ -379,7 +381,7 @@ export default function PalCameraPreview({
               ref={cameraRef}
               style={StyleSheet.absoluteFill}
               facing={facing}
-              mode="video"
+              mode="picture"
               flash={flash}
               enableTorch={flash === 'on'}
               zoom={zoomLevel === 0.5 ? 0.02 : 0.05}

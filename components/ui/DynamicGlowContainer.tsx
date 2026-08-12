@@ -6,6 +6,7 @@ import { Colors } from '../../constants/colors';
 interface DynamicGlowContainerProps {
   selectedThemeColor: string;
   showBorder: boolean;
+  showGlow?: boolean;
   children: React.ReactNode;
   style?: ViewStyle;
 }
@@ -13,6 +14,7 @@ interface DynamicGlowContainerProps {
 export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   selectedThemeColor,
   showBorder = true,
+  showGlow = true,
   children,
   style,
 }) => {
@@ -34,11 +36,11 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           showBorder && {
             borderColor: accentColor,
             borderWidth: 3.5,
-            shadowColor: accentColor,
+            shadowColor: showGlow ? accentColor : 'transparent',
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: isDark ? 0.54 : 0.71,
-            shadowRadius: 10.0, // Area & radius strictly preserved
-            elevation: 10,
+            shadowOpacity: showGlow ? (isDark ? 0.54 : 0.71) : 0,
+            shadowRadius: showGlow ? 10.0 : 0,
+            elevation: showGlow ? 10 : 0,
           },
           style,
         ]}
@@ -49,7 +51,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
         </View>
 
         {/* 360-DEGREE ISOTROPIC GAUSSIAN BLURRED CORNER & EDGE GLOW OVERLAY */}
-        {showBorder && (
+        {showBorder && showGlow && (
           <View style={styles.inwardGlowOverlay} pointerEvents="none">
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
               <Defs>

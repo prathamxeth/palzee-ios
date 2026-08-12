@@ -42,7 +42,7 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
         <View
           style={[
             styles.container,

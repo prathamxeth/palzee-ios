@@ -133,7 +133,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true}>
+      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
         <View
           style={[
             styles.container,
