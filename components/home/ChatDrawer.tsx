@@ -35,7 +35,19 @@ interface ChatDrawerProps {
   user: User | null;
   isDark?: boolean;
   selectedThemeColor?: string;
-  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; date?: string; isMuted?: boolean; rate?: number; mode?: string }>;
+  vlogList?: Array<{
+    id: string;
+    uri: string;
+    videoUri?: string;
+    caption?: string;
+    timestamp: string;
+    date?: string;
+    createdAt?: string;
+    isMuted?: boolean;
+    rate?: number;
+    mode?: string;
+    sender?: { username?: string; avatarUri?: string; themeColor?: string };
+  }>;
   activeVideoUri?: string;
 }
 
@@ -61,20 +73,29 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const displayList = vlogList && vlogList.length > 0 
     ? vlogList 
     : activeVideoUri 
-      ? [{ id: 'active_default', uri: activeVideoUri, caption: 'Done', timestamp: '7:26 PM' }] 
-      : [{ id: 'demo_default', uri: 'https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-makeup-39875-large.mp4', caption: 'Done', timestamp: '7:26 PM' }];
+      ? [{ id: 'active_default', uri: activeVideoUri, caption: '', timestamp: '' }] 
+      : [];
+
+  const activePal = displayList?.[0];
+  const resolvedActiveVideoUri = 
+    activePal?.uri || 
+    activePal?.videoUri || 
+    (activePal as any)?.video_url || 
+    (activePal as any)?.mediaUrl || 
+    (activePal as any)?.path || 
+    '';
 
   const [extractedThumbnail, setExtractedThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    if (displayList[0]?.uri) {
-      generateVideoThumbnail(displayList[0].uri).then((uri) => {
+    if (resolvedActiveVideoUri) {
+      generateVideoThumbnail(resolvedActiveVideoUri).then((uri) => {
         if (isMounted && uri) setExtractedThumbnail(uri);
       });
     }
     return () => { isMounted = false; };
-  }, [displayList[0]?.uri]);
+  }, [resolvedActiveVideoUri]);
 
   const getDisplayTimestamp = (item?: any) => {
     if (!item) return '7:26 PM';
@@ -248,7 +269,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
-                    <Text style={[styles.vlogPillText, { color: textColor }]}>Hi</Text>
+                    <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
                   </View>
                 </View>
 
@@ -259,9 +280,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               {/* 2. FLEXIBLE CHAT CONTENT AREA (DISMISS KEYBOARD ON TOUCH) */}
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={[styles.bodyContainer, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
-                  {displayList.length > 0 && (
+                  {/* STRICT GUARD: Only render thumbnail & log card if a valid Pal item and resolved video URI exists */}
+                  {activePal && resolvedActiveVideoUri ? (
                     <>
-                      {/* TIMESTAMP / DAY HEADER ABOVE VIDEO THUMBNAIL (CHARCOAL IN DARK MODE, GREY IN LIGHT MODE) */}
+                      {/* DYNAMIC TIMESTAMP ABOVE THUMBNAIL */}
                       <Text
                         style={{
                           textAlign: 'center',
@@ -271,13 +293,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           marginBottom: 10,
                         }}
                       >
-                        {`${getDayLabel(displayList[0])} ${getDisplayTimestamp(displayList[0])}`}
+                        {`${getDayLabel(activePal)} ${getDisplayTimestamp(activePal)}`}
                       </Text>
 
-                      {/* THUMBNAIL BUBBLE AS LIVE PREVIEW OF SENT VIDEO PAL (RIGHT-ALIGNED, CLICKABLE TO OPEN PREVIEW) */}
+                      {/* DYNAMIC 1ST FRAME THUMBNAIL BUBBLE */}
                       <TouchableOpacity
                         activeOpacity={0.9}
-                        onPress={openPreviewModal}
+                        onPress={() => {
+                          if (activePal) openPreviewModal();
+                        }}
                         style={{
                           alignSelf: 'flex-end',
                           marginRight: 16,
@@ -299,20 +323,20 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           />
                         ) : (
                           <Video
-                            source={{ uri: displayList[0]?.uri }}
+                            source={{ uri: resolvedActiveVideoUri }}
                             style={StyleSheet.absoluteFill}
                             videoStyle={{ width: '100%', height: '100%', borderRadius: 20 }}
                             resizeMode={ResizeMode.COVER}
                             shouldPlay={true}
                             isLooping={true}
                             isMuted={true}
-                            rate={displayList[0]?.rate || 1.0}
+                            rate={activePal?.rate || 1.0}
                             shouldCorrectPitch={true}
                           />
                         )}
                       </TouchableOpacity>
 
-                      {/* VIEW PAL BOX BELOW THUMBNAIL (SHOWN ONLY WHEN VIDEO PALS ARE CAPTURED) */}
+                      {/* ACTION CARD BAR */}
                       <TouchableOpacity
                         activeOpacity={0.85}
                         onPress={() => {
@@ -332,26 +356,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           marginBottom: 8,
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 17,
-                            fontFamily: Fonts.SystemRoundedBold,
-                            color: isDark ? '#FFFFFF' : '#000000',
-                          }}
-                        >
-                          {getDayLabel(displayList[0])}
+                        <Text style={{ fontSize: 17, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                          {getDayLabel(activePal)}
                         </Text>
-                        <Text
-                          style={{
-                            fontSize: 16,
-                            fontFamily: Fonts.SystemRoundedSemibold,
-                            color: edgeColor,
-                          }}
-                        >
+                        <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: edgeColor }}>
                           view pal
                         </Text>
                       </TouchableOpacity>
                     </>
+                  ) : (
+                    /* OPTIONAL EMPTY STATE: Render nothing when no Pal is sent */
+                    <View style={{ flex: 1 }} />
                   )}
                 </View>
               </TouchableWithoutFeedback>
@@ -509,7 +524,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           tint={isDark ? 'dark' : 'light'}
                           style={StyleSheet.absoluteFill}
                         />
-                        <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>Hi</Text>
+                        <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>Vlog</Text>
                       </View>
                     </View>
 
@@ -517,111 +532,91 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     <View style={{ width: 44 }} />
                   </View>
 
-                  {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (MATCHING IMAGE 2 EXACTLY) */}
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <View
-                      style={{
-                        width: screenWidth - 32,
-                        height: (screenWidth - 32) * (9 / 16),
-                        borderRadius: 28,
-                        overflow: 'hidden',
-                        position: 'relative',
-                        backgroundColor: '#000000',
-                        shadowColor: '#000000',
-                        shadowOffset: { width: 0, height: 8 },
-                        shadowOpacity: 0.4,
-                        shadowRadius: 16,
-                        elevation: 8,
-                      }}
-                    >
-                      <Video
-                        source={{ uri: displayList[0]?.uri }}
-                        style={StyleSheet.absoluteFill}
-                        videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
-                        resizeMode={ResizeMode.COVER}
-                        shouldPlay={true}
-                        isLooping={true}
-                        isMuted={false}
-                      />
-                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
-
-                      {/* TOP LEFT USER ROW INSIDE CARD: REPLICATING VLOG SHEET EXACT USER ROW */}
+                  {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (STRICT GUARDED) */}
+                  {activePal && resolvedActiveVideoUri ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                       <View
                         style={{
-                          position: 'absolute',
-                          top: 14,
-                          left: 16,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 10,
-                          zIndex: 20,
+                          width: screenWidth - 32,
+                          height: (screenWidth - 32) * (9 / 16),
+                          borderRadius: 28,
+                          overflow: 'hidden',
+                          position: 'relative',
+                          backgroundColor: '#000000',
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 0, height: 8 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 16,
+                          elevation: 8,
                         }}
-                        pointerEvents="none"
                       >
-                        <View
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 12,
-                            backgroundColor: edgeColor,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <Image
-                            source={require('../../assets/images/capture_smile.png')}
-                            style={{ width: 23, height: 23 }}
-                            resizeMode="contain"
-                          />
-                        </View>
-                        <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedMedium, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
-                          {username}
-                        </Text>
-                      </View>
+                        <Video
+                          source={{ uri: resolvedActiveVideoUri }}
+                          style={StyleSheet.absoluteFill}
+                          videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
+                          resizeMode={ResizeMode.COVER}
+                          shouldPlay={true}
+                          isLooping={true}
+                          isMuted={false}
+                        />
+                        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
 
-                      {/* CENTER TIME TEXT & CAPTION OVERLAY: REPLICATING VLOG SHEET CENTER TEXT OVERLAY */}
-                      <View
-                        style={{
-                          ...StyleSheet.absoluteFillObject,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          zIndex: 20,
-                        }}
-                        pointerEvents="none"
-                      >
-                        <Text
-                          style={{
-                            fontSize: 28,
-                            fontFamily: Fonts.DelaGothicOne,
-                            color: '#FFFFFF',
-                            textAlign: 'center',
-                            textShadowColor: 'rgba(0, 0, 0, 0.6)',
-                            textShadowOffset: { width: 0, height: 2 },
-                            textShadowRadius: 6,
-                          }}
-                        >
-                          {getNearestHourText(displayList[0]?.timestamp)}
-                        </Text>
-                        {!!displayList[0]?.caption && (
-                          <Text
+                        {/* TOP-LEFT USER BADGE */}
+                        <View style={{ position: 'absolute', top: 14, left: 16, flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 20 }}>
+                          <View
                             style={{
-                              fontSize: 18,
-                              fontFamily: Fonts.SystemRoundedSemibold,
-                              color: '#FFFFFF',
-                              textAlign: 'center',
-                              marginTop: 4,
-                              textShadowColor: 'rgba(0, 0, 0, 0.6)',
-                              textShadowOffset: { width: 0, height: 1 },
-                              textShadowRadius: 4,
+                              width: 29,
+                              height: 29,
+                              borderRadius: 14.5,
+                              backgroundColor: activePal?.sender?.themeColor || edgeColor,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              overflow: 'hidden',
                             }}
                           >
-                            {displayList[0]?.caption}
+                            {activePal?.sender?.avatarUri ? (
+                              <Image
+                                source={{ uri: activePal?.sender?.avatarUri }}
+                                style={{ width: '100%', height: '100%' }}
+                                resizeMode="cover"
+                              />
+                            ) : (
+                              <Image
+                                source={require('../../assets/images/capture_smile.png')}
+                                style={{ width: 23, height: 23 }}
+                                resizeMode="contain"
+                              />
+                            )}
+                          </View>
+                          
+                          <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedMedium, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
+                            {activePal?.sender?.username || username}
                           </Text>
-                        )}
+                        </View>
+
+                        {/* CENTER TIME & CAPTION OVERLAY */}
+                        <View
+                          style={{
+                            ...StyleSheet.absoluteFillObject,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 20,
+                          }}
+                          pointerEvents="none"
+                        >
+                          <Text style={{ fontSize: 28, fontFamily: Fonts.DelaGothicOne, color: '#FFFFFF', textAlign: 'center', textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>
+                            {getNearestHourText(activePal?.timestamp || activePal?.createdAt)}
+                          </Text>
+
+                          {Boolean(activePal?.caption) && (
+                            <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF', textAlign: 'center', marginTop: 4, textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>
+                              {activePal?.caption}
+                            </Text>
+                          )}
+                        </View>
                       </View>
                     </View>
-                  </View>
+                  ) : null}
                 </Animated.View>
               )}
             </View>

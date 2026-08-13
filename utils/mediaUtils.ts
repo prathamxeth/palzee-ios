@@ -102,3 +102,12 @@ export const formatRoundedHour = (dateInput?: Date | string | number): string =>
   const paddedHours = hours.toString().padStart(2, '0');
   return `${paddedHours}:00`;
 };
+
+export const getNearestHourText = (timestamp?: string | number | Date): string => {
+  return formatRoundedHour(timestamp);
+};
+
+export const getUserInitial = (name?: string): string => {
+  if (!name || name.trim().length === 0) return 'P';
+  return name.trim().charAt(0).toUpperCase();
+};
