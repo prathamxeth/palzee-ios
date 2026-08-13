@@ -1,3 +1,16 @@
+import { Platform } from 'react-native';
+
+let FileSystem: any = null;
+try {
+  FileSystem = require('expo-file-system/legacy');
+} catch (e) {
+  try {
+    FileSystem = require('expo-file-system');
+  } catch (err) {
+    FileSystem = null;
+  }
+}
+
 let VideoThumbnails: any = null;
 try {
   VideoThumbnails = require('expo-video-thumbnails');
@@ -9,7 +22,7 @@ try {
 const thumbnailCache = new Map<string, string>();
 
 /**
- * Extracts the 1st frame (time: 0) from a video URI with caching.
+ * Extracts the 1st frame (time: 100ms keyframe) from a video URI with caching.
  */
 export const generateVideoThumbnail = async (videoUri: string): Promise<string | null> => {
   if (!videoUri) return null;
@@ -18,18 +31,44 @@ export const generateVideoThumbnail = async (videoUri: string): Promise<string |
   }
 
   try {
-    if (VideoThumbnails && VideoThumbnails.getThumbnailAsync) {
-      const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
-        time: 0, // True 1st frame
-        quality: 0.8,
-      });
-      thumbnailCache.set(videoUri, uri);
-      return uri;
+    if (FileSystem && FileSystem.getInfoAsync) {
+      const fileInfo = await FileSystem.getInfoAsync(videoUri);
+      console.log('📁 File Info Exists:', fileInfo.exists);
     }
   } catch (e) {
-    console.warn("Error generating video thumbnail:", e);
+    console.log('File check warning:', e);
   }
-  return videoUri;
+
+  const cleanUri = Platform.OS === 'ios' ? videoUri.replace('file://', '') : videoUri;
+
+  try {
+    if (VideoThumbnails && VideoThumbnails.getThumbnailAsync) {
+      const { uri } = await VideoThumbnails.getThumbnailAsync(cleanUri, {
+        time: 100, // 100ms keyframe timestamp fix for iOS Camera cache
+        quality: 0.8,
+      });
+      if (uri) {
+        thumbnailCache.set(videoUri, uri);
+        return uri;
+      }
+    }
+  } catch (e) {
+    try {
+      if (VideoThumbnails && VideoThumbnails.getThumbnailAsync) {
+        const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
+          time: 100,
+          quality: 0.8,
+        });
+        if (uri) {
+          thumbnailCache.set(videoUri, uri);
+          return uri;
+        }
+      }
+    } catch (err) {
+      console.warn("Error generating video thumbnail:", err);
+    }
+  }
+  return null;
 };
 
 /**

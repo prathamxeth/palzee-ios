@@ -27,6 +27,7 @@ import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 import { CRTStaticCard } from './CRTStaticCard';
 import { ChatDrawer } from './ChatDrawer';
 import { EditExportSheet } from './EditExportSheet';
+import { getNearestHourText } from '../../utils/mediaUtils';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -101,7 +102,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
   const currentUri = currentClip ? currentClip.uri : activeVideoUri;
   const currentCaption = currentClip ? (currentClip.caption || '') : caption;
-  const currentTimestamp = currentClip ? (currentClip.timestamp || '18:33') : timestamp;
+  const currentTimestamp = getNearestHourText(currentClip ? ((currentClip as any).displayTime || currentClip.timestamp) : timestamp);
   const currentIsMuted = currentClip ? (currentClip.isMuted ?? false) : isMuted;
 
   const [editingCaptionText, setEditingCaptionText] = useState(currentCaption);
@@ -483,7 +484,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 {!!currentUri ? (
                   <>
                     <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
-                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>{currentCaption}</Text>
+                    {!!currentCaption && (
+                      <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
+                        {currentCaption}
+                      </Text>
+                    )}
                     <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{currentTimestamp}</Text>
                   </>
                 ) : (

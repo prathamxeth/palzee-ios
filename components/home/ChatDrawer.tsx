@@ -39,6 +39,8 @@ interface ChatDrawerProps {
     id: string;
     uri: string;
     videoUri?: string;
+    thumbnailUri?: string;
+    needsRotation?: boolean;
     caption?: string;
     timestamp: string;
     date?: string;
@@ -86,6 +88,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     '';
 
   const [extractedThumbnail, setExtractedThumbnail] = useState<string | null>(null);
+  const [isSideways, setIsSideways] = useState(false);
+  const activeThumbUri = activePal?.thumbnailUri || extractedThumbnail;
 
   useEffect(() => {
     let isMounted = true;
@@ -98,6 +102,23 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     }
     return () => { isMounted = false; };
   }, [resolvedActiveVideoUri]);
+
+  useEffect(() => {
+    if (activeThumbUri) {
+      Image.getSize(
+        activeThumbUri,
+        (w, h) => {
+          const isRawSideways = w > h;
+          setIsSideways(isRawSideways);
+        },
+        (err) => {
+          console.warn('Failed to inspect thumbnail dimensions:', err);
+        }
+      );
+    } else {
+      setIsSideways(false);
+    }
+  }, [activeThumbUri]);
 
   const getDisplayTimestamp = (item?: any) => {
     if (!item) return '7:26 PM';
@@ -312,15 +333,23 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           height: 86,
                           borderRadius: 20,
                           overflow: 'hidden',
-                          backgroundColor: '#000000',
+                          backgroundColor: '#1C1C1E',
                           borderWidth: 1,
                           borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)',
                         }}
                       >
-                        {extractedThumbnail ? (
+                        {activeThumbUri ? (
                           <Image
-                            source={{ uri: extractedThumbnail }}
-                            style={StyleSheet.absoluteFill}
+                            source={{ uri: activeThumbUri }}
+                            style={
+                              activePal?.needsRotation || isSideways
+                                ? {
+                                    width: 86,
+                                    height: 146,
+                                    transform: [{ rotate: '90deg' }],
+                                  }
+                                : StyleSheet.absoluteFill
+                            }
                             resizeMode="cover"
                           />
                         ) : (
@@ -563,13 +592,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         />
                         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
 
-                        {/* TOP-LEFT USER BADGE */}
-                        <View style={{ position: 'absolute', top: 14, left: 16, flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 20 }}>
+                        {/* TOP-LEFT USER BADGE (EXACT MATCH FOR VLOGSHEET POSITION & SIZE) */}
+                        <View style={{ position: 'absolute', top: 10, left: 14.5, flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 20 }}>
                           <View
                             style={{
-                              width: 29,
-                              height: 29,
-                              borderRadius: 14.5,
+                              width: 24,
+                              height: 24,
+                              borderRadius: 12,
                               backgroundColor: activePal?.sender?.themeColor || edgeColor,
                               justifyContent: 'center',
                               alignItems: 'center',
@@ -596,7 +625,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           </Text>
                         </View>
 
-                        {/* CENTER TIME & CAPTION OVERLAY */}
+                        {/* CENTER TIME & CAPTION OVERLAY (REDUCED TIME TEXT BY 5DP: 28 -> 23) */}
                         <View
                           style={{
                             ...StyleSheet.absoluteFillObject,
@@ -606,7 +635,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           }}
                           pointerEvents="none"
                         >
-                          <Text style={{ fontSize: 28, fontFamily: Fonts.DelaGothicOne, color: '#FFFFFF', textAlign: 'center', textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>
+                          <Text style={{ fontSize: 23, fontFamily: Fonts.DelaGothicOne, color: '#FFFFFF', textAlign: 'center', textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>
                             {getNearestHourText(activePal?.timestamp || activePal?.createdAt)}
                           </Text>
 

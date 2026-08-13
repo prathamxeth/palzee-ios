@@ -28,6 +28,7 @@ import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
+import { getNearestHourText, generateVideoThumbnail } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
@@ -495,7 +496,20 @@ export default function HomeScreen({
     setCameraFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
-  const [vlogList, setVlogList] = useState<Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>>([]);
+  const [vlogList, setVlogList] = useState<
+    Array<{
+      id: string;
+      uri: string;
+      thumbnailUri?: string;
+      needsRotation?: boolean;
+      caption?: string;
+      timestamp: string;
+      displayTime?: string;
+      isMuted?: boolean;
+      rate?: number;
+      mode?: string;
+    }>
+  >([]);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
   const [homeVlogProgress, setHomeVlogProgress] = useState(0);
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
@@ -526,7 +540,8 @@ export default function HomeScreen({
     loop.start();
   }, []);
 
-  const handleVideoSent = (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
+  const handleVideoSent = async (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
+    console.log('🎥 [handleVideoSent] Triggered with URI:', uri);
     const now = new Date();
     let hours = now.getHours();
     const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -535,15 +550,46 @@ export default function HomeScreen({
     hours = hours ? hours : 12;
     const timestamp = `${hours}:${minutes} ${ampm}`;
 
+    let thumbnailUri = '';
+    let needsRotation = false;
+    try {
+      console.log('⏳ Generating 1st frame thumbnail...');
+      const thumb = await generateVideoThumbnail(uri);
+      if (thumb) {
+        thumbnailUri = thumb;
+        console.log('✅ Thumbnail Generated Successfully:', thumbnailUri);
+
+        await new Promise((resolve) => {
+          Image.getSize(
+            thumb,
+            (w, h) => {
+              if (w > h && mode !== 'landscape') {
+                needsRotation = true;
+              }
+              resolve(true);
+            },
+            () => resolve(false)
+          );
+        });
+      }
+    } catch (e) {
+      console.error('❌ Native Thumbnail Generation Error:', e);
+    }
+
     const newLog = {
       id: Date.now().toString(),
       uri,
+      thumbnailUri,
+      needsRotation,
       caption: caption || '',
-      timestamp,
+      timestamp: now.toISOString(),
+      displayTime: timestamp,
       isMuted: isMuted ?? false,
       rate: rate || 1.0,
       mode: mode || 'off',
     };
+
+    console.log('📦 New Vlog Payload:', newLog);
 
     setVlogList((prev) => [newLog, ...prev]);
     setHomeVlogIndex(0);
@@ -808,17 +854,20 @@ export default function HomeScreen({
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
+                        zIndex: 10,
                       }}
                       pointerEvents="none"
                     >
                       <Text style={{ color: '#FFFFFF', fontSize: 24, fontFamily: Fonts.SystemRoundedBold }}>
                         vlog
                       </Text>
-                      <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
-                        {vlogList[homeVlogIndex]?.caption || 'Hi'}
-                      </Text>
+                      {!!vlogList[homeVlogIndex]?.caption && (
+                        <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
+                          {vlogList[homeVlogIndex]?.caption}
+                        </Text>
+                      )}
                       <Text style={{ color: '#FFFFFF', fontSize: 17, fontFamily: Fonts.SystemRoundedSemibold }}>
-                        {vlogList[homeVlogIndex]?.timestamp || '18:33'}
+                        {getNearestHourText(vlogList[homeVlogIndex]?.timestamp || vlogList[homeVlogIndex]?.displayTime)}
                       </Text>
                     </View>
 
