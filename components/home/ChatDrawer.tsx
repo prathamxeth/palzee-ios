@@ -34,7 +34,8 @@ interface ChatDrawerProps {
   user?: User;
   isDark?: boolean;
   selectedThemeColor?: string;
-  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean }>;
+  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
+  activeVideoUri?: string | null;
 }
 
 export const ChatDrawer: React.FC<ChatDrawerProps> = ({
@@ -46,6 +47,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   isDark: isDarkProp,
   selectedThemeColor = 'cyan',
   vlogList = [],
+  activeVideoUri,
 }) => {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -53,6 +55,18 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const isDark = isDarkProp !== undefined ? isDarkProp : systemScheme === 'dark';
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
+
+  const displayList = vlogList && vlogList.length > 0 
+    ? vlogList 
+    : activeVideoUri 
+      ? [{ id: 'active_default', uri: activeVideoUri, caption: 'Hi', timestamp: '7:26 PM' }] 
+      : [{ id: 'demo_default', uri: 'https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-makeup-39875-large.mp4', caption: 'Hi', timestamp: '7:26 PM' }];
+
+  const getDayLabel = (item?: any) => {
+    if (!item) return 'Today';
+    if (item.dayLabel) return item.dayLabel;
+    return 'Today';
+  };
 
   const [messageText, setMessageText] = useState('');
   const [modalVisible, setModalVisible] = useState(visible);
@@ -216,7 +230,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               {/* 2. FLEXIBLE CHAT CONTENT AREA (DISMISS KEYBOARD ON TOUCH) */}
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={[styles.bodyContainer, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
-                  {vlogList.length > 0 && (
+                  {displayList.length > 0 && (
                     <>
                       {/* TIMESTAMP / DAY HEADER ABOVE VIDEO THUMBNAIL (CHARCOAL IN DARK MODE, GREY IN LIGHT MODE) */}
                       <Text
@@ -228,7 +242,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           marginBottom: 10,
                         }}
                       >
-                        {`Yesterday ${vlogList[0]?.timestamp || '7:26 PM'}`}
+                        {`${getDayLabel(displayList[0])} ${displayList[0]?.timestamp || '7:26 PM'}`}
                       </Text>
 
                       {/* THUMBNAIL BUBBLE AS LIVE PREVIEW OF SENT VIDEO PAL (RIGHT-ALIGNED, CLICKABLE TO OPEN PREVIEW) */}
@@ -249,13 +263,16 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         }}
                       >
                         <Video
-                          source={{ uri: vlogList[0]?.uri }}
+                          source={{ uri: displayList[0]?.uri }}
                           style={StyleSheet.absoluteFill}
                           resizeMode={ResizeMode.COVER}
                           shouldPlay={true}
                           isLooping={true}
                           isMuted={true}
-                          rate={vlogList[0]?.rate || 1.0}
+                          usePoster={true}
+                          posterSource={{ uri: displayList[0]?.uri }}
+                          posterStyle={{ resizeMode: 'cover' }}
+                          rate={displayList[0]?.rate || 1.0}
                           shouldCorrectPitch={true}
                         />
                       </TouchableOpacity>
@@ -287,7 +304,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             color: isDark ? '#FFFFFF' : '#000000',
                           }}
                         >
-                          Yesterday
+                          {getDayLabel(displayList[0])}
                         </Text>
                         <Text
                           style={{
@@ -405,16 +422,16 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         </Animated.View>
       </View>
 
-      {/* FULL-SCREEN VIDEO PREVIEW OVERLAY MODAL (CLICKED FROM THUMBNAIL, MATCHING REFERENCE IMAGE EXACTLY) */}
+      {/* FULL-SCREEN VIDEO PREVIEW OVERLAY MODAL (MATCHING IMAGE 2 EXACTLY) */}
       <Modal
         visible={previewVideoModal}
         transparent={true}
         animationType="fade"
         onRequestClose={() => setPreviewVideoModal(false)}
       >
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.88)', justifyContent: 'center', alignItems: 'center' }]}>
-          {/* TOP LEFT CLOSE CROSS ICON */}
-          <View style={{ position: 'absolute', top: Math.max(insets.top, 16), left: 16, zIndex: 50 }}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.85)', justifyContent: 'center', alignItems: 'center' }]}>
+          {/* TOP HEADER BAR INSIDE MODAL: LEFT CLOSE CROSS ICON + CENTER "Hi" PILL */}
+          <View style={{ position: 'absolute', top: Math.max(insets.top, 16), left: 16, right: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 50 }}>
             <LiquidGlassIconButton
               idPrefix="btnClosePreviewOverlay"
               isDark={isDark}
@@ -422,29 +439,55 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             >
               <Ionicons name="close" size={24} color="#FFFFFF" />
             </LiquidGlassIconButton>
+
+            {/* CENTER "Hi" PILL BUTTON MATCHING IMAGE 2 */}
+            <View
+              style={{
+                width: 52,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: 'rgba(30,30,34,0.75)',
+                borderColor: 'rgba(255,255,255,0.15)',
+                borderWidth: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <BlurView intensity={35} tint="dark" style={StyleSheet.absoluteFill} />
+              <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedBold, color: '#FFFFFF' }}>Hi</Text>
+            </View>
+
+            <View style={{ width: 44 }} />
           </View>
 
-          {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (MATCHING REFERENCE IMAGE EXACTLY) */}
+          {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (MATCHING IMAGE 2 EXACTLY) */}
           <View
             style={{
-              width: screenWidth - 30,
-              height: (screenWidth - 30) * (9 / 16),
-              borderRadius: 24,
+              width: screenWidth - 32,
+              height: (screenWidth - 32) * (9 / 16),
+              borderRadius: 28,
               overflow: 'hidden',
               position: 'relative',
               backgroundColor: '#000000',
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.4,
+              shadowRadius: 16,
+              elevation: 8,
             }}
           >
             <Video
-              source={{ uri: vlogList[0]?.uri }}
+              source={{ uri: displayList[0]?.uri }}
               style={StyleSheet.absoluteFill}
               resizeMode={ResizeMode.COVER}
               shouldPlay={true}
               isLooping={true}
+              isMuted={false}
             />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
 
-            {/* TOP LEFT USER ROW INSIDE CARD: PROFILE SMILEY CIRCLE + USERNAME */}
+            {/* TOP LEFT USER ROW INSIDE CARD: DEFAULT PROFILE SMILEY CIRCLE + FULL USERNAME */}
             <View
               style={{
                 position: 'absolute',
@@ -452,16 +495,16 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 left: 16,
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 8,
+                gap: 6,
                 zIndex: 20,
               }}
               pointerEvents="none"
             >
               <View
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 14,
+                  width: 27,
+                  height: 27,
+                  borderRadius: 13.5,
                   backgroundColor: edgeColor,
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -470,11 +513,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               >
                 <Image
                   source={require('../../assets/images/capture_smile.png')}
-                  style={{ width: 16, height: 16, tintColor: '#000000' }}
+                  style={{ width: 15, height: 15, tintColor: '#000000' }}
                   resizeMode="contain"
                 />
               </View>
-              <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF' }}>
+              <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
                 {username}
               </Text>
             </View>
@@ -491,31 +534,31 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             >
               <Text
                 style={{
-                  fontSize: 28,
+                  fontSize: 22,
                   fontFamily: Fonts.DelaGothicOne,
                   color: '#FFFFFF',
                   textAlign: 'center',
-                  textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                  textShadowColor: 'rgba(0, 0, 0, 0.6)',
                   textShadowOffset: { width: 0, height: 2 },
-                  textShadowRadius: 4,
+                  textShadowRadius: 5,
                 }}
               >
-                {getNearestHourText(vlogList[0]?.timestamp)}
+                {getNearestHourText(displayList[0]?.timestamp)}
               </Text>
-              {!!vlogList[0]?.caption && (
+              {!!displayList[0]?.caption && (
                 <Text
                   style={{
-                    fontSize: 18,
+                    fontSize: 16,
                     fontFamily: Fonts.SystemRoundedSemibold,
                     color: '#FFFFFF',
                     textAlign: 'center',
-                    marginTop: 4,
-                    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                    marginTop: 2,
+                    textShadowColor: 'rgba(0, 0, 0, 0.6)',
                     textShadowOffset: { width: 0, height: 1 },
                     textShadowRadius: 3,
                   }}
                 >
-                  {vlogList[0]?.caption}
+                  {displayList[0]?.caption}
                 </Text>
               )}
             </View>

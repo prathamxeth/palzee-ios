@@ -292,12 +292,12 @@ export default function PalCameraPreview({
   };
 
   const getRecordingDurationSec = () => {
-    if (timerMode === 'off') return 3.5;
+    if (timerMode === 'off') return 2.0;
     if (timerMode === '3s') return 3;
     if (timerMode === '5s') return 5;
     if (timerMode === 'timelapse') return 10;
     if (timerMode === 'jump_cut') return 10;
-    return 3.5;
+    return 2.0;
   };
 
   const executeRecording = async () => {
@@ -318,16 +318,16 @@ export default function PalCameraPreview({
       const data = await cameraRef.current.recordAsync({
         maxDuration: recSec,
         quality: '1080p',
+        mute: false,
       });
       if (data && data.uri) {
-        setTimeout(() => {
-          setPreviewVideoUri(data.uri);
-        }, 150);
+        setPreviewVideoUri(data.uri);
       }
     } catch (e) {
+      console.log('Record error:', e);
+    } finally {
       setIsRecording(false);
       progressAnim.setValue(0);
-    } finally {
       setFlash('off');
     }
   };

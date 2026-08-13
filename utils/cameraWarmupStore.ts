@@ -14,20 +14,12 @@ class CameraWarmupStore {
 
   public async checkAndWarmupPermissions(): Promise<{ camera: boolean; mic: boolean }> {
     try {
-      const [camRes, micRes] = await Promise.all([
-        Camera.getCameraPermissionsAsync(),
-        Camera.getMicrophonePermissionsAsync(),
-      ]);
+      const camRes = await Camera.getCameraPermissionsAsync();
       const isCamGranted = camRes.granted;
-      const isMicGranted = micRes.granted;
 
       let changed = false;
       if (this.cameraGranted !== isCamGranted) {
         this.cameraGranted = isCamGranted;
-        changed = true;
-      }
-      if (this.micGranted !== isMicGranted) {
-        this.micGranted = isMicGranted;
         changed = true;
       }
 
@@ -35,7 +27,7 @@ class CameraWarmupStore {
         this.notify();
       }
 
-      return { camera: isCamGranted, mic: isMicGranted };
+      return { camera: isCamGranted, mic: this.micGranted };
     } catch (e) {
       console.warn('[CameraWarmupStore] Check permissions error:', e);
       return { camera: this.cameraGranted, mic: this.micGranted };

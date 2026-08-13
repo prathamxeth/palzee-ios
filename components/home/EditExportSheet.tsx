@@ -184,7 +184,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           style={[
             styles.container,
             {
-              backgroundColor: '#000000',
+              backgroundColor: isDark ? '#000000' : '#F2F2F7',
               paddingTop: Math.max(insets.top, 12),
               paddingBottom: Math.max(insets.bottom, 12),
             },
@@ -193,7 +193,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
           <View style={styles.headerBar}>
             <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
-              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
             </LiquidGlassIconButton>
           </View>
 
@@ -207,7 +207,11 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   borderRadius: 0,
                   overflow: 'hidden',
                   position: 'relative',
-                  backgroundColor: '#000000',
+                  backgroundColor: isDark ? '#000000' : '#FFFFFF',
+                  shadowColor: isDark ? '#000000' : '#8E8E93',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 10,
                 }}
               >
                 <Video
@@ -314,7 +318,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   marginTop: 8,
                   fontSize: 15.5,
                   fontFamily: Fonts.SystemRoundedMedium,
-                  color: isDark ? '#8E8E93' : '#636366',
+                  color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
                 }}
               >
@@ -337,7 +341,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   marginTop: 8,
                   fontSize: 15.5,
                   fontFamily: Fonts.SystemRoundedMedium,
-                  color: isDark ? '#8E8E93' : '#636366',
+                  color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
                 }}
               >
@@ -366,7 +370,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   marginTop: 8,
                   fontSize: 15.5,
                   fontFamily: Fonts.SystemRoundedMedium,
-                  color: isDark ? '#8E8E93' : '#636366',
+                  color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
                 }}
               >
@@ -400,7 +404,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   marginTop: 8,
                   fontSize: 15.5,
                   fontFamily: Fonts.SystemRoundedMedium,
-                  color: isDark ? '#8E8E93' : '#636366',
+                  color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
                 }}
               >
