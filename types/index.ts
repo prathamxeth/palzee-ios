@@ -57,3 +57,19 @@ export interface ActivePalState {
   exportData: Record<number, SubmissionDbItem[]>;
   memberCount: number;
 }
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  avatarUri?: string;
+  themeColor?: string;
+}
+
+export interface PalMessage {
+  id: string;
+  videoUri: string;
+  timestamp: string | number | Date;
+  sender: UserProfile;
+  caption?: string;
+  chatTitle?: string;
+}

@@ -1010,16 +1010,16 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   avatarCircleFilled: {
-    width: 29,
-    height: 29,
-    borderRadius: 14.5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   avatarSmileImage: {
-    width: 28,
-    height: 28,
+    width: 23,
+    height: 23,
   },
   usernameText: {
     fontSize: 15,

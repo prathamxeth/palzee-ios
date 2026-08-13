@@ -122,6 +122,7 @@ export default function PalCameraPreview({
   }, []);
 
   const [colorIndex, setColorIndex] = useState(0);
+  const [isPreparingVideo, setIsPreparingVideo] = useState(false);
 
   // Live time state (Formated as 7:17 PM)
   const [timeText, setTimeText] = useState('');
@@ -160,10 +161,10 @@ export default function PalCameraPreview({
   }, []);
 
   useEffect(() => {
-    if (!previewVideoUri && !isRecording && countdown === null) {
+    if (!previewVideoUri && !isRecording && !isPreparingVideo && countdown === null) {
       startIdleRotation();
     }
-  }, [previewVideoUri, isRecording, countdown]);
+  }, [previewVideoUri, isRecording, isPreparingVideo, countdown]);
 
   // Floating mode pill auto-hide state
   const [showPill, setShowPill] = useState(false);
@@ -196,10 +197,10 @@ export default function PalCameraPreview({
     return () => clearTimeout(timer);
   }, [timerMode]);
 
-  // Dancing hex colors animation during recording & countdown
+  // Dancing hex colors animation during recording, countdown & video preparation
   useEffect(() => {
     let danceInterval: any = null;
-    if (isRecording || countdown !== null) {
+    if (isRecording || isPreparingVideo || countdown !== null) {
       danceInterval = setInterval(() => {
         setColorIndex((prev) => (prev + 1) % DANCING_COLORS.length);
       }, 100);
@@ -209,11 +210,11 @@ export default function PalCameraPreview({
     return () => {
       if (danceInterval) clearInterval(danceInterval);
     };
-  }, [isRecording, countdown]);
+  }, [isRecording, isPreparingVideo, countdown]);
 
-  // Slow rotation during recording & countdown
+  // Slow rotation during recording, countdown & video preparation
   useEffect(() => {
-    if (isRecording || countdown !== null) {
+    if (isRecording || isPreparingVideo || countdown !== null) {
       rotationAnim.setValue(0);
       Animated.loop(
         Animated.timing(rotationAnim, {
@@ -227,7 +228,7 @@ export default function PalCameraPreview({
       rotationAnim.stopAnimation();
       rotationAnim.setValue(0);
     }
-  }, [isRecording, countdown]);
+  }, [isRecording, isPreparingVideo, countdown]);
 
   const sideMargin = 8.5;
   let cameraWidth = Math.max(screenWidth - sideMargin * 2, 320);
@@ -320,13 +321,17 @@ export default function PalCameraPreview({
         quality: '1080p',
         mute: false,
       });
+      setIsRecording(false);
+      setIsPreparingVideo(true);
       if (data && data.uri) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
         setPreviewVideoUri(data.uri);
       }
     } catch (e) {
       console.log('Record error:', e);
     } finally {
       setIsRecording(false);
+      setIsPreparingVideo(false);
       progressAnim.setValue(0);
       setFlash('off');
     }
@@ -337,7 +342,7 @@ export default function PalCameraPreview({
     outputRange: ['0deg', '360deg'],
   });
 
-  const smileyColor = isRecording || countdown !== null ? DANCING_COLORS[colorIndex] : '#00F0FF';
+  const smileyColor = isRecording || isPreparingVideo || countdown !== null ? DANCING_COLORS[colorIndex] : '#00F0FF';
   const shutterSize = 82;
   const centerShutterLeft = (cameraWidth - shutterSize) / 2;
 

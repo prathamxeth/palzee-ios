@@ -528,9 +528,12 @@ export default function HomeScreen({
 
   const handleVideoSent = (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
+    let hours = now.getHours();
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    const timestamp = `${hours}:${minutes}`;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const timestamp = `${hours}:${minutes} ${ampm}`;
 
     const newLog = {
       id: Date.now().toString(),
@@ -1859,6 +1862,7 @@ export default function HomeScreen({
           isDark={isDark}
           selectedThemeColor={selectedThemeColor}
           vlogList={vlogList}
+          activeVideoUri={vlogList.length > 0 ? vlogList[0]?.uri : undefined}
         />
 
         <VlogSheet

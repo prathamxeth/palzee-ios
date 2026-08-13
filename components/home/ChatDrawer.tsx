@@ -24,6 +24,7 @@ import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { User } from '../../types';
+import { generateVideoThumbnail, formatExactTime, formatRoundedHour, formatRelativeDay } from '../../utils/mediaUtils';
 
 interface ChatDrawerProps {
   visible: boolean;
@@ -31,11 +32,11 @@ interface ChatDrawerProps {
   onOpenCamera?: () => void;
   onOpenVlog?: () => void;
   palCode?: string;
-  user?: User;
+  user: User | null;
   isDark?: boolean;
   selectedThemeColor?: string;
-  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
-  activeVideoUri?: string | null;
+  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; date?: string; isMuted?: boolean; rate?: number; mode?: string }>;
+  activeVideoUri?: string;
 }
 
 export const ChatDrawer: React.FC<ChatDrawerProps> = ({
@@ -43,9 +44,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   onClose,
   onOpenCamera,
   onOpenVlog,
+  palCode = 'palzee_space',
   user,
   isDark: isDarkProp,
-  selectedThemeColor = 'cyan',
+  selectedThemeColor = 'orange',
   vlogList = [],
   activeVideoUri,
 }) => {
@@ -59,13 +61,29 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const displayList = vlogList && vlogList.length > 0 
     ? vlogList 
     : activeVideoUri 
-      ? [{ id: 'active_default', uri: activeVideoUri, caption: 'Hi', timestamp: '7:26 PM' }] 
-      : [{ id: 'demo_default', uri: 'https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-makeup-39875-large.mp4', caption: 'Hi', timestamp: '7:26 PM' }];
+      ? [{ id: 'active_default', uri: activeVideoUri, caption: 'Done', timestamp: '7:26 PM' }] 
+      : [{ id: 'demo_default', uri: 'https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-makeup-39875-large.mp4', caption: 'Done', timestamp: '7:26 PM' }];
+
+  const [extractedThumbnail, setExtractedThumbnail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (displayList[0]?.uri) {
+      generateVideoThumbnail(displayList[0].uri).then((uri) => {
+        if (isMounted && uri) setExtractedThumbnail(uri);
+      });
+    }
+    return () => { isMounted = false; };
+  }, [displayList[0]?.uri]);
+
+  const getDisplayTimestamp = (item?: any) => {
+    if (!item) return '7:26 PM';
+    return formatExactTime(item.timestamp || item.date);
+  };
 
   const getDayLabel = (item?: any) => {
-    if (!item) return 'Today';
-    if (item.dayLabel) return item.dayLabel;
-    return 'Today';
+    if (!item) return 'Yesterday';
+    return formatRelativeDay(item.date || item.createdAt || item.timestamp);
   };
 
   const [messageText, setMessageText] = useState('');
@@ -73,20 +91,31 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const [previewVideoModal, setPreviewVideoModal] = useState(false);
 
   const getNearestHourText = (rawTimestamp?: string) => {
-    const t = rawTimestamp || '19:00';
-    const parts = t.split(':');
-    if (parts.length === 2) {
-      let h = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10);
-      if (isNaN(h)) h = 19;
-      if (!isNaN(m) && m >= 30) h = (h + 1) % 24;
-      return `${String(h).padStart(2, '0')}:00`;
-    }
-    return t;
+    return formatRoundedHour(rawTimestamp);
   };
 
   const expandAnim = useRef(new Animated.Value(0)).current;
   const smileyRotateAnim = useRef(new Animated.Value(0)).current;
+  const previewAnim = useRef(new Animated.Value(0)).current;
+
+  const openPreviewModal = () => {
+    setPreviewVideoModal(true);
+    previewAnim.setValue(0);
+    Animated.spring(previewAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 65,
+      friction: 11,
+    }).start();
+  };
+
+  const closePreviewModal = () => {
+    Animated.timing(previewAnim, {
+      toValue: 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => setPreviewVideoModal(false));
+  };
 
   useEffect(() => {
     smileyRotateAnim.setValue(0);
@@ -219,7 +248,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
-                    <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
+                    <Text style={[styles.vlogPillText, { color: textColor }]}>Hi</Text>
                   </View>
                 </View>
 
@@ -242,13 +271,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           marginBottom: 10,
                         }}
                       >
-                        {`${getDayLabel(displayList[0])} ${displayList[0]?.timestamp || '7:26 PM'}`}
+                        {`${getDayLabel(displayList[0])} ${getDisplayTimestamp(displayList[0])}`}
                       </Text>
 
                       {/* THUMBNAIL BUBBLE AS LIVE PREVIEW OF SENT VIDEO PAL (RIGHT-ALIGNED, CLICKABLE TO OPEN PREVIEW) */}
                       <TouchableOpacity
                         activeOpacity={0.9}
-                        onPress={() => setPreviewVideoModal(true)}
+                        onPress={openPreviewModal}
                         style={{
                           alignSelf: 'flex-end',
                           marginRight: 16,
@@ -262,19 +291,25 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)',
                         }}
                       >
-                        <Video
-                          source={{ uri: displayList[0]?.uri }}
-                          style={StyleSheet.absoluteFill}
-                          resizeMode={ResizeMode.COVER}
-                          shouldPlay={true}
-                          isLooping={true}
-                          isMuted={true}
-                          usePoster={true}
-                          posterSource={{ uri: displayList[0]?.uri }}
-                          posterStyle={{ resizeMode: 'cover' }}
-                          rate={displayList[0]?.rate || 1.0}
-                          shouldCorrectPitch={true}
-                        />
+                        {extractedThumbnail ? (
+                          <Image
+                            source={{ uri: extractedThumbnail }}
+                            style={StyleSheet.absoluteFill}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <Video
+                            source={{ uri: displayList[0]?.uri }}
+                            style={StyleSheet.absoluteFill}
+                            videoStyle={{ width: '100%', height: '100%', borderRadius: 20 }}
+                            resizeMode={ResizeMode.COVER}
+                            shouldPlay={true}
+                            isLooping={true}
+                            isMuted={true}
+                            rate={displayList[0]?.rate || 1.0}
+                            shouldCorrectPitch={true}
+                          />
+                        )}
                       </TouchableOpacity>
 
                       {/* VIEW PAL BOX BELOW THUMBNAIL (SHOWN ONLY WHEN VIDEO PALS ARE CAPTURED) */}
@@ -417,154 +452,182 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   </View>
                 </View>
               </KeyboardAvoidingView>
+              {/* FULL-SCREEN VIDEO PREVIEW OVERLAY (INSIDE CONTAINER FOR 1:1 ZERO-OFFSET HEADER OVERLAP & SPRING SLIDE-UP ANIMATION) */}
+              {previewVideoModal && (
+                <Animated.View
+                  style={[
+                    StyleSheet.absoluteFillObject,
+                    {
+                      backgroundColor: isDark ? 'rgba(0, 0, 0, 0.92)' : 'rgba(242, 242, 247, 0.95)',
+                      paddingTop: Math.max(insets.top, 12),
+                      paddingBottom: Math.max(insets.bottom, 12),
+                      borderRadius: 36,
+                      overflow: 'hidden',
+                      zIndex: 200,
+                      opacity: previewAnim,
+                      transform: [
+                        {
+                          translateY: previewAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [150, 0],
+                          }),
+                        },
+                        {
+                          scale: previewAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.94, 1],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  {/* TOP HEADER BAR INSIDE OVERLAY: EXACT 1:1 OVERLAP WITH CHAT DRAWER HEADER ROW */}
+                  <View style={styles.headerRow}>
+                    {/* LEFT CLOSE CROSS BUTTON (EXACT MATCH FOR BACK CHEVRON BUTTON POSITION) */}
+                    <LiquidGlassIconButton
+                      idPrefix="btnClosePreviewOverlay"
+                      isDark={isDark}
+                      onPress={closePreviewModal}
+                    >
+                      <Ionicons name="close" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+                    </LiquidGlassIconButton>
+
+                    {/* CENTER VLOG PILL (EXACT MATCH FOR CHAT DRAWER CENTER VLOG PILL) */}
+                    <View style={styles.vlogCenterPillWrapper} pointerEvents="box-none">
+                      <View
+                        style={[
+                          styles.vlogLiquidPillBtn,
+                          {
+                            backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
+                            borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                          },
+                        ]}
+                      >
+                        <BlurView
+                          intensity={35}
+                          tint={isDark ? 'dark' : 'light'}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>Hi</Text>
+                      </View>
+                    </View>
+
+                    {/* BALANCING SPACER */}
+                    <View style={{ width: 44 }} />
+                  </View>
+
+                  {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (MATCHING IMAGE 2 EXACTLY) */}
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View
+                      style={{
+                        width: screenWidth - 32,
+                        height: (screenWidth - 32) * (9 / 16),
+                        borderRadius: 28,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#000000',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 8 },
+                        shadowOpacity: 0.4,
+                        shadowRadius: 16,
+                        elevation: 8,
+                      }}
+                    >
+                      <Video
+                        source={{ uri: displayList[0]?.uri }}
+                        style={StyleSheet.absoluteFill}
+                        videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={true}
+                        isLooping={true}
+                        isMuted={false}
+                      />
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
+
+                      {/* TOP LEFT USER ROW INSIDE CARD: REPLICATING VLOG SHEET EXACT USER ROW */}
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 14,
+                          left: 16,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 10,
+                          zIndex: 20,
+                        }}
+                        pointerEvents="none"
+                      >
+                        <View
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 12,
+                            backgroundColor: edgeColor,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <Image
+                            source={require('../../assets/images/capture_smile.png')}
+                            style={{ width: 23, height: 23 }}
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedMedium, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
+                          {username}
+                        </Text>
+                      </View>
+
+                      {/* CENTER TIME TEXT & CAPTION OVERLAY: REPLICATING VLOG SHEET CENTER TEXT OVERLAY */}
+                      <View
+                        style={{
+                          ...StyleSheet.absoluteFillObject,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          zIndex: 20,
+                        }}
+                        pointerEvents="none"
+                      >
+                        <Text
+                          style={{
+                            fontSize: 28,
+                            fontFamily: Fonts.DelaGothicOne,
+                            color: '#FFFFFF',
+                            textAlign: 'center',
+                            textShadowColor: 'rgba(0, 0, 0, 0.6)',
+                            textShadowOffset: { width: 0, height: 2 },
+                            textShadowRadius: 6,
+                          }}
+                        >
+                          {getNearestHourText(displayList[0]?.timestamp)}
+                        </Text>
+                        {!!displayList[0]?.caption && (
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontFamily: Fonts.SystemRoundedSemibold,
+                              color: '#FFFFFF',
+                              textAlign: 'center',
+                              marginTop: 4,
+                              textShadowColor: 'rgba(0, 0, 0, 0.6)',
+                              textShadowOffset: { width: 0, height: 1 },
+                              textShadowRadius: 4,
+                            }}
+                          >
+                            {displayList[0]?.caption}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                </Animated.View>
+              )}
             </View>
           </DynamicGlowContainer>
         </Animated.View>
       </View>
-
-      {/* FULL-SCREEN VIDEO PREVIEW OVERLAY MODAL (MATCHING IMAGE 2 EXACTLY) */}
-      <Modal
-        visible={previewVideoModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setPreviewVideoModal(false)}
-      >
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.85)', justifyContent: 'center', alignItems: 'center' }]}>
-          {/* TOP HEADER BAR INSIDE MODAL: LEFT CLOSE CROSS ICON + CENTER "Hi" PILL */}
-          <View style={{ position: 'absolute', top: Math.max(insets.top, 16), left: 16, right: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 50 }}>
-            <LiquidGlassIconButton
-              idPrefix="btnClosePreviewOverlay"
-              isDark={isDark}
-              onPress={() => setPreviewVideoModal(false)}
-            >
-              <Ionicons name="close" size={24} color="#FFFFFF" />
-            </LiquidGlassIconButton>
-
-            {/* CENTER "Hi" PILL BUTTON MATCHING IMAGE 2 */}
-            <View
-              style={{
-                width: 52,
-                height: 38,
-                borderRadius: 19,
-                backgroundColor: 'rgba(30,30,34,0.75)',
-                borderColor: 'rgba(255,255,255,0.15)',
-                borderWidth: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden',
-              }}
-            >
-              <BlurView intensity={35} tint="dark" style={StyleSheet.absoluteFill} />
-              <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedBold, color: '#FFFFFF' }}>Hi</Text>
-            </View>
-
-            <View style={{ width: 44 }} />
-          </View>
-
-          {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (MATCHING IMAGE 2 EXACTLY) */}
-          <View
-            style={{
-              width: screenWidth - 32,
-              height: (screenWidth - 32) * (9 / 16),
-              borderRadius: 28,
-              overflow: 'hidden',
-              position: 'relative',
-              backgroundColor: '#000000',
-              shadowColor: '#000000',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.4,
-              shadowRadius: 16,
-              elevation: 8,
-            }}
-          >
-            <Video
-              source={{ uri: displayList[0]?.uri }}
-              style={StyleSheet.absoluteFill}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay={true}
-              isLooping={true}
-              isMuted={false}
-            />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
-
-            {/* TOP LEFT USER ROW INSIDE CARD: DEFAULT PROFILE SMILEY CIRCLE + FULL USERNAME */}
-            <View
-              style={{
-                position: 'absolute',
-                top: 14,
-                left: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                zIndex: 20,
-              }}
-              pointerEvents="none"
-            >
-              <View
-                style={{
-                  width: 27,
-                  height: 27,
-                  borderRadius: 13.5,
-                  backgroundColor: edgeColor,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  overflow: 'hidden',
-                }}
-              >
-                <Image
-                  source={require('../../assets/images/capture_smile.png')}
-                  style={{ width: 15, height: 15, tintColor: '#000000' }}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
-                {username}
-              </Text>
-            </View>
-
-            {/* CENTER TIME TEXT & CAPTION OVERLAY */}
-            <View
-              style={{
-                ...StyleSheet.absoluteFillObject,
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 20,
-              }}
-              pointerEvents="none"
-            >
-              <Text
-                style={{
-                  fontSize: 22,
-                  fontFamily: Fonts.DelaGothicOne,
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                  textShadowColor: 'rgba(0, 0, 0, 0.6)',
-                  textShadowOffset: { width: 0, height: 2 },
-                  textShadowRadius: 5,
-                }}
-              >
-                {getNearestHourText(displayList[0]?.timestamp)}
-              </Text>
-              {!!displayList[0]?.caption && (
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontFamily: Fonts.SystemRoundedSemibold,
-                    color: '#FFFFFF',
-                    textAlign: 'center',
-                    marginTop: 2,
-                    textShadowColor: 'rgba(0, 0, 0, 0.6)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 3,
-                  }}
-                >
-                  {displayList[0]?.caption}
-                </Text>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
     </Modal>
   );
 };
