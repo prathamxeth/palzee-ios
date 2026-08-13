@@ -33,65 +33,75 @@ export const generateVideoThumbnail = async (videoUri: string): Promise<string |
 };
 
 /**
- * Formats exact dispatch time for chat headers (e.g., "7:26 PM").
+ * Safely parses Date from ISO string, Date object, or 12-hr time string (e.g. "7:26 PM")
  */
-export const formatExactTime = (dateInput?: Date | string | number): string => {
-  if (!dateInput) return '';
-  if (typeof dateInput === 'string' && (dateInput.includes('AM') || dateInput.includes('PM'))) {
-    return dateInput;
+export const parseToDate = (timeInput?: string | number | Date): Date | null => {
+  if (!timeInput) return null;
+  if (timeInput instanceof Date) return isNaN(timeInput.getTime()) ? null : timeInput;
+
+  // Try standard Date parsing (ISO strings, Unix timestamps)
+  const parsed = new Date(timeInput);
+  if (!isNaN(parsed.getTime())) return parsed;
+
+  // Handle 12-hour string format e.g. "7:26 PM" or "07:26 AM"
+  if (typeof timeInput === 'string') {
+    const timeRegex = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+    const match = timeInput.trim().match(timeRegex);
+    if (match) {
+      const today = new Date();
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const ampm = match[3].toUpperCase();
+
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+
+      today.setHours(hours, minutes, 0, 0);
+      return today;
+    }
   }
-  const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return String(dateInput);
+
+  return null;
+};
+
+/**
+ * Calculates exact chat timestamp dynamically without hardcoded fallbacks
+ */
+export const getDisplayTimestamp = (item?: any): string => {
+  if (!item) return '';
+  const date = parseToDate(item.createdAt || item.timestamp || item.date);
+  if (!date) {
+    if (typeof item.timestamp === 'string' && item.timestamp.length > 0) {
+      return item.timestamp;
+    }
+    return '';
+  }
   return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
 };
 
 /**
- * Dynamically calculates "Today", "Yesterday", or formatted date.
+ * Calculates dynamic day label ("Today", "Yesterday", or Date) without hardcoding
  */
-export const formatRelativeDay = (dateInput?: Date | string | number): string => {
-  if (!dateInput) return 'Yesterday';
-  const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return 'Yesterday';
+export const getDayLabel = (item?: any): string => {
+  if (!item) return '';
+  const date = parseToDate(item.createdAt || item.timestamp || item.date);
+  if (!date) return 'Today';
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
   const diffDays = Math.round((startOfToday.getTime() - startOfTarget.getTime()) / (1000 * 3600 * 24));
 
-  if (diffDays === 0) return 'Today';
+  if (diffDays <= 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
 
 /**
- * Rounds timestamp to nearest hour for thumbnail preview overlay (e.g., 18:33 -> "19:00", 18:20 -> "18:00").
+ * Calculates dynamic nearest hour (e.g., 18:33 / 7:26 PM -> "19:00")
  */
-export const formatRoundedHour = (dateInput?: Date | string | number): string => {
-  if (!dateInput) return '19:00';
-  let date: Date;
-
-  if (typeof dateInput === 'string') {
-    const isPM = dateInput.toUpperCase().includes('PM');
-    const isAM = dateInput.toUpperCase().includes('AM');
-    const clean = dateInput.replace(/(AM|PM)/i, '').trim();
-    const parts = clean.split(':');
-    if (parts.length >= 2) {
-      let h = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10);
-      if (!isNaN(h)) {
-        if (isPM && h < 12) h += 12;
-        if (isAM && h === 12) h = 0;
-        if (!isNaN(m) && m >= 30) h = (h + 1) % 24;
-        return `${String(h).padStart(2, '0')}:00`;
-      }
-    }
-    date = new Date(dateInput);
-  } else {
-    date = new Date(dateInput);
-  }
-
-  if (isNaN(date.getTime())) return '19:00';
+export const getNearestHourText = (timeInput?: string | number | Date): string => {
+  const date = parseToDate(timeInput) || new Date();
   const minutes = date.getMinutes();
   let hours = date.getHours();
 
@@ -99,12 +109,28 @@ export const formatRoundedHour = (dateInput?: Date | string | number): string =>
     hours = (hours + 1) % 24;
   }
 
-  const paddedHours = hours.toString().padStart(2, '0');
-  return `${paddedHours}:00`;
+  return `${hours.toString().padStart(2, '0')}:00`;
 };
 
-export const getNearestHourText = (timestamp?: string | number | Date): string => {
-  return formatRoundedHour(timestamp);
+/**
+ * Formats exact dispatch time for chat headers
+ */
+export const formatExactTime = (dateInput?: Date | string | number): string => {
+  return getDisplayTimestamp({ timestamp: dateInput });
+};
+
+/**
+ * Formats relative day for chat headers
+ */
+export const formatRelativeDay = (dateInput?: Date | string | number): string => {
+  return getDayLabel({ timestamp: dateInput });
+};
+
+/**
+ * Rounds timestamp to nearest hour
+ */
+export const formatRoundedHour = (dateInput?: Date | string | number): string => {
+  return getNearestHourText(dateInput);
 };
 
 export const getUserInitial = (name?: string): string => {

@@ -73,7 +73,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const displayList = vlogList && vlogList.length > 0 
     ? vlogList 
     : activeVideoUri 
-      ? [{ id: 'active_default', uri: activeVideoUri, caption: '', timestamp: '' }] 
+      ? [{ id: 'active_default', uri: activeVideoUri, caption: '', timestamp: new Date().toISOString() }] 
       : [];
 
   const activePal = displayList?.[0];
@@ -93,6 +93,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       generateVideoThumbnail(resolvedActiveVideoUri).then((uri) => {
         if (isMounted && uri) setExtractedThumbnail(uri);
       });
+    } else {
+      setExtractedThumbnail(null);
     }
     return () => { isMounted = false; };
   }, [resolvedActiveVideoUri]);
