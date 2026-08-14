@@ -30,6 +30,7 @@ type TimerMode = 'off' | '3s' | '5s' | 'timelapse' | 'jump_cut';
 interface PalCameraPreviewProps {
   selectedThemeColor?: string;
   autoTickVlog?: boolean;
+  palCount?: number;
   onCaptureSuccess?: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
   onClose?: () => void;
   timerMode?: TimerMode;
@@ -41,6 +42,7 @@ interface PalCameraPreviewProps {
 export default function PalCameraPreview({
   selectedThemeColor = 'cyan',
   autoTickVlog = true,
+  palCount = 1,
   onCaptureSuccess,
   onClose,
   timerMode = 'off',
@@ -621,6 +623,7 @@ export default function PalCameraPreview({
         timeText={timeText}
         selectedThemeColor={selectedThemeColor}
         autoTickVlog={autoTickVlog}
+        palCount={palCount}
         playbackRate={timerMode === 'timelapse' ? 3.5 : timerMode === 'jump_cut' ? 1.35 : 1.0}
         timerMode={timerMode}
         onRetake={() => {

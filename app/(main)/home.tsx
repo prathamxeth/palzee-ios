@@ -821,6 +821,7 @@ export default function HomeScreen({
             facing={cameraFacing}
             onToggleFacing={toggleFacing}
             autoTickVlog={false}
+            palCount={vlogList.length}
             onCaptureSuccess={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
           />
         </Animated.View>
@@ -2847,7 +2848,7 @@ const styles = StyleSheet.create({
   },
   profileDropdownCard: {
     position: 'absolute',
-    top: 58,
+    top: 56,
     right: 13,
     width: 246.75,
     borderRadius: 24,

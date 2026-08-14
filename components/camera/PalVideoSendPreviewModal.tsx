@@ -22,7 +22,7 @@ import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
@@ -80,6 +80,12 @@ LogBox.ignoreLogs([
   'SDK 54',
 ]);
 
+export interface PalGroupItem {
+  id: string;
+  name: string;
+  subtitle?: string;
+}
+
 interface PalVideoSendPreviewModalProps {
   visible: boolean;
   videoUri: string | null;
@@ -89,6 +95,9 @@ interface PalVideoSendPreviewModalProps {
   autoTickVlog?: boolean;
   playbackRate?: number;
   timerMode?: string;
+  userName?: string;
+  palCount?: number;
+  palGroups?: PalGroupItem[];
   onRetake: () => void;
   onSend: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
 }
@@ -170,6 +179,9 @@ export default function PalVideoSendPreviewModal({
   autoTickVlog = true,
   playbackRate = 1.0,
   timerMode = 'off',
+  userName = 'apple_user',
+  palCount = 1,
+  palGroups = [],
   onRetake,
   onSend,
 }: PalVideoSendPreviewModalProps) {
@@ -340,6 +352,8 @@ export default function PalVideoSendPreviewModal({
   const titleColor = isDark ? '#FFFFFF' : '#000000';
   const iconColor = isDark ? '#FFFFFF' : '#000000';
   const sendToColor = isDark ? '#9E9EA5' : '#707070';
+  const palzeeTextColor =
+    Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#77E4BE';
 
   if (!visible || !videoUri) return null;
 
@@ -526,7 +540,82 @@ export default function PalVideoSendPreviewModal({
                 </View>
 
                 <View style={{ marginTop: 12 }}>
-                  {/* VLOG BOX (DEFAULT SELECTED RECIPIENT, FILLS WITH CRISP LIGHT GREY WHEN CLICKED/SELECTED) */}
+                  {/* PAL GROUPS / RECIPIENT BOXES (WHEN AT LEAST 1 PAL / GROUP IS PRESENT) */}
+                  {palGroups.map((group) => {
+                    const isSelected = selectedTargets.includes(group.id);
+                    return (
+                      <TouchableOpacity
+                        key={group.id}
+                        activeOpacity={0.85}
+                        onPress={() => toggleTarget(group.id)}
+                        style={[
+                          styles.targetBoxContainer,
+                          {
+                            backgroundColor: isSelected
+                              ? isDark
+                                ? 'rgba(255, 255, 255, 0.12)'
+                                : '#F2F2F7'
+                              : isDark
+                              ? 'rgba(255, 255, 255, 0.05)'
+                              : '#F9F9FB',
+                            marginBottom: 10,
+                          },
+                        ]}
+                      >
+                        {/* Left Selection Circle */}
+                        <View style={styles.leftCircleWrapper}>
+                          {isSelected ? (
+                            <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
+                              <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                            </View>
+                          ) : (
+                            <View
+                              style={[
+                                styles.unselectedCircleHollow,
+                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.18)' },
+                              ]}
+                            />
+                          )}
+                        </View>
+
+                        {/* Middle Title & Subtitle */}
+                        <View style={styles.targetTextWrapper}>
+                          <Text style={[styles.targetTitle, { color: titleColor }]}>{group.name}</Text>
+                          <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
+                            {group.subtitle || 'group'}
+                          </Text>
+                        </View>
+
+                        {/* Right Rotated capture_smile.png Icon Badge */}
+                        <View
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 12,
+                            backgroundColor: baseAccentColor,
+                            borderWidth: 1.5,
+                            borderColor: palzeeTextColor,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <Image
+                            source={require('../../assets/images/capture_smile.png')}
+                            style={{
+                              width: 18.5,
+                              height: 18.5,
+                              transform: [{ rotate: '180deg' }],
+                              tintColor: '#000000',
+                            }}
+                            resizeMode="contain"
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {/* VLOG BOX */}
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => toggleTarget('vlog')}
@@ -543,7 +632,7 @@ export default function PalVideoSendPreviewModal({
                       },
                     ]}
                   >
-                    {/* Left Selection Circle: Solid Screen Edge Accent when Selected, Hollow Outline when Unselected */}
+                    {/* Left Selection Circle */}
                     <View style={styles.leftCircleWrapper}>
                       {selectedTargets.includes('vlog') ? (
                         <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
@@ -559,27 +648,59 @@ export default function PalVideoSendPreviewModal({
                       )}
                     </View>
 
-                    {/* Middle Title & User Handle */}
+                    {/* Middle Title & User's Name Subtitle */}
                     <View style={styles.targetTextWrapper}>
                       <Text style={[styles.targetTitle, { color: titleColor }]}>vlog</Text>
                       <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
-                        apple_user
+                        {userName}
                       </Text>
                     </View>
 
-                    {/* Right Smiley Icon with Light Grey Circular Border Badge as per reference image */}
-                    <View
-                      style={[
-                        styles.smileyBadgeContainer,
-                        { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
-                      ]}
-                    >
-                      <Image
-                        source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={{ width: 22, height: 22, tintColor: iconColor }}
-                        resizeMode="contain"
-                      />
-                    </View>
+                    {/* Right Smiley Icon: Coloured upright if at least 1 video pal exists, uncoloured upside-down if 0 video pals */}
+                    {palCount > 0 || palGroups.length > 0 ? (
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          backgroundColor: baseAccentColor,
+                          borderWidth: 1.5,
+                          borderColor: palzeeTextColor,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <Image
+                          source={require('../../assets/images/capture_smile.png')}
+                          style={{
+                            width: 18.5,
+                            height: 18.5,
+                            transform: [{ rotate: '180deg' }],
+                            tintColor: '#000000',
+                          }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    ) : (
+                      <View
+                        style={[
+                          styles.smileyBadgeContainer,
+                          { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
+                        ]}
+                      >
+                        <Image
+                          source={require('../../assets/images/capture_smile.png')}
+                          style={{
+                            width: 18.5,
+                            height: 18.5,
+                            transform: [{ rotate: '0deg' }],
+                            tintColor: iconColor,
+                          }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>

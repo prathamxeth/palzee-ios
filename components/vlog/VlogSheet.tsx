@@ -786,8 +786,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: 'rgba(0, 0, 0, 0.45)',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-                paddingBottom: 282.5,
-                paddingRight: 9,
+                paddingBottom: 297.5,
+                paddingRight: 10.0,
               }}
               activeOpacity={1}
               onPress={() => setShowOptionsMenu(false)}
@@ -999,7 +999,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     onPress={handleConfirmDelete}
                   >
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
-                      delete log
+                      delete pal
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1127,7 +1127,7 @@ const styles = StyleSheet.create({
   },
   cardBottomRightDots: {
     position: 'absolute',
-    bottom: 14,
+    bottom: 9,
     right: 16,
     padding: 6,
     zIndex: 20,
