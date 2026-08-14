@@ -450,8 +450,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         height="40.5"
                         rx="20.25"
                         fill="url(#logsPillGrad)"
-                        stroke="url(#logsPillBdr)"
-                        strokeWidth="1.5"
+                        stroke={isDark ? 'none' : 'url(#logsPillBdr)'}
+                        strokeWidth={isDark ? 0 : 1.5}
                       />
                     </Svg>
                     <View style={[styles.logsSmileyCircle, { backgroundColor: '#FF3B30' }]}>
@@ -532,8 +532,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         height="42.5"
                         rx="21.25"
                         fill="url(#vlogPillGrad)"
-                        stroke="url(#vlogPillBdr)"
-                        strokeWidth="1.5"
+                        stroke={isDark ? 'none' : 'url(#vlogPillBdr)'}
+                        strokeWidth={isDark ? 0 : 1.5}
                       />
                     </Svg>
                     <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>

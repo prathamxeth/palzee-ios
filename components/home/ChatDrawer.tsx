@@ -264,7 +264,7 @@ export const ChatDrawer = ({
                           <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.08 : 0.08} />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0.75" y="0.75" width="94.5" height="42.5" rx="21.25" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth="1.5" />
+                      <Rect x="0.75" y="0.75" width="94.5" height="42.5" rx="21.25" fill="url(#vlogHeaderPillGrad)" stroke={isDark ? 'none' : 'url(#vlogHeaderPillBdr)'} strokeWidth={isDark ? 0 : 1.5} />
                     </Svg>
                     <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
                   </View>

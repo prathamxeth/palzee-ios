@@ -48,23 +48,23 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           <LinearGradient id="iconMatchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#000000' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.40 : 0.20}
+              stopColor="#EAE8E3"
+              stopOpacity={isDark ? 0.12 : 0.20}
             />
             <Stop
               offset="35%"
-              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.35 : 0.70}
+              stopColor="#F7F6F3"
+              stopOpacity={isDark ? 0.20 : 0.70}
             />
             <Stop
               offset="75%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 1.0}
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.32 : 1.0}
             />
             <Stop
               offset="100%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 1.0}
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.32 : 1.0}
             />
           </LinearGradient>
           <LinearGradient id="iconMatchBdr" x1="0%" y1="0%" x2="0%" y2="100%">

@@ -152,8 +152,8 @@ const LiquidGlassCircleButton = ({
         height={size - 1.5}
         rx={(size - 1.5) / 2}
         fill={`url(#${idPrefix}Grad)`}
-        stroke={`url(#${idPrefix}Bdr)`}
-        strokeWidth="1.5"
+        stroke={isDark ? 'none' : `url(#${idPrefix}Bdr)`}
+        strokeWidth={isDark ? 0 : 1.5}
       />
     </Svg>
     {children}

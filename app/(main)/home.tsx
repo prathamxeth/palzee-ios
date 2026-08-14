@@ -91,18 +91,18 @@ const LiquidGlassPillButton = ({
         <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
-            stopColor={isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.75 : 0.88}
+            stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
+            stopOpacity={isDark ? 0.50 : 0.88}
           />
           <Stop
             offset="50%"
-            stopColor={isDark ? '#18181B' : '#F7F6F3'}
-            stopOpacity={isDark ? 0.6 : 0.75}
+            stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
+            stopOpacity={isDark ? 0.35 : 0.75}
           />
           <Stop
             offset="100%"
-            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.85 : 0.65}
+            stopColor={isDark ? '#000000' : '#EAE8E3'}
+            stopOpacity={isDark ? 0.40 : 0.65}
           />
         </LinearGradient>
         <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -125,8 +125,8 @@ const LiquidGlassPillButton = ({
         height="34.5"
         rx="17.25"
         fill={`url(#${idPrefix}Grad)`}
-        stroke={`url(#${idPrefix}Bdr)`}
-        strokeWidth="1.5"
+        stroke={isDark ? 'none' : `url(#${idPrefix}Bdr)`}
+        strokeWidth={isDark ? 0 : 1.5}
       />
     </Svg>
     <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
@@ -137,10 +137,12 @@ const LiquidGlassNavPillBar = ({
   activeTab,
   onSelectTab,
   isDark = true,
+  accentColor = '#8A2BE2',
 }: {
   activeTab: 'camera' | 'pals';
   onSelectTab: (tab: 'camera' | 'pals') => void;
   isDark?: boolean;
+  accentColor?: string;
 }) => (
   <View style={styles.bottomSwitcherContainer}>
     <View style={styles.liquidOuterCapsule}>
@@ -184,8 +186,8 @@ const LiquidGlassNavPillBar = ({
           height="48"
           rx="24"
           fill="url(#capsuleGrad)"
-          stroke="url(#capsuleBorder)"
-          strokeWidth="1.5"
+          stroke={isDark ? 'none' : 'url(#capsuleBorder)'}
+          strokeWidth={isDark ? 0 : 1.5}
         />
       </Svg>
 
@@ -202,37 +204,37 @@ const LiquidGlassNavPillBar = ({
                 <LinearGradient id="actGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
-                    stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.95 : 0.98}
+                    stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
+                    stopOpacity={isDark ? 0.98 : 0.98}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#24242A' : '#F2EFF4'}
-                    stopOpacity={isDark ? 0.95 : 0.92}
+                    stopColor={isDark ? '#000000' : '#F2EFF4'}
+                    stopOpacity={isDark ? 0.98 : 0.92}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.45 : 1.0}
+                    stopOpacity={isDark ? 0.35 : 0.95}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.06}
+                    stopColor={isDark ? accentColor : '#000000'}
+                    stopOpacity={isDark ? 0.85 : 0.45}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
-                x="0.5"
-                y="0.5"
-                width="81.25"
-                height="47"
-                rx="23.5"
+                x="0"
+                y="0"
+                width="82.25"
+                height="49.5"
+                rx="24"
                 fill="url(#actGrad1)"
-                stroke="url(#actBdr1)"
-                strokeWidth="1"
+                stroke="none"
+                strokeWidth={0}
               />
             </Svg>
           )}
@@ -254,42 +256,42 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('pals')}
         >
           {activeTab === 'pals' && (
-            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
+            <Svg width={82.25} height={49.5} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
-                    stopColor={isDark ? '#4A4A54' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.95 : 0.98}
+                    stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
+                    stopOpacity={isDark ? 0.98 : 0.98}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#24242A' : '#F2EFF4'}
-                    stopOpacity={isDark ? 0.95 : 0.92}
+                    stopColor={isDark ? '#000000' : '#F2EFF4'}
+                    stopOpacity={isDark ? 0.98 : 0.92}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.45 : 1.0}
+                    stopOpacity={isDark ? 0.35 : 0.95}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.15 : 0.06}
+                    stopColor={isDark ? accentColor : '#000000'}
+                    stopOpacity={isDark ? 0.85 : 0.45}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
-                x="0.5"
-                y="0.5"
-                width="81.25"
-                height="47"
-                rx="23.5"
+                x="0"
+                y="0"
+                width="82.25"
+                height="49.5"
+                rx="24"
                 fill="url(#actGrad2)"
-                stroke="url(#actBdr2)"
-                strokeWidth="1"
+                stroke="none"
+                strokeWidth={0}
               />
             </Svg>
           )}
@@ -1362,6 +1364,7 @@ export default function HomeScreen({
               setActiveTab(t);
             }}
             isDark={isDark}
+            accentColor={accentColor}
           />
 
           {/* RIGHT CAMERA ROTATE BUTTON (CAMERA TAB ONLY, SMOOTH FADE) */}
@@ -1472,7 +1475,7 @@ export default function HomeScreen({
                     },
                   ]}
                 >
-                {/* INNER DIAGONAL GLOW FILL: CREATES NATURAL GLOWING EDGE (TOP-RIGHT) & DIMMED GLOW (BOTTOM-LEFT) */}
+                {/* INNER SLANTING DIAGONAL GLOW FILL (OPTIMIZED SMOOTH TRANSPARENCY) */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                   <Defs>
                     <LinearGradient
@@ -1482,9 +1485,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={0.88} />
-                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.65 : 0.78} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.26 : 0.38} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
+                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -1496,7 +1499,7 @@ export default function HomeScreen({
                   style={StyleSheet.absoluteFill}
                 />
 
-                {/* SOFT GLASS SPECULAR EDGE HIGHLIGHT (NO HARSH BRIGHT BOUNDARY STROKE) */}
+                {/* SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                   <Defs>
                     <LinearGradient
@@ -1506,9 +1509,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.40 : 0.48} />
-                      <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.18 : 0.24} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.07 : 0.10} />
+                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
+                      <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
                     </LinearGradient>
                   </Defs>
                   <Rect
@@ -1520,7 +1523,7 @@ export default function HomeScreen({
                     ry="23"
                     fill="none"
                     stroke="url(#cardBorderGradient)"
-                    strokeWidth="0.8"
+                    strokeWidth="1.0"
                   />
                 </Svg>
 
@@ -1656,9 +1659,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={1.0} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.70 : 0.85} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.45} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
@@ -1666,16 +1669,16 @@ export default function HomeScreen({
 
                   <BlurView intensity={75} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                  {/* SOFT SPECULAR HIGHLIGHT (NO HARD BRIGHT BORDER STROKE) */}
+                  {/* SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="subCardBorderGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.35 : 0.40} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.15 : 0.20} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
                       </LinearGradient>
                     </Defs>
-                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="0.8" />
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="1.0" />
                   </Svg>
 
                   {/* Sub-Card Header Row: edit profile + down chevron v (DIMMED WHEN COLOR MENU IS ACTIVE) */}
@@ -1770,9 +1773,9 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.88} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.65 : 0.78} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.26 : 0.38} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
+                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
@@ -1783,12 +1786,12 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="colorSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.40 : 0.48} />
-                        <Stop offset="50%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.18 : 0.24} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.07 : 0.10} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
                       </LinearGradient>
                     </Defs>
-                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="0.8" />
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="1.0" />
                   </Svg>
 
                   {/* Header Row: color title + down chevron v */}

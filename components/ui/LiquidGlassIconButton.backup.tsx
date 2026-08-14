@@ -37,18 +37,18 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
           <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 0.88}
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.32 : 0.88}
             />
             <Stop
               offset="50%"
-              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.35 : 0.75}
+              stopColor="#F7F6F3"
+              stopOpacity={isDark ? 0.20 : 0.75}
             />
             <Stop
               offset="100%"
-              stopColor={isDark ? '#000000' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.40 : 0.65}
+              stopColor="#EAE8E3"
+              stopOpacity={isDark ? 0.12 : 0.65}
             />
           </LinearGradient>
           <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
