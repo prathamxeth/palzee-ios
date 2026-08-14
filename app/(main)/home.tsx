@@ -570,15 +570,18 @@ export default function HomeScreen({
       permanentUri = destPath;
       console.log('💾 Permanent Video Saved:', permanentUri);
 
-      // 2. Extract thumbnail using the newly installed package
+      // 2. Extract thumbnail and persist to permanent Documents directory
       const thumbResult = await VideoThumbnails.getThumbnailAsync(permanentUri, {
         time: 100,
         quality: 0.85,
       });
 
       if (thumbResult?.uri) {
-        thumbnailUri = thumbResult.uri;
-        console.log('✅ THUMBNAIL CREATED:', thumbnailUri);
+        const thumbFileName = `vlog_thumb_${Date.now()}.jpg`;
+        const permThumbPath = `${FileSystem.documentDirectory}${thumbFileName}`;
+        await FileSystem.copyAsync({ from: thumbResult.uri, to: permThumbPath });
+        thumbnailUri = permThumbPath;
+        console.log('✅ PERMANENT THUMBNAIL CREATED:', thumbnailUri);
       }
     } catch (err) {
       console.error('Thumbnail generation error:', err);
