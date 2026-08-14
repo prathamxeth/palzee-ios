@@ -32,6 +32,7 @@ import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { Accelerometer } from 'expo-sensors';
 
 import { InAppBrowserModal } from '../../components/ui/InAppBrowserModal';
 import * as VideoThumbnails from 'expo-video-thumbnails';
@@ -376,6 +377,7 @@ export default function HomeScreen({
     return name.includes('_') ? name.split('_').slice(1).join(' ') : name.split(' ').slice(1).join(' ') || 'user';
   });
   const [activeTab, setActiveTab] = useState<'camera' | 'pals'>('pals');
+  const [isManualNavLock, setIsManualNavLock] = useState(false);
   const [userPalRooms, setUserPalRooms] = useState<PalRoom[]>([]);
   const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
 
@@ -507,6 +509,65 @@ export default function HomeScreen({
       useNativeDriver: true,
     }).start();
   }, [activeTab]);
+
+  // Accelerometer tilt detection for "rotate to capture"
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(120);
+
+    let isTilted = false;
+
+    const subscription = Accelerometer.addListener((data) => {
+      const x = data?.x ?? 0;
+      const y = data?.y ?? 0;
+      const z = data?.z ?? 0;
+
+      // Disable tilt if user manually selected tab via bottom nav bar or if any modal/view is active
+      if (
+        isManualNavLock ||
+        showExportSheet ||
+        showEditExportSheet ||
+        showChatDrawer ||
+        showCamera ||
+        showCreateModal ||
+        showEditNameModal ||
+        showGroupsView ||
+        showProfileMenu ||
+        showViewingPalsGuide ||
+        !!inAppBrowserUrl
+      ) {
+        return;
+      }
+
+      // Smooth omnidirectional tilt detection (sideways left/right, up/down, top/bottom)
+      // Measures 3D tilt deviation away from upright portrait vector (0, -1, 0)
+      const tiltDev = Math.sqrt(x * x + (y + 1) * (y + 1) + z * z);
+      const tiltedNow = tiltDev > 0.55;
+
+      if (tiltedNow && !isTilted) {
+        isTilted = true;
+        setActiveTab('camera');
+      } else if (tiltDev < 0.38 && isTilted) {
+        isTilted = false;
+        setActiveTab('pals');
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [
+    isManualNavLock,
+    showExportSheet,
+    showEditExportSheet,
+    showChatDrawer,
+    showCamera,
+    showCreateModal,
+    showEditNameModal,
+    showGroupsView,
+    showProfileMenu,
+    showViewingPalsGuide,
+    inAppBrowserUrl,
+  ]);
 
   const toggleTimerMode = () => {
     setCameraTimerMode((current) => {
@@ -1387,6 +1448,11 @@ export default function HomeScreen({
           <LiquidGlassNavPillBar
             activeTab={activeTab}
             onSelectTab={(t) => {
+              if (t === 'camera') {
+                setIsManualNavLock(true);
+              } else {
+                setIsManualNavLock(false);
+              }
               setActiveTab(t);
             }}
             isDark={isDark}
