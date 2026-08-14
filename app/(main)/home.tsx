@@ -869,7 +869,14 @@ export default function HomeScreen({
               </LiquidGlassIconButton>
 
               {/* 3. USER PROFILE PERSON ICON OR CHOSEN PFP */}
-              <LiquidGlassIconButton idPrefix="btnUser" isDark={isDark} onPress={() => setShowProfileMenu(true)}>
+              <LiquidGlassIconButton
+                idPrefix="btnUser"
+                isDark={isDark}
+                onPress={() => {
+                  setProfileSubMenu('main');
+                  setShowProfileMenu(true);
+                }}
+              >
                 {profilePhotoUri ? (
                   <Image
                     source={{ uri: profilePhotoUri }}
@@ -1475,12 +1482,18 @@ export default function HomeScreen({
           visible={showProfileMenu}
           transparent
           animationType="fade"
-          onRequestClose={() => setShowProfileMenu(false)}
+          onRequestClose={() => {
+            setShowProfileMenu(false);
+            setProfileSubMenu('main');
+          }}
         >
           <TouchableOpacity
             style={styles.dropdownModalOverlay}
             activeOpacity={1}
-            onPress={() => setShowProfileMenu(false)}
+            onPress={() => {
+              setShowProfileMenu(false);
+              setProfileSubMenu('main');
+            }}
           >
             <TouchableWithoutFeedback>
               <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
@@ -1650,6 +1663,7 @@ export default function HomeScreen({
                     activeOpacity={0.7}
                     onPress={() => {
                       setShowProfileMenu(false);
+                      setProfileSubMenu('main');
                       setInAppBrowserTitle('feedback');
                       setInAppBrowserUrl('https://palzee.fun/feedback.html');
                     }}
@@ -1668,6 +1682,7 @@ export default function HomeScreen({
                     activeOpacity={0.7}
                     onPress={() => {
                       setShowProfileMenu(false);
+                      setProfileSubMenu('main');
                       setActiveTab('pals');
                       setShowViewingPalsGuide(true);
                     }}
@@ -1986,6 +2001,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
+                        setProfileSubMenu('main');
                         setInAppBrowserTitle('terms of service');
                         setInAppBrowserUrl('https://palzee.fun/tos.html');
                       }}
@@ -2000,6 +2016,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
+                        setProfileSubMenu('main');
                         setInAppBrowserTitle('csam policy');
                         setInAppBrowserUrl('https://palzee.fun/csampolicy.html');
                       }}
@@ -2014,6 +2031,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
+                        setProfileSubMenu('main');
                         setInAppBrowserTitle('privacy policy');
                         setInAppBrowserUrl('https://palzee.fun/privacy.html');
                       }}
