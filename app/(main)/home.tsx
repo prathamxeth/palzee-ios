@@ -1507,10 +1507,10 @@ export default function HomeScreen({
                   cornerStyle="continuous"
                 >
                   {/* ADD MENU ITEMS LIST */}
-                  <View style={{ paddingVertical: 12, paddingHorizontal: 16 }}>
+                  <View style={{ paddingTop: 11.5, paddingBottom: 16.5, paddingLeft: 20.0, paddingRight: 12 }}>
                     {/* Option 1: create a pal */}
                     <TouchableOpacity
-                      style={{ paddingVertical: 8 }}
+                      style={{ paddingVertical: 7.5 }}
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowAddMenu(false);
@@ -1525,7 +1525,7 @@ export default function HomeScreen({
 
                     {/* Option 2: join a pal */}
                     <TouchableOpacity
-                      style={{ paddingVertical: 8 }}
+                      style={{ paddingVertical: 7.5 }}
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowAddMenu(false);
@@ -2787,13 +2787,13 @@ const styles = StyleSheet.create({
   inactiveSegmentText: {
     color: '#8E8E93',
     fontFamily: Fonts.SystemRoundedMedium,
-    fontSize: 16,
+    fontSize: 18.5,
     fontWeight: '400',
   },
   activeSegmentText: {
     color: '#FFFFFF',
     fontFamily: Fonts.SystemRoundedSemibold,
-    fontSize: 16,
+    fontSize: 18.5,
     fontWeight: '600',
   },
   modalOverlay: {
@@ -3002,9 +3002,9 @@ const styles = StyleSheet.create({
   },
   addDropdownCard: {
     position: 'absolute',
-    top: 58,
-    left: 46.5,
-    width: 215,
+    top: 55.5,
+    left: 62.5,
+    width: 195.0,
     borderRadius: 26,
     borderWidth: 0,
     overflow: 'hidden',

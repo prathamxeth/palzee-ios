@@ -421,7 +421,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               <Text
                 style={{
                   marginTop: 8,
-                  fontSize: 15.5,
+                  fontSize: 18.0,
                   fontFamily: Fonts.SystemRoundedMedium,
                   color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
@@ -444,7 +444,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               <Text
                 style={{
                   marginTop: 8,
-                  fontSize: 15.5,
+                  fontSize: 18.0,
                   fontFamily: Fonts.SystemRoundedMedium,
                   color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
@@ -473,7 +473,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               <Text
                 style={{
                   marginTop: 8,
-                  fontSize: 15.5,
+                  fontSize: 18.0,
                   fontFamily: Fonts.SystemRoundedMedium,
                   color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',
@@ -507,7 +507,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               <Text
                 style={{
                   marginTop: 8,
-                  fontSize: 15.5,
+                  fontSize: 18.0,
                   fontFamily: Fonts.SystemRoundedMedium,
                   color: isDark ? '#8E8E93' : '#3A3A3C',
                   textAlign: 'center',

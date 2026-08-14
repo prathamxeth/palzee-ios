@@ -601,8 +601,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
             <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 0 ? 78.0 : 55.0 }]} pointerEvents="box-none">
               {(() => {
-                const headerTitleText = getDayHeaderTitle(dayOffset);
-                const headerPillWidth = Math.max(110, headerTitleText.length * 21 + 24);
+                const headerTitleText = getDayHeaderTitle(dayOffset).toLowerCase();
+                const headerPillWidth = Math.max(96, headerTitleText.length * 14 + 24);
                 return (
                   <TouchableOpacity
                     style={[styles.vlogLiquidPillBtn, { width: headerPillWidth }]}
@@ -1332,7 +1332,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 35,
+    fontSize: 22.5,
     fontFamily: Fonts.SystemRoundedBold,
   },
   headerRightIcons: {

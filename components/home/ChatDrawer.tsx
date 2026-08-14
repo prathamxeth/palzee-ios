@@ -266,7 +266,7 @@ export const ChatDrawer = ({
                       </Defs>
                       <Rect x="0.75" y="0.75" width="108.5" height="43.5" rx="21.75" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth={1.5} />
                     </Svg>
-                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center' }]}>Vlog</Text>
+                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center' }]}>vlog</Text>
                   </View>
                 </View>
 
@@ -308,14 +308,28 @@ export const ChatDrawer = ({
 
                       return (
                         <View key={clip.id || `vlog_clip_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 14 }}>
-                          {/* Timestamp Header Above Thumbnail */}
-                          <Text
-                            style={[
-                              styles.timestampText,
-                              { color: isDark ? '#8E8E93' : '#636366', alignSelf: 'center' },
-                            ]}
-                          >
-                            {`${cycleInfo.dayLabel} ${formatTime(clip.timestamp)}`}
+                          {/* Timestamp Header Above Thumbnail: Day Text BOLD, Time Text REGULAR */}
+                          <Text style={{ alignSelf: 'center', marginBottom: 10 }}>
+                            <Text
+                              style={{
+                                fontSize: 16.5,
+                                fontFamily: Fonts.SystemRoundedBold,
+                                fontWeight: '700',
+                                color: isDark ? '#8E8E93' : '#636366',
+                              }}
+                            >
+                              {cycleInfo.dayLabel}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 16.5,
+                                fontFamily: Fonts.SystemRoundedRegular,
+                                fontWeight: '400',
+                                color: isDark ? '#8E8E93' : '#636366',
+                              }}
+                            >
+                              {` ${formatTime(clip.timestamp)}`}
+                            </Text>
                           </Text>
 
                           {/* Thumbnail Bubble (146 x 86px) */}
@@ -564,7 +578,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 35,
+    fontSize: 22.5,
     fontFamily: Fonts.SystemRoundedBold,
   },
   feedContainer: {
@@ -572,7 +586,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   timestampText: {
-    fontSize: 14,
+    fontSize: 16.5,
     fontFamily: Fonts.SystemRoundedMedium,
     marginBottom: 10,
   },
@@ -601,11 +615,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   viewPalDayText: {
-    fontSize: 17,
+    fontSize: 22,
     fontFamily: Fonts.SystemRoundedBold,
   },
   viewPalActionText: {
-    fontSize: 16,
+    fontSize: 21,
     fontFamily: Fonts.SystemRoundedSemibold,
   },
   inputRow: {
@@ -644,7 +658,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 21,
     fontFamily: Fonts.SystemRoundedMedium,
     height: '100%',
   },

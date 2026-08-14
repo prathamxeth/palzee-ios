@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: Fonts.SystemRoundedBold,
-    fontSize: 18,
+    fontSize: 23.0,
     fontWeight: '700',
     color: '#000000',
   },
@@ -835,10 +835,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 24,
     marginBottom: 10,
-    minHeight: 70,
+    minHeight: 76,
   },
   leftCircleWrapper: {
     marginRight: 14,
@@ -863,12 +863,12 @@ const styles = StyleSheet.create({
   },
   targetTitle: {
     fontFamily: Fonts.SystemRoundedBold,
-    fontSize: 17,
+    fontSize: 19.5,
     fontWeight: '800',
   },
   targetSubtitle: {
     fontFamily: Fonts.SystemRoundedMedium,
-    fontSize: 13,
+    fontSize: 15.5,
     fontWeight: '500',
     marginTop: 2,
   },
