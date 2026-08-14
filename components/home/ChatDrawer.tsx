@@ -73,19 +73,20 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
 
-  const displayList = vlogList && vlogList.length > 0 
-    ? vlogList 
-    : activeVideoUri 
-      ? [{ id: 'active_default', uri: activeVideoUri, caption: '', timestamp: new Date().toISOString() }] 
-      : [];
+  const displayList = Array.isArray(vlogList) && vlogList.length > 0
+    ? vlogList
+    : activeVideoUri
+    ? [{ id: 'active_default', uri: activeVideoUri, thumbnailUri: '', timestamp: new Date().toISOString() }]
+    : [];
 
-  const activePal = displayList?.[0];
-  const resolvedActiveVideoUri = 
-    activePal?.uri || 
-    activePal?.videoUri || 
-    (activePal as any)?.video_url || 
-    (activePal as any)?.mediaUrl || 
-    (activePal as any)?.path || 
+  const activePal = displayList[0] || null;
+  const resolvedActiveVideoUri =
+    activePal?.uri ||
+    activePal?.videoUri ||
+    (activePal as any)?.video_url ||
+    (activePal as any)?.mediaUrl ||
+    (activePal as any)?.path ||
+    activeVideoUri ||
     '';
 
   const [extractedThumbnail, setExtractedThumbnail] = useState<string | null>(null);
@@ -351,7 +352,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             {/* 2. FLEXIBLE CHAT CONTENT AREA */}
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={[styles.bodyContainer, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
-                {activePal && resolvedActiveVideoUri ? (
+                {Boolean(resolvedActiveVideoUri) ? (
                   <>
                     <Text
                       style={{
