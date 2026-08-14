@@ -66,12 +66,13 @@ class VideoExporter: NSObject {
     let orientWidth = max(abs(transformedRect.width), 1)
     let orientHeight = max(abs(transformedRect.height), 1)
     
-    let isPortraitInput = orientHeight > orientWidth
+    // Evaluate if the video is vertical (height > width)
+    let isVerticalPal = orientHeight > orientWidth
     
     var finalTransform = transform
     
-    if isPortraitInput {
-      // 1. Rotate 270 degrees counter-clockwise matching VlogSheet.tsx rotate: '270deg' logic
+    if isVerticalPal {
+      // Vertical pals: Rotate 270 degrees counter-clockwise (3 * pi / 2)
       let rot270 = CGAffineTransform(rotationAngle: 3.0 * .pi / 2.0)
       finalTransform = finalTransform.concatenating(rot270)
       
@@ -86,9 +87,10 @@ class VideoExporter: NSObject {
       let fitW = rotW * scale
       let fitH = rotH * scale
       let offX = (boxWidth - fitW) / 2.0
-      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
+      let offY = (boxHeight - fitH) / 2.0
       finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
     } else {
+      // Horizontal pals: Keep video as it is (no extra rotation)
       if transformedRect.origin.x < 0 {
         finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: orientWidth, y: 0))
       }
@@ -100,7 +102,7 @@ class VideoExporter: NSObject {
       let fitW = orientWidth * scale
       let fitH = orientHeight * scale
       let offX = (boxWidth - fitW) / 2.0
-      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
+      let offY = (boxHeight - fitH) / 2.0
       finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
     }
     
@@ -120,27 +122,27 @@ class VideoExporter: NSObject {
     // Center Overlay Y Midpoint (In CoreAnimation, Y=0 is bottom: 656.25 + 303.75 = 960px)
     let overlayCenterY: CGFloat = 960.0
     
-    // Overlay 1: "vlog" title (Left aligned, 44pt text matching VlogSheet ratio)
+    // Overlay 1: "vlog" title (Left aligned, 59pt font size)
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 44, weight: .bold)
-    vlogLayer.fontSize = 44
+    vlogLayer.font = UIFont.systemFont(ofSize: 59, weight: .bold)
+    vlogLayer.fontSize = 59
     vlogLayer.foregroundColor = UIColor.white.cgColor
     vlogLayer.alignmentMode = .left
     vlogLayer.shadowColor = UIColor.black.cgColor
     vlogLayer.shadowOpacity = 0.85
     vlogLayer.shadowRadius = 4
     vlogLayer.shadowOffset = CGSize(width: 0, height: 2)
-    vlogLayer.frame = CGRect(x: 50, y: overlayCenterY - 26, width: 220, height: 52)
+    vlogLayer.frame = CGRect(x: 50, y: overlayCenterY - 32, width: 250, height: 68)
     vlogLayer.contentsScale = 2.0
     parentLayer.addSublayer(vlogLayer)
     
-    // Overlay 2: Caption (Center aligned, 48pt text matching VlogSheet ratio)
+    // Overlay 2: Caption (Center aligned, 63pt font size)
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 48, weight: .bold)
-      captionLayer.fontSize = 48
+      captionLayer.font = UIFont.systemFont(ofSize: 63, weight: .bold)
+      captionLayer.fontSize = 63
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
       captionLayer.shadowColor = UIColor.black.cgColor
@@ -148,24 +150,24 @@ class VideoExporter: NSObject {
       captionLayer.shadowRadius = 4
       captionLayer.shadowOffset = CGSize(width: 0, height: 2)
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 270, y: overlayCenterY - 28, width: 540, height: 56)
+      captionLayer.frame = CGRect(x: 270, y: overlayCenterY - 34, width: 490, height: 72)
       captionLayer.contentsScale = 2.0
       parentLayer.addSublayer(captionLayer)
     }
     
-    // Overlay 3: Timestamp Text (Right aligned, 40pt text matching VlogSheet ratio)
+    // Overlay 3: Timestamp Text (Right aligned, 55pt font size)
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 40, weight: .semibold)
-      timeLayer.fontSize = 40
+      timeLayer.font = UIFont.systemFont(ofSize: 55, weight: .semibold)
+      timeLayer.fontSize = 55
       timeLayer.foregroundColor = UIColor.white.cgColor
       timeLayer.alignmentMode = .right
       timeLayer.shadowColor = UIColor.black.cgColor
       timeLayer.shadowOpacity = 0.85
       timeLayer.shadowRadius = 4
       timeLayer.shadowOffset = CGSize(width: 0, height: 2)
-      timeLayer.frame = CGRect(x: 820, y: overlayCenterY - 24, width: 210, height: 48)
+      timeLayer.frame = CGRect(x: 770, y: overlayCenterY - 30, width: 260, height: 64)
       timeLayer.contentsScale = 2.0
       parentLayer.addSublayer(timeLayer)
     }
