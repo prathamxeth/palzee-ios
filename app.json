@@ -3,7 +3,9 @@
     "name": "Palzee",
     "slug": "palzee-ios",
     "version": "1.0.0",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "orientation": "default",
     "icon": "./assets/images/pal_logo.png",
     "userInterfaceStyle": "automatic",
@@ -56,7 +58,8 @@
           ]
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "scheme": "io.supabase.pals"
   }

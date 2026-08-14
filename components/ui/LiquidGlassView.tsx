@@ -48,48 +48,48 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           <LinearGradient id="iconMatchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#000000' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.40 : 0.20}
+              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.60 : 0.20}
             />
             <Stop
               offset="35%"
               stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.35 : 0.70}
+              stopOpacity={isDark ? 0.50 : 0.70}
             />
             <Stop
               offset="75%"
               stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 1.0}
+              stopOpacity={isDark ? 0.65 : 1.0}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 1.0}
+              stopOpacity={isDark ? 0.65 : 1.0}
             />
           </LinearGradient>
           <LinearGradient id="iconMatchBdr" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.35 : 0.95}
+              stopOpacity={isDark ? 0.28 : 0.95}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.08 : 0.08}
+              stopOpacity={isDark ? 0.04 : 0.08}
             />
           </LinearGradient>
         </Defs>
         <Rect
-          x="0.75"
-          y="0.75"
-          width="99.1%"
-          height="99.1%"
-          rx={borderRadius - 1}
-          ry={borderRadius - 1}
+          x="0.5"
+          y="0.5"
+          width="99.3%"
+          height="99.3%"
+          rx={borderRadius - 0.5}
+          ry={borderRadius - 0.5}
           fill="url(#iconMatchGrad)"
-          stroke={isDark ? 'none' : 'url(#iconMatchBdr)'}
-          strokeWidth={isDark ? 0 : 1.5}
+          stroke="url(#iconMatchBdr)"
+          strokeWidth={1.0}
         />
       </Svg>
 

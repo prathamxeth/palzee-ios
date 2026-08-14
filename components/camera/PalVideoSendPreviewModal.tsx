@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
@@ -388,7 +389,7 @@ export default function PalVideoSendPreviewModal({
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
                   <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
-                    <Ionicons name="close" size={24} color={iconColor} />
+                    <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
                   </LiquidGlassCircleButton>
 
                   {/* Header Title Text: "vlog >" when vlog box is clicked/selected, "send" when unselected */}
@@ -396,23 +397,35 @@ export default function PalVideoSendPreviewModal({
                     {selectedTargets.includes('vlog') ? 'vlog >' : 'send'}
                   </Text>
 
-                  {/* Top Right Liquid Glass Send Arrow Button (Liquid Screen Edge Accent Color when Selected, Unfilled Liquid Glass when Unselected) */}
-                  <LiquidGlassCircleButton
-                    idPrefix={isSendActive ? 'sendBtnActive' : 'sendBtnInactive'}
-                    isDark={isDark}
-                    accentColor={isSendActive ? baseAccentColor : undefined}
-                    onPress={() => {
-                      if (isSendActive) {
-                        handleSend();
-                      }
-                    }}
-                  >
-                    <Ionicons
-                      name="arrow-up"
-                      size={24}
-                      color={isSendActive ? '#FFFFFF' : isDark ? '#8E8E93' : '#636366'}
-                    />
-                  </LiquidGlassCircleButton>
+                  {/* Top Right Liquid Glass / Filled Action Button (Screen Edge Accent Color when Selected, Unfilled Liquid Glass when Unselected) */}
+                  {isSendActive ? (
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={handleSend}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 22,
+                        backgroundColor: baseAccentColor,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <SymbolView name="arrow.up" size={22} weight="bold" tintColor="#FFFFFF" />
+                    </TouchableOpacity>
+                  ) : (
+                    <LiquidGlassCircleButton
+                      idPrefix="sendBtnInactive"
+                      isDark={isDark}
+                    >
+                      <SymbolView
+                        name="arrow.up"
+                        size={22}
+                        weight="medium"
+                        tintColor={isDark ? '#8E8E93' : '#636366'}
+                      />
+                    </LiquidGlassCircleButton>
+                  )}
                 </View>
 
                 {/* 2. 16:9 HORIZONTAL VIDEO CARD BOX */}
@@ -480,10 +493,11 @@ export default function PalVideoSendPreviewModal({
                       activeOpacity={0.8}
                       onPress={() => setIsMuted(!isMuted)}
                     >
-                      <Ionicons
-                        name={isMuted ? 'volume-mute' : 'volume-high'}
-                        size={24}
-                        color="#FFFFFF"
+                      <SymbolView
+                        name={isMuted ? 'speaker.slash.fill' : 'speaker.wave.2.fill'}
+                        size={22}
+                        weight="medium"
+                        tintColor="#FFFFFF"
                       />
                     </TouchableOpacity>
 
@@ -496,10 +510,11 @@ export default function PalVideoSendPreviewModal({
                       {saveRawState === 'saving' ? (
                         <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
-                        <Ionicons
-                          name={saveRawState === 'saved' ? 'checkmark' : 'download-outline'}
-                          size={24}
-                          color="#FFFFFF"
+                        <SymbolView
+                          name={saveRawState === 'saved' ? 'checkmark' : 'arrow.down.circle.fill'}
+                          size={22}
+                          weight="medium"
+                          tintColor="#FFFFFF"
                         />
                       )}
                     </TouchableOpacity>
@@ -533,7 +548,7 @@ export default function PalVideoSendPreviewModal({
                     <View style={styles.leftCircleWrapper}>
                       {selectedTargets.includes('vlog') ? (
                         <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                          <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
                         </View>
                       ) : (
                         <View

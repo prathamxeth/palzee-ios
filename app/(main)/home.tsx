@@ -21,6 +21,7 @@ import {
   useWindowDimensions,
   NativeModules,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,6 +31,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
+import * as WebBrowser from 'expo-web-browser';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
@@ -41,6 +43,7 @@ import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { ActivityDrawer } from '../../components/home/ActivityDrawer';
 import { VlogSheet, EditExportSheet, CRTStaticCard } from '../../components/vlog';
+import { ViewingPalsInstructionModal } from '../../components/vlog/ViewingPalsInstructionModal';
 import { Video, ResizeMode } from 'expo-av';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
@@ -92,41 +95,41 @@ const LiquidGlassPillButton = ({
           <Stop
             offset="0%"
             stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.50 : 0.88}
+            stopOpacity={isDark ? 0.65 : 0.88}
           />
           <Stop
             offset="50%"
             stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-            stopOpacity={isDark ? 0.35 : 0.75}
+            stopOpacity={isDark ? 0.50 : 0.75}
           />
           <Stop
             offset="100%"
-            stopColor={isDark ? '#000000' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.40 : 0.65}
+            stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
+            stopOpacity={isDark ? 0.60 : 0.65}
           />
         </LinearGradient>
         <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.35 : 0.95}
+            stopOpacity={isDark ? 0.28 : 0.95}
           />
           <Stop
             offset="100%"
             stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.08 : 0.08}
+            stopOpacity={isDark ? 0.04 : 0.08}
           />
         </LinearGradient>
       </Defs>
       <Rect
-        x="0.75"
-        y="0.75"
-        width="116.5"
-        height="34.5"
-        rx="17.25"
+        x="0.5"
+        y="0.5"
+        width="117"
+        height="35"
+        rx="17.5"
         fill={`url(#${idPrefix}Grad)`}
-        stroke={isDark ? 'none' : `url(#${idPrefix}Bdr)`}
-        strokeWidth={isDark ? 0 : 1.5}
+        stroke={`url(#${idPrefix}Bdr)`}
+        strokeWidth={1.0}
       />
     </Svg>
     <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
@@ -152,18 +155,18 @@ const LiquidGlassNavPillBar = ({
           <LinearGradient id="capsuleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#28282E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.75 : 0.88}
+              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
+              stopOpacity={isDark ? 0.65 : 0.88}
             />
             <Stop
               offset="50%"
-              stopColor={isDark ? '#18181B' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.6 : 0.75}
+              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
+              stopOpacity={isDark ? 0.50 : 0.75}
             />
             <Stop
               offset="100%"
-              stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.85 : 0.65}
+              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.60 : 0.65}
             />
           </LinearGradient>
           <LinearGradient id="capsuleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -175,19 +178,19 @@ const LiquidGlassNavPillBar = ({
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.05 : 0.08}
+              stopOpacity={isDark ? 0.04 : 0.08}
             />
           </LinearGradient>
         </Defs>
         <Rect
-          x="1"
-          y="1"
-          width="165.5"
-          height="48"
-          rx="24"
+          x="0.5"
+          y="0.5"
+          width="166.5"
+          height="49"
+          rx="24.5"
           fill="url(#capsuleGrad)"
-          stroke={isDark ? 'none' : 'url(#capsuleBorder)'}
-          strokeWidth={isDark ? 0 : 1.5}
+          stroke="url(#capsuleBorder)"
+          strokeWidth={1.0}
         />
       </Svg>
 
@@ -205,36 +208,41 @@ const LiquidGlassNavPillBar = ({
                   <Stop
                     offset="0%"
                     stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.98 : 0.98}
+                    stopOpacity={isDark ? 0.98 : 0.95}
+                  />
+                  <Stop
+                    offset="50%"
+                    stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
+                    stopOpacity={isDark ? 0.98 : 0.85}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#000000' : '#F2EFF4'}
-                    stopOpacity={isDark ? 0.98 : 0.92}
+                    stopColor={isDark ? '#000000' : '#EAE8E3'}
+                    stopOpacity={isDark ? 0.98 : 0.75}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.35 : 0.95}
+                    stopOpacity={isDark ? 0.40 : 0.95}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? accentColor : '#000000'}
-                    stopOpacity={isDark ? 0.85 : 0.45}
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.12 : 0.12}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
-                x="0"
-                y="0"
-                width="82.25"
-                height="49.5"
-                rx="24"
+                x="0.75"
+                y="0.75"
+                width="80.75"
+                height="46.5"
+                rx="23.25"
                 fill="url(#actGrad1)"
-                stroke="none"
-                strokeWidth={0}
+                stroke="url(#actBdr1)"
+                strokeWidth={1.5}
               />
             </Svg>
           )}
@@ -256,42 +264,47 @@ const LiquidGlassNavPillBar = ({
           onPress={() => onSelectTab('pals')}
         >
           {activeTab === 'pals' && (
-            <Svg width={82.25} height={49.5} style={StyleSheet.absoluteFill}>
+            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.98 : 0.98}
+                    stopOpacity={isDark ? 0.98 : 0.95}
+                  />
+                  <Stop
+                    offset="50%"
+                    stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
+                    stopOpacity={isDark ? 0.98 : 0.85}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? '#000000' : '#F2EFF4'}
-                    stopOpacity={isDark ? 0.98 : 0.92}
+                    stopColor={isDark ? '#000000' : '#EAE8E3'}
+                    stopOpacity={isDark ? 0.98 : 0.75}
                   />
                 </LinearGradient>
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.35 : 0.95}
+                    stopOpacity={isDark ? 0.40 : 0.95}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={isDark ? accentColor : '#000000'}
-                    stopOpacity={isDark ? 0.85 : 0.45}
+                    stopColor={isDark ? '#FFFFFF' : '#000000'}
+                    stopOpacity={isDark ? 0.12 : 0.12}
                   />
                 </LinearGradient>
               </Defs>
               <Rect
-                x="0"
-                y="0"
-                width="82.25"
-                height="49.5"
-                rx="24"
+                x="0.75"
+                y="0.75"
+                width="80.75"
+                height="46.5"
+                rx="23.25"
                 fill="url(#actGrad2)"
-                stroke="none"
-                strokeWidth={0}
+                stroke="url(#actBdr2)"
+                strokeWidth={1.5}
               />
             </Svg>
           )}
@@ -347,7 +360,9 @@ export default function HomeScreen({
   const [showEditExportSheet, setShowEditExportSheet] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color'>('main');
+  const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color' | 'logNotifications' | 'account'>('main');
+  const [notificationFreq, setNotificationFreq] = useState<'1hr' | '3hrs' | 'off'>('off');
+  const [showViewingPalsGuide, setShowViewingPalsGuide] = useState(false);
   const [showEditNameModal, setShowEditNameModal] = useState(false);
   const [editFirstName, setEditFirstName] = useState(() => {
     const name = user?.displayName || 'apple_user';
@@ -1470,12 +1485,19 @@ export default function HomeScreen({
                   style={[
                     styles.profileDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.90)' : 'rgba(250, 244, 252, 0.93)',
-                      shadowColor: isDark ? accentColor : '#000000',
+                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.45)' : 'rgba(253, 246, 255, 0.55)',
+                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
-                {/* INNER SLANTING DIAGONAL GLOW FILL (OPTIMIZED SMOOTH TRANSPARENCY) */}
+                {/* 1. FROSTED GLASS BACKDROP BLUR (ALLOWS UNDERLYING TEXT ON LEFT TO BLEED THROUGH) */}
+                <BlurView
+                  intensity={60}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+
+                {/* 2. INNER DIAGONAL AMBIENT GLOW: TRANSLUCENT TOP-RIGHT GLOW SPREADING SMOOTHLY */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                   <Defs>
                     <LinearGradient
@@ -1485,21 +1507,16 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
-                      <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.38} />
+                      <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.24 : 0.20} />
+                      <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.09 : 0.07} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.02} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
                 </Svg>
 
-                <BlurView
-                  intensity={70}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
-                />
-
-                {/* SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
+                {/* 3. SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
                 <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                   <Defs>
                     <LinearGradient
@@ -1509,9 +1526,9 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
-                      <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
+                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                      <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
                     </LinearGradient>
                   </Defs>
                   <Rect
@@ -1570,12 +1587,12 @@ export default function HomeScreen({
                   </Text>
                 </View>
 
-                {/* MAIN MENU OPTIONS (DIMMED FOR EDIT PROFILE, HIDDEN FOR COLOR) */}
+                {/* MAIN MENU OPTIONS (DIMMED FOR SUB-MENUS, HIDDEN FOR COLOR) */}
                 <View
                   style={[
                     styles.dropdownMenuList,
                     {
-                      opacity: profileSubMenu === 'color' ? 0.0 : profileSubMenu === 'editProfile' ? 0.40 : 1.0,
+                      opacity: profileSubMenu === 'color' ? 0.0 : profileSubMenu !== 'main' ? 0.40 : 1.0,
                     },
                   ]}
                 >
@@ -1598,10 +1615,7 @@ export default function HomeScreen({
                   <TouchableOpacity
                     style={styles.dropdownMenuItem}
                     activeOpacity={0.7}
-                    onPress={() => {
-                      setShowProfileMenu(false);
-                      setShowChatDrawer(true);
-                    }}
+                    onPress={() => setProfileSubMenu('logNotifications')}
                   >
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="notifications-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
@@ -1613,7 +1627,11 @@ export default function HomeScreen({
                   </TouchableOpacity>
 
                   {/* Option 3: account */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                  <TouchableOpacity
+                    style={styles.dropdownMenuItem}
+                    activeOpacity={0.7}
+                    onPress={() => setProfileSubMenu('account')}
+                  >
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="person-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -1624,7 +1642,14 @@ export default function HomeScreen({
                   </TouchableOpacity>
 
                   {/* Option 4: feedback */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                  <TouchableOpacity
+                    style={styles.dropdownMenuItem}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setShowProfileMenu(false);
+                      WebBrowser.openBrowserAsync('https://palzee.fun/feedback.html');
+                    }}
+                  >
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="add-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -1634,7 +1659,15 @@ export default function HomeScreen({
                   </TouchableOpacity>
 
                   {/* Option 5: guide */}
-                  <TouchableOpacity style={styles.dropdownMenuItem} activeOpacity={0.7} onPress={() => setShowProfileMenu(false)}>
+                  <TouchableOpacity
+                    style={styles.dropdownMenuItem}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setShowProfileMenu(false);
+                      setActiveTab('pals');
+                      setShowViewingPalsGuide(true);
+                    }}
+                  >
                     <View style={styles.dropdownMenuLeft}>
                       <Ionicons name="help-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
@@ -1651,31 +1684,32 @@ export default function HomeScreen({
                   style={[
                     styles.profileSubDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.95)' : 'rgba(250, 244, 252, 0.96)',
-                      shadowColor: isDark ? accentColor : '#000000',
+                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.45)' : 'rgba(253, 246, 255, 0.55)',
+                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
+                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.38} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.24 : 0.20} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.09 : 0.07} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.02} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
                   </Svg>
 
-                  <BlurView intensity={75} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-
                   {/* SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="subCardBorderGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
-                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
                       </LinearGradient>
                     </Defs>
                     <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#subCardBorderGradient)" strokeWidth="1.0" />
@@ -1759,36 +1793,274 @@ export default function HomeScreen({
                 </View>
               )}
 
+              {/* OVERLAPPING LOG NOTIFICATIONS SUB-DROPDOWN CARD */}
+              {profileSubMenu === 'logNotifications' && (
+                <View
+                  style={[
+                    styles.profileSubDropdownCard,
+                    {
+                      top: 146,
+                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.45)' : 'rgba(253, 246, 255, 0.55)',
+                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
+                    },
+                  ]}
+                >
+                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                    <Defs>
+                      <LinearGradient id="notifSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.38} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.24 : 0.20} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.09 : 0.07} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.02} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#notifSubDiagonalGlow)" />
+                  </Svg>
+
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="notifSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#notifSubCardBorder)" strokeWidth="1.0" />
+                  </Svg>
+
+                  {/* Header: bell icon + log notifications + down chevron */}
+                  <TouchableOpacity
+                    style={styles.dropdownHeaderRow}
+                    activeOpacity={0.7}
+                    onPress={() => setProfileSubMenu('main')}
+                  >
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="notifications-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 10 }]}>
+                        log notifications
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-down" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                  </TouchableOpacity>
+
+                  {/* Hairline Separator Line */}
+                  <View
+                    style={{
+                      height: StyleSheet.hairlineWidth,
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
+                      marginHorizontal: 16,
+                      marginTop: 4,
+                      marginBottom: 12,
+                    }}
+                  />
+
+                  {/* Options List */}
+                  <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => setNotificationFreq('1hr')}
+                    >
+                      <View style={styles.dropdownMenuLeft}>
+                        {notificationFreq === '1hr' ? (
+                          <Ionicons name="checkmark" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} style={{ marginRight: 8 }} />
+                        ) : (
+                          <View style={{ width: 25 }} />
+                        )}
+                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 0 }]}>
+                          every 1hr
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => setNotificationFreq('3hrs')}
+                    >
+                      <View style={styles.dropdownMenuLeft}>
+                        {notificationFreq === '3hrs' ? (
+                          <Ionicons name="checkmark" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} style={{ marginRight: 8 }} />
+                        ) : (
+                          <View style={{ width: 25 }} />
+                        )}
+                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 0 }]}>
+                          every 3hrs
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => setNotificationFreq('off')}
+                    >
+                      <View style={styles.dropdownMenuLeft}>
+                        {notificationFreq === 'off' ? (
+                          <Ionicons name="checkmark" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} style={{ marginRight: 8 }} />
+                        ) : (
+                          <View style={{ width: 25 }} />
+                        )}
+                        <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 0 }]}>
+                          off
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* OVERLAPPING ACCOUNT SUB-DROPDOWN CARD */}
+              {profileSubMenu === 'account' && (
+                <View
+                  style={[
+                    styles.profileSubDropdownCard,
+                    {
+                      top: 190,
+                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.45)' : 'rgba(253, 246, 255, 0.55)',
+                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
+                    },
+                  ]}
+                >
+                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                    <Defs>
+                      <LinearGradient id="acctSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.38} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.24 : 0.20} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.09 : 0.07} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.02} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#acctSubDiagonalGlow)" />
+                  </Svg>
+
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="acctSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#acctSubCardBorder)" strokeWidth="1.0" />
+                  </Svg>
+
+                  {/* Header: person circle icon + account + down chevron */}
+                  <TouchableOpacity
+                    style={styles.dropdownHeaderRow}
+                    activeOpacity={0.7}
+                    onPress={() => setProfileSubMenu('main')}
+                  >
+                    <View style={styles.dropdownMenuLeft}>
+                      <Ionicons name="person-circle-outline" size={20} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                      <Text style={[styles.dropdownUsernameText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 10 }]}>
+                        account
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-down" size={17} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+                  </TouchableOpacity>
+
+                  {/* Hairline Separator Line */}
+                  <View
+                    style={{
+                      height: StyleSheet.hairlineWidth,
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
+                      marginHorizontal: 16,
+                      marginTop: 4,
+                      marginBottom: 12,
+                    }}
+                  />
+
+                  {/* Options List */}
+                  <View style={[styles.dropdownMenuList, { paddingTop: 4, paddingBottom: 16 }]}>
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        WebBrowser.openBrowserAsync('https://palzee.fun/tos.html');
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
+                        terms of service
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        WebBrowser.openBrowserAsync('https://palzee.fun/csampolicy.html');
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
+                        csam policy
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        WebBrowser.openBrowserAsync('https://palzee.fun/privacy.html');
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
+                        privacy policy
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
               {/* 3RD LEVEL OVERLAPPING COLOR PALETTE SUB-DROPDOWN CARD (EXACTLY MATCHING ATTACHED SCREENSHOT) */}
               {profileSubMenu === 'color' && (
                 <View
                   style={[
                     styles.profileColorDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(24, 18, 42, 0.96)' : 'rgba(250, 244, 252, 0.97)',
-                      shadowColor: isDark ? accentColor : '#000000',
+                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.45)' : 'rgba(253, 246, 255, 0.55)',
+                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
+                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={0.37} />
-                        <Stop offset="45%" stopColor={accentColor} stopOpacity={isDark ? 0.27 : 0.31} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.11 : 0.15} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.45 : 0.38} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.24 : 0.20} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.09 : 0.07} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.02} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
                   </Svg>
 
-                  <BlurView intensity={75} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="colorSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="1.0" />
+                  </Svg>
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="colorSubCardBorder" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.54 : 0.63} />
-                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.25 : 0.29} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.09 : 0.11} />
+                        <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.42 : 0.75} />
+                        <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.18 : 0.35} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
                       </LinearGradient>
                     </Defs>
                     <Rect x="1" y="1" width="99.1%" height="99.1%" rx="23" ry="23" fill="none" stroke="url(#colorSubCardBorder)" strokeWidth="1.0" />
@@ -2112,6 +2384,12 @@ export default function HomeScreen({
           selectedThemeColor={selectedThemeColor}
           onDeleteVideo={handleDeleteVideo}
           onUpdateCaption={handleUpdateCaption}
+        />
+
+        {/* VIEWING PALS GUIDE OVERLAY MODAL */}
+        <ViewingPalsInstructionModal
+          visible={showViewingPalsGuide}
+          onContinue={() => setShowViewingPalsGuide(false)}
         />
       </View>
     </DynamicGlowContainer>
@@ -2535,7 +2813,7 @@ const styles = StyleSheet.create({
   },
   profileDropdownCard: {
     position: 'absolute',
-    top: 60,
+    top: 58,
     right: 13,
     width: 246.75,
     borderRadius: 24,
@@ -2597,7 +2875,7 @@ const styles = StyleSheet.create({
   },
   profileSubDropdownCard: {
     position: 'absolute',
-    top: 104,
+    top: 102,
     right: 10,
     width: 253,
     borderRadius: 24,
@@ -2610,7 +2888,7 @@ const styles = StyleSheet.create({
   },
   profileColorDropdownCard: {
     position: 'absolute',
-    top: 236,
+    top: 234,
     right: 7,
     width: 259.5,
     borderRadius: 24,
@@ -2623,7 +2901,7 @@ const styles = StyleSheet.create({
   },
   addDropdownCard: {
     position: 'absolute',
-    top: 60,
+    top: 58,
     left: 46.5,
     width: 215,
     borderRadius: 26,

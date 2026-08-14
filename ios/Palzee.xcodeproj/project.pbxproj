@@ -21,11 +21,11 @@
 		7E149582DDBF4591B0B98DDC /* roboto_mono_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5C305C2AC47450991C98A58 /* roboto_mono_regular.ttf */; };
 		832FD7C178A845908AE9182D /* bricolage_grotesque_variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 567083AD86F741F2ABECD009 /* bricolage_grotesque_variable.ttf */; };
 		A206BFD08235E2655CD4FA43 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087BADAA23C949F676DC1441 /* ExpoModulesProvider.swift */; };
+		B10010012E00000100000000 /* VideoExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10010022E00000100000000 /* VideoExporter.swift */; };
+		B10010032E00000100000000 /* VideoExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = B10010042E00000100000000 /* VideoExporter.m */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		E73A0F4D4FE44DF78CC1B6FA /* google_sans_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8541F1E4B67A46019141016B /* google_sans_regular.ttf */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		B10010012E00000100000000 /* VideoExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10010022E00000100000000 /* VideoExporter.swift */; };
-		B10010032E00000100000000 /* VideoExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = B10010042E00000100000000 /* VideoExporter.m */; };
 		FB0D9A61F3AD4BD99CD9CCA8 /* ownglyph.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 14CFEE246FBB4A06A79FC937 /* ownglyph.ttf */; };
 		FD2B33E8CDF14C10B8BEF6CE /* roboto_medium_numbers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3812D25A1CE7430DBEBB13ED /* roboto_medium_numbers.ttf */; };
 /* End PBXBuildFile section */
@@ -47,10 +47,10 @@
 		8ADBEBFEB76FF8BAD25238FE /* Pods-Palzee.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Palzee.release.xcconfig"; path = "Target Support Files/Pods-Palzee/Pods-Palzee.release.xcconfig"; sourceTree = "<group>"; };
 		9EA7E2330D494F80B868E6D2 /* space_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = space_mono_regular.ttf; path = ../assets/fonts/space_mono_regular.ttf; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Palzee/SplashScreen.storyboard; sourceTree = "<group>"; };
-		BA5AFEA9D2A982B6D9BD10AD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Palzee/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		B10010022E00000100000000 /* VideoExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoExporter.swift; path = Palzee/VideoExporter.swift; sourceTree = "<group>"; };
 		B10010042E00000100000000 /* VideoExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = VideoExporter.m; path = Palzee/VideoExporter.m; sourceTree = "<group>"; };
+		BA5AFEA9D2A982B6D9BD10AD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Palzee/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		D5C305C2AC47450991C98A58 /* roboto_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = roboto_mono_regular.ttf; path = ../assets/fonts/roboto_mono_regular.ttf; sourceTree = "<group>"; };
 		DBC6B034A5E44B89AF605C81 /* jetbrains_mono_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = jetbrains_mono_regular.ttf; path = ../assets/fonts/jetbrains_mono_regular.ttf; sourceTree = "<group>"; };
 		E4E9E60CC55F4D3A8981352E /* dela_gothic_one_regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = dela_gothic_one_regular.ttf; path = ../assets/fonts/dela_gothic_one_regular.ttf; sourceTree = "<group>"; };

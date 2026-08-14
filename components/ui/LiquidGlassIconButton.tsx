@@ -38,41 +38,41 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
             <Stop
               offset="0%"
               stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.50 : 0.88}
+              stopOpacity={isDark ? 0.65 : 0.88}
             />
             <Stop
               offset="50%"
               stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.35 : 0.75}
+              stopOpacity={isDark ? 0.50 : 0.75}
             />
             <Stop
               offset="100%"
-              stopColor={isDark ? '#000000' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.40 : 0.65}
+              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.60 : 0.65}
             />
           </LinearGradient>
           <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.35 : 0.95}
+              stopOpacity={isDark ? 0.28 : 0.95}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.08 : 0.08}
+              stopOpacity={isDark ? 0.04 : 0.08}
             />
           </LinearGradient>
         </Defs>
         <Rect
-          x="0.75"
-          y="0.75"
-          width={rectSize}
-          height={rectSize}
-          rx={rectRadius}
+          x="0.5"
+          y="0.5"
+          width={size - 1.0}
+          height={size - 1.0}
+          rx={(size - 1.0) / 2}
           fill={`url(#${idPrefix}Grad)`}
-          stroke={isDark ? 'none' : `url(#${idPrefix}Bdr)`}
-          strokeWidth={isDark ? 0 : 1.5}
+          stroke={`url(#${idPrefix}Bdr)`}
+          strokeWidth={1.0}
         />
       </Svg>
       {children}
