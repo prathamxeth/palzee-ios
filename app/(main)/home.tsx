@@ -31,7 +31,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { getNearestHourText, generateVideoThumbnail, getLiveSandboxUri } from '../../utils/mediaUtils';
+import { getNearestHourText, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
@@ -557,8 +557,8 @@ export default function HomeScreen({
       }
     });
   }, []);
+  const [selectedDayOffset, setSelectedDayOffset] = useState(0);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
-  const [homeVlogProgress, setHomeVlogProgress] = useState(0);
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
   const [isHomeVlogVertical, setIsHomeVlogVertical] = useState(true);
   const vlogFadeAnim = useRef(new Animated.Value(1)).current;
@@ -566,15 +566,6 @@ export default function HomeScreen({
   useEffect(() => {
     vlogFadeAnim.setValue(0);
   }, [homeVlogIndex]);
-
-  useEffect(() => {
-    Animated.timing(homeProgressAnim, {
-      toValue: homeVlogProgress,
-      duration: 60,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    }).start();
-  }, [homeVlogProgress]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -655,7 +646,7 @@ export default function HomeScreen({
       return updated;
     });
     setHomeVlogIndex(0);
-    setHomeVlogProgress(0);
+    homeProgressAnim.setValue(0);
     setShowCamera(false);
     setShowExportSheet(false);
     setShowChatDrawer(false);
@@ -689,7 +680,7 @@ export default function HomeScreen({
     setVlogList(updatedList);
     AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updatedList));
     setHomeVlogIndex(0);
-    setHomeVlogProgress(0);
+    homeProgressAnim.setValue(0);
     setShowExportSheet(false);
   };
 
@@ -896,7 +887,7 @@ export default function HomeScreen({
                               }
                             : StyleSheet.absoluteFill
                         }
-                        contentFit="cover"
+                        resizeMode="cover"
                       />
                     )}
                     <Animated.View
@@ -926,15 +917,15 @@ export default function HomeScreen({
                         isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
                         rate={vlogList[homeVlogIndex]?.rate || 1.0}
                         shouldCorrectPitch={true}
-                        progressUpdateIntervalMillis={16}
+                        progressUpdateIntervalMillis={100}
                         onPlaybackStatusUpdate={(status) => {
                           if (status.isLoaded) {
                             if (status.durationMillis && status.durationMillis > 0) {
                               const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
-                              setHomeVlogProgress(p);
+                              homeProgressAnim.setValue(p);
                             }
                             if (status.didJustFinish) {
-                              setHomeVlogProgress(0);
+                              homeProgressAnim.setValue(0);
                               if (vlogList.length > 1) {
                                 setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
                               }
@@ -1000,33 +991,31 @@ export default function HomeScreen({
                         pointerEvents="none"
                       >
                         {vlogList.map((_, index) => {
-                          let fillPercent = 0;
-                          if (vlogList.length === 1) {
-                            fillPercent = homeVlogProgress * 100;
-                          } else {
-                            if (index < homeVlogIndex) {
-                              fillPercent = 100;
-                            } else if (index === homeVlogIndex) {
-                              fillPercent = homeVlogProgress * 100;
-                            } else {
-                              fillPercent = 0;
-                            }
-                          }
+                          const isCurrent = index === homeVlogIndex;
+                          const isPast = index < homeVlogIndex;
+                          const barWidth = vlogList.length === 1 ? 30 : 24;
 
                           return (
                             <View
                               key={index}
                               style={{
-                                width: vlogList.length === 1 ? 30 : 24,
+                                width: barWidth,
                                 height: 3.5,
                                 borderRadius: 2,
                                 backgroundColor: 'rgba(255, 255, 255, 0.40)',
                                 overflow: 'hidden',
                               }}
                             >
-                              <View
+                              <Animated.View
                                 style={{
-                                  width: `${Math.min(Math.max(fillPercent, 0), 100)}%`,
+                                  width: isCurrent
+                                    ? homeProgressAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: ['0%', '100%'],
+                                      })
+                                    : isPast
+                                    ? '100%'
+                                    : '0%',
                                   height: '100%',
                                   backgroundColor: '#FFFFFF',
                                   borderRadius: 2,
@@ -2026,8 +2015,9 @@ export default function HomeScreen({
           user={user}
           isDark={isDark}
           selectedThemeColor={selectedThemeColor}
-          vlogList={vlogList}
-          activeVideoUri={vlogList.length > 0 ? vlogList[0]?.uri : undefined}
+          vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
+          activeVideoUri={getClipsForDayOffset(vlogList, selectedDayOffset).length > 0 ? getClipsForDayOffset(vlogList, selectedDayOffset)[0]?.uri : undefined}
+          selectedDayOffset={selectedDayOffset}
         />
 
         <VlogSheet
@@ -2045,6 +2035,8 @@ export default function HomeScreen({
           isMuted={vlogList.length > 0 ? vlogList[0]?.isMuted : false}
           onDeleteVideo={handleDeleteVideo}
           onUpdateCaption={handleUpdateCaption}
+          selectedDayOffset={selectedDayOffset}
+          onSelectDayOffset={(offset) => setSelectedDayOffset(offset)}
           onOpenCamera={() => {
             setShowChatDrawer(false);
             setShowExportSheet(false);
@@ -2058,7 +2050,7 @@ export default function HomeScreen({
         <EditExportSheet
           visible={showEditExportSheet}
           onClose={() => setShowEditExportSheet(false)}
-          vlogList={vlogList}
+          vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
           selectedThemeColor={selectedThemeColor}
           onDeleteVideo={handleDeleteVideo}
           onUpdateCaption={handleUpdateCaption}

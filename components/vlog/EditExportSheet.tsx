@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Alert,
   Modal,
@@ -14,7 +14,10 @@ import {
   ActivityIndicator,
   Share,
   NativeModules,
+  Animated,
+  Easing,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -40,7 +43,7 @@ export const FFMPEG_LETTERBOX_FILTER = `-i input.mp4 -vf "scale=1080:607:force_o
 export interface EditExportSheetProps {
   visible: boolean;
   onClose: () => void;
-  vlogList?: Array<{ id: string; uri: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
+  vlogList?: Array<{ id: string; uri: string; thumbnailUri?: string; caption?: string; timestamp: string; isMuted?: boolean; rate?: number; mode?: string }>;
   selectedThemeColor?: string;
   onDeleteVideo?: (id?: string) => void;
   onUpdateCaption?: (newCaption: string, id?: string) => void;
@@ -65,9 +68,56 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const [isExportVideoVertical, setIsExportVideoVertical] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   // Chronological order: oldest recorded clip first, newest ones after it
   const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
   const currentClip = list.length > 0 ? list[Math.min(currentIndex, list.length - 1)] : null;
+
+  useEffect(() => {
+    if (visible) {
+      setCurrentIndex(0);
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    slideAnim.setValue(16);
+    scaleAnim.setValue(0.97);
+
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 240,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 240,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentIndex]);
+
+  const handlePlaybackStatusUpdate = (status: any) => {
+    if (status && status.isLoaded && status.didJustFinish) {
+      if (list.length > 1) {
+        setCurrentIndex((prev) => (prev + 1) % list.length);
+      }
+    }
+  };
+
+  const handleCardTap = (event: any) => {
+    if (list.length <= 1) return;
+    const touchX = event.nativeEvent.locationX;
+    if (touchX > cardWidth / 2) {
+      setCurrentIndex((prev) => (prev + 1) % list.length);
+    } else {
+      setCurrentIndex((prev) => (prev - 1 + list.length) % list.length);
+    }
+  };
 
   const formatExportTime = (ts?: string, displayTime?: string) => {
     if (displayTime && (displayTime.includes('AM') || displayTime.includes('PM'))) {
@@ -84,23 +134,36 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     return `${h}:${m} ${ampm}`;
   };
 
-  // Native AVFoundation Video Processing to 1080x1920 9:16 Portrait Canvas
+  // Native AVFoundation Video Processing to 1080x1920 9:16 Portrait Canvas Slideshow
   const processAndSaveVideo = async (): Promise<string> => {
-    if (!currentClip || !currentClip.uri) return '';
-
     const TargetExporter = NativeModules.VideoExporter;
+
+    if (vlogList && vlogList.length > 0) {
+      // Chronological order: oldest recorded clip first, newest ones after it
+      const chronologicalList = [...vlogList].reverse();
+      const inputPaths: string[] = [];
+      const captions: string[] = [];
+      const timestamps: string[] = [];
+
+      for (const clip of chronologicalList) {
+        if (clip && clip.uri) {
+          inputPaths.push(clip.uri);
+          captions.push(clip.caption || '');
+          timestamps.push(formatExportTime(clip.timestamp, (clip as any).displayTime) || '7:26 PM');
+        }
+      }
+
+      if (TargetExporter && TargetExporter.exportSlideshowVideo && inputPaths.length > 0) {
+        const exportedUri = await TargetExporter.exportSlideshowVideo(inputPaths, captions, timestamps);
+        return exportedUri;
+      }
+    }
+
+    if (!currentClip || !currentClip.uri) return '';
 
     if (TargetExporter && TargetExporter.exportPortraitVideoWithCaption) {
       const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
       const exportedUri = await TargetExporter.exportPortraitVideoWithCaption(
-        currentClip.uri,
-        currentClip.caption || '',
-        formattedTimeText || '7:26 PM'
-      );
-      return exportedUri;
-    } else if (TargetExporter && TargetExporter.exportPortraitVideo) {
-      const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
-      const exportedUri = await TargetExporter.exportPortraitVideo(
         currentClip.uri,
         currentClip.caption || '',
         formattedTimeText || '7:26 PM'
@@ -219,7 +282,9 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           {/* 2. CENTER 16:9 VIDEO PREVIEW BOX */}
           <View style={styles.centerContent}>
             {currentClip && currentClip.uri ? (
-              <View
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={handleCardTap}
                 style={{
                   width: cardWidth,
                   height: cardHeight,
@@ -233,23 +298,45 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   shadowRadius: 10,
                 }}
               >
-                <Video
-                  key={currentClip.uri}
-                  source={{ uri: currentClip.uri }}
-                  style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
-                  resizeMode={ResizeMode.COVER}
-                  shouldPlay={true}
-                  isLooping={true}
-                  isMuted={currentClip.isMuted ?? false}
-                  rate={currentClip.rate || 1.0}
-                  shouldCorrectPitch={true}
-                  onReadyForDisplay={(event) => {
-                    if (event?.naturalSize) {
-                      const { width, height } = event.naturalSize;
-                      setIsExportVideoVertical(height > width);
-                    }
-                  }}
-                />
+
+                {Boolean((currentClip as any)?.thumbnailUri) && (
+                  <Image
+                    source={{ uri: (currentClip as any)?.thumbnailUri }}
+                    style={(isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill) as any}
+                    contentFit="cover"
+                  />
+                )}
+
+                <Animated.View
+                  style={[
+                    StyleSheet.absoluteFill,
+                    {
+                      transform: [
+                        { translateX: slideAnim },
+                        { scale: scaleAnim },
+                      ],
+                    },
+                  ]}
+                >
+                  <Video
+                    key={currentClip.uri}
+                    source={{ uri: currentClip.uri }}
+                    style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                    resizeMode={ResizeMode.COVER}
+                    shouldPlay={true}
+                    isLooping={list.length === 1}
+                    isMuted={currentClip.isMuted ?? false}
+                    rate={currentClip.rate || 1.0}
+                    shouldCorrectPitch={true}
+                    onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+                    onReadyForDisplay={(event) => {
+                      if (event?.naturalSize) {
+                        const { width, height } = event.naturalSize;
+                        setIsExportVideoVertical(height > width);
+                      }
+                    }}
+                  />
+                </Animated.View>
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
                 {/* OVERLAY TEXT: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
@@ -303,7 +390,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                     {formatExportTime(currentClip.timestamp, (currentClip as any).displayTime)}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ) : null}
           </View>
 

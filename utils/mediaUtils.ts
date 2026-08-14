@@ -188,3 +188,40 @@ export const getUserInitial = (name?: string): string => {
   if (!name || name.trim().length === 0) return 'P';
   return name.trim().charAt(0).toUpperCase();
 };
+
+/**
+ * Computes 4 AM cycle day offset relative to current day.
+ * 0 = Today's 4 AM cycle
+ * 1 = Yesterday's 4 AM cycle
+ * ...
+ * 6 = 6 days ago (7th day)
+ * -1 = Older than 7 days (or invalid)
+ */
+export const getClip4AMDayOffset = (clipTime?: string | number | Date): number => {
+  const date = parseToDate(clipTime);
+  if (!date) return 0;
+
+  const now = new Date();
+  const clipShifted = new Date(date.getTime() - 4 * 3600 * 1000);
+  const nowShifted = new Date(now.getTime() - 4 * 3600 * 1000);
+
+  const clipDayStart = new Date(clipShifted.getFullYear(), clipShifted.getMonth(), clipShifted.getDate()).getTime();
+  const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
+
+  const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
+  if (diffDays >= 0 && diffDays < 7) {
+    return diffDays;
+  }
+  return -1;
+};
+
+/**
+ * Returns video clips belonging to a specific day offset (0 to 6).
+ */
+export const getClipsForDayOffset = (clips: any[], dayOffset: number): any[] => {
+  if (!Array.isArray(clips)) return [];
+  return clips.filter((item) => {
+    const offset = getClip4AMDayOffset(item.timestamp || item.createdAt || item.date);
+    return offset === dayOffset;
+  });
+};

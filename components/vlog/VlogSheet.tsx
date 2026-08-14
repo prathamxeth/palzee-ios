@@ -14,6 +14,7 @@ import {
   TextInput,
   Platform,
   Keyboard,
+  PanResponder,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
@@ -27,7 +28,9 @@ import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 import { CRTStaticCard } from './CRTStaticCard';
 import { ChatDrawer } from '../home/ChatDrawer';
 import { EditExportSheet } from './EditExportSheet';
-import { getNearestHourText, formatExactTime } from '../../utils/mediaUtils';
+import { ViewingPalsInstructionModal } from './ViewingPalsInstructionModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getNearestHourText, formatExactTime, getClipsForDayOffset } from '../../utils/mediaUtils';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -45,6 +48,8 @@ export interface VlogSheetProps {
   onDeleteVideo?: (id?: string) => void;
   onUpdateCaption?: (newCaption: string, id?: string) => void;
   initialOpenExport?: boolean;
+  selectedDayOffset?: number;
+  onSelectDayOffset?: (offset: number) => void;
 }
 
 export const VlogSheet: React.FC<VlogSheetProps> = ({
@@ -63,6 +68,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   onDeleteVideo,
   onUpdateCaption,
   initialOpenExport = false,
+  selectedDayOffset = 0,
+  onSelectDayOffset,
 }) => {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -97,12 +104,74 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [showExportModal, setShowExportModal] = useState(false);
   const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
+  const [dayOffset, setDayOffset] = useState(selectedDayOffset);
+  const [showInstructions, setShowInstructions] = useState(false);
 
-  const rawList = vlogList && vlogList.length > 0 ? vlogList : (activeVideoUri ? [{ id: 'default', uri: activeVideoUri, caption, timestamp, isMuted }] : []);
-  const list = rawList;
+  useEffect(() => {
+    if (visible) {
+      AsyncStorage.getItem('@palzee_has_seen_vlog_instructions').then((val) => {
+        if (!val) {
+          setShowInstructions(true);
+        }
+      });
+    }
+  }, [visible]);
+
+  const handleDismissInstructions = () => {
+    setShowInstructions(false);
+    AsyncStorage.setItem('@palzee_has_seen_vlog_instructions', 'true');
+  };
+
+  useEffect(() => {
+    setDayOffset(selectedDayOffset);
+  }, [selectedDayOffset, visible]);
+
+  const getDayHeaderTitle = (offset: number) => {
+    if (offset === 0) return 'vlog';
+    if (offset === 1) return 'yesterday';
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    return d.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dy) < 30;
+      },
+      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dy) < 30;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -30) {
+          // SWIPE LEFT -> Move to Previous Day (up to 6)
+          if (dayOffset < 6) {
+            const nextOffset = dayOffset + 1;
+            setDayOffset(nextOffset);
+            setCurrentVlogIndex(0);
+            if (onSelectDayOffset) onSelectDayOffset(nextOffset);
+          }
+        } else if (gestureState.dx > 30) {
+          // SWIPE RIGHT -> Move to Next Day (towards 0)
+          if (dayOffset > 0) {
+            const prevOffset = dayOffset - 1;
+            setDayOffset(prevOffset);
+            setCurrentVlogIndex(0);
+            if (onSelectDayOffset) onSelectDayOffset(prevOffset);
+          }
+        }
+      },
+    })
+  ).current;
+
+  // Filter clips strictly for the active day offset
+  const dayClips = getClipsForDayOffset(vlogList, dayOffset);
+  const list = dayClips;
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
-  const currentUri = currentClip ? currentClip.uri : activeVideoUri;
-  const currentCaption = currentClip ? (currentClip.caption || '') : caption;
+  const currentUri = currentClip ? currentClip.uri : (dayOffset === 0 ? activeVideoUri : null);
+  const currentCaption = currentClip ? (currentClip.caption || '') : (dayOffset === 0 ? caption : '');
   const currentTimestamp = getNearestHourText(currentClip ? ((currentClip as any).displayTime || currentClip.timestamp) : timestamp);
   const currentIsMuted = currentClip ? (currentClip.isMuted ?? false) : isMuted;
 
@@ -114,14 +183,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       setShowExportModal(Boolean(initialOpenExport));
       setShowVlogDropdown(false);
       setShowEditCaptionBox(false);
-      setShowOptionsMenu(false);
       setShowDeleteDialog(false);
       setIsEditingCaption(false);
-      if (!vlogList || vlogList.length === 0) {
-        trigger0PalsEffect();
-      }
+      setShow0Logs(false);
     }
-  }, [visible, vlogList?.length, initialOpenExport]);
+  }, [visible, dayOffset, initialOpenExport]);
 
   useEffect(() => {
     setEditingCaptionText(currentCaption);
@@ -150,19 +216,72 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     }
   };
 
-  const handleScreenTap = (evt: any) => {
-    if (showEditCaptionBox) {
-      setShowEditCaptionBox(false);
-      return;
-    }
-    if (showDeleteDialog || isEditingCaption || showVlogDropdown) return;
-    if (list.length <= 1) return;
+  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
 
-    const touchX = evt.nativeEvent.locationX;
-    if (touchX < screenWidth / 2) {
-      setCurrentVlogIndex((prev) => (prev < list.length - 1 ? prev + 1 : 0));
-    } else {
-      setCurrentVlogIndex((prev) => (prev > 0 ? prev - 1 : list.length - 1));
+  const handleTouchStart = (e: any) => {
+    touchStartRef.current = {
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+      time: Date.now(),
+    };
+  };
+
+  const handleTouchEnd = (e: any) => {
+    const dx = e.nativeEvent.pageX - touchStartRef.current.x;
+    const dy = e.nativeEvent.pageY - touchStartRef.current.y;
+    const dt = Date.now() - touchStartRef.current.time;
+
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    // 1. HORIZONTAL SWIPE (ONLY NAVIGATES BETWEEN DAYS, NEVER BETWEEN VIDEO PALS)
+    if (absDx > 25 && absDx > absDy && dt < 600) {
+      if (dx < 0) {
+        // SWIPE LEFT -> NEXT DAY (towards today 0)
+        if (dayOffset > 0) {
+          const nextOffset = dayOffset - 1;
+          setDayOffset(nextOffset);
+          setCurrentVlogIndex(0);
+          if (onSelectDayOffset) onSelectDayOffset(nextOffset);
+        }
+      } else if (dx > 0) {
+        // SWIPE RIGHT -> PREVIOUS DAY (away from today, up to 6)
+        if (dayOffset < 6) {
+          const prevOffset = dayOffset + 1;
+          setDayOffset(prevOffset);
+          setCurrentVlogIndex(0);
+          if (onSelectDayOffset) onSelectDayOffset(prevOffset);
+        }
+      }
+      return; // SWIPES NEVER CHANGE VIDEO PAL INDEX WITHIN THE DAY!
+    }
+
+    // 2. TAP GESTURE (ONLY NAVIGATES BETWEEN VIDEO PALS WITHIN THE ACTIVE DAY)
+    if (absDx <= 15 && absDy <= 15 && dt < 400) {
+      if (showOptionsMenu) {
+        setShowOptionsMenu(false);
+        return;
+      }
+      if (showEditCaptionBox) {
+        setShowEditCaptionBox(false);
+        return;
+      }
+      if (showDeleteDialog || isEditingCaption || showVlogDropdown) return;
+      if (list.length <= 1) return;
+
+      const touchX = e.nativeEvent.locationX;
+      if (touchX < cardWidth / 2) {
+        // Tap LEFT -> Navigate to MORE RECENT (newer) video pal
+        // If at index 0 (most recent), DO NOTHING!
+        if (currentVlogIndex > 0) {
+          setCurrentVlogIndex((prev) => prev - 1);
+        }
+      } else {
+        // Tap RIGHT -> Navigate to PREVIOUS (older) video pal
+        if (currentVlogIndex < list.length - 1) {
+          setCurrentVlogIndex((prev) => prev + 1);
+        }
+      }
     }
   };
 
@@ -280,6 +399,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                           {
                             tintColor: '#000000',
                             transform: [
+                              { scale: 1.22 },
                               {
                                 rotate: logsRotateAnim.interpolate({
                                   inputRange: [0, 1],
@@ -303,83 +423,95 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            <View style={styles.centerHeaderGroup} pointerEvents="box-none">
-              <TouchableOpacity
-                style={styles.vlogLiquidPillBtn}
-                activeOpacity={0.8}
-                onPress={() => setShowVlogDropdown(!showVlogDropdown)}
-              >
-                <BlurView
-                  intensity={35}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
-                  <Defs>
-                    <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop
-                        offset="0%"
-                        stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                        stopOpacity={isDark ? 0.75 : 0.88}
+            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 0 ? 75.5 : 52.5 }]} pointerEvents="box-none">
+              {(() => {
+                const headerTitleText = getDayHeaderTitle(dayOffset);
+                const headerPillWidth = Math.max(105, headerTitleText.length * 11 + 44);
+                return (
+                  <TouchableOpacity
+                    style={[styles.vlogLiquidPillBtn, { width: headerPillWidth }]}
+                    activeOpacity={0.8}
+                    onPress={() => setShowVlogDropdown(!showVlogDropdown)}
+                  >
+                    <BlurView
+                      intensity={35}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width={headerPillWidth} height={44} style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop
+                            offset="0%"
+                            stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                            stopOpacity={isDark ? 0.75 : 0.88}
+                          />
+                          <Stop
+                            offset="50%"
+                            stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                            stopOpacity={isDark ? 0.6 : 0.75}
+                          />
+                          <Stop
+                            offset="100%"
+                            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                            stopOpacity={isDark ? 0.85 : 0.65}
+                          />
+                        </LinearGradient>
+                        <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width={headerPillWidth - 1.5}
+                        height="42.5"
+                        rx="21.25"
+                        fill="url(#vlogPillGrad)"
+                        stroke="url(#vlogPillBdr)"
+                        strokeWidth="1.5"
                       />
-                      <Stop
-                        offset="50%"
-                        stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                        stopOpacity={isDark ? 0.6 : 0.75}
-                      />
-                      <Stop
-                        offset="100%"
-                        stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                        stopOpacity={isDark ? 0.85 : 0.65}
-                      />
-                    </LinearGradient>
-                    <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect
-                    x="0.75"
-                    y="0.75"
-                    width="94.5"
-                    height="42.5"
-                    rx="21.25"
-                    fill="url(#vlogPillGrad)"
-                    stroke="url(#vlogPillBdr)"
-                    strokeWidth="1.5"
-                  />
-                </Svg>
-                <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                  Vlog
-                </Text>
-                <Ionicons
-                  name="chevron-down"
-                  size={16}
-                  color={isDark ? '#FFFFFF' : '#000000'}
-                  style={{ marginLeft: 4 }}
-                />
-              </TouchableOpacity>
+                    </Svg>
+                    <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      {headerTitleText}
+                    </Text>
+                    <Ionicons
+                      name="chevron-down"
+                      size={16}
+                      color={isDark ? '#FFFFFF' : '#000000'}
+                      style={{ marginLeft: 4 }}
+                    />
+                  </TouchableOpacity>
+                );
+              })()}
 
-              <View
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  backgroundColor: edgeColor,
-                  borderWidth: 1.5,
-                  borderColor: isDark ? '#2C2C2E' : '#E5E5EA',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  overflow: 'hidden',
-                  marginTop: 6,
-                }}
-              >
-                <Image
-                  source={require('../../assets/images/custom_rotate_smiley.png')}
-                  style={{ width: 15, height: 15, tintColor: '#000000' }}
-                  resizeMode="contain"
-                />
+            {list.length > 0 && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
+                {Array.from({ length: list.length }).map((_, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: edgeColor,
+                      borderWidth: 1.5,
+                      borderColor: isDark ? '#2C2C2E' : '#E5E5EA',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Image
+                      source={require('../../assets/images/custom_rotate_smiley.png')}
+                      style={{ width: 15.05, height: 15.05, tintColor: '#000000', transform: [{ scale: 1.035 }] }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                ))}
               </View>
+            )}
             </View>
 
             <View style={styles.headerRightIcons}>
@@ -389,6 +521,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 onPress={() => {
                   if (currentUri) {
                     setShowExportModal(true);
+                  } else {
+                    setShow0Logs(true);
+                    trigger0PalsEffect();
                   }
                 }}
               >
@@ -406,10 +541,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           </View>
 
           {/* 2. MAIN 16:9 CARD VIEW CONTAINER */}
-          <TouchableOpacity
+          <View
             style={styles.cardContainer}
-            activeOpacity={1}
-            onPress={handleScreenTap}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
             <View style={[styles.cardOuter, { width: cardWidth, height: cardHeight }]}>
               {!!currentUri ? (
@@ -430,7 +565,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   }}
                 />
               ) : (
-                <CRTStaticCard isDark={isDark} width={cardWidth} height={cardHeight} borderRadius={28} />
+                <CRTStaticCard isDark={isDark} width={cardWidth} height={cardHeight} borderRadius={28} showBouncingSmiley={true} />
               )}
 
               <View style={styles.cardHeaderRow} pointerEvents="box-none">
@@ -463,34 +598,47 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       {formatExactTime((currentClip as any)?.displayTime || currentClip?.timestamp || timestamp)}
                     </Text>
                   </>
-                ) : (
+                ) : dayOffset === 0 ? (
                   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity
-                      style={styles.centerCaptureBtn}
-                      activeOpacity={0.85}
+                      style={{
+                        paddingHorizontal: 22,
+                        paddingVertical: 12,
+                        borderRadius: 22,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                      }}
+                      activeOpacity={0.8}
                       onPress={() => {
                         onClose();
                         if (onOpenCamera) onOpenCamera();
                       }}
                     >
-                      <Text style={styles.centerCaptureBtnText}>tap to capture vlog</Text>
+                      <BlurView
+                        intensity={30}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold }}>
+                        tap to capture
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                )}
+                ) : null}
               </View>
 
-              {/* BOTTOM RIGHT TRIPLE DOT BUTTON (PLAIN ICON, NO PILL BG) */}
-              {!!currentUri && (
-                <TouchableOpacity
-                  style={styles.cardBottomRightDots}
-                  activeOpacity={0.7}
-                  onPress={() => setShowOptionsMenu(true)}
-                >
-                  <Ionicons name="ellipsis-horizontal" size={22} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
+              {/* BOTTOM RIGHT TRIPLE DOT BUTTON (ALWAYS SHOWN) */}
+              <TouchableOpacity
+                style={styles.cardBottomRightDots}
+                activeOpacity={0.7}
+                onPress={() => setShowOptionsMenu(true)}
+              >
+                <Ionicons name="ellipsis-horizontal" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          </View>
 
           <EditExportSheet
             visible={showExportModal}
@@ -537,14 +685,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               >
                 <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                <Svg width={190} height={120} style={StyleSheet.absoluteFill}>
+                <Svg width={190} height={currentUri ? 120 : 44} style={StyleSheet.absoluteFill}>
                   <Defs>
                     <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                       <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
                       <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="190" height="120" rx="20" fill="url(#optionsPillGrad)" />
+                  <Rect x="0" y="0" width="190" height={currentUri ? 120 : 44} rx="20" fill="url(#optionsPillGrad)" />
                 </Svg>
 
                 {/* 1. Edit Caption */}
@@ -562,53 +710,57 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     setShowEditCaptionBox(true);
                   }}
                 >
-                  <Ionicons name="create-outline" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
-                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                  <Ionicons name="create-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                  <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                     edit caption
                   </Text>
                 </TouchableOpacity>
 
-                {/* 2. Save & Export */}
-                <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    gap: 10,
-                  }}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setShowOptionsMenu(false);
-                    setShowExportModal(true);
-                  }}
-                >
-                  <Ionicons name="share-outline" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
-                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
-                    save & export
-                  </Text>
-                </TouchableOpacity>
+                {!!currentUri && (
+                  <>
+                    {/* 2. Save */}
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 10,
+                        paddingHorizontal: 16,
+                        gap: 10,
+                      }}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowOptionsMenu(false);
+                        setShowExportModal(true);
+                      }}
+                    >
+                      <Ionicons name="download-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                      <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                        save
+                      </Text>
+                    </TouchableOpacity>
 
-                {/* 3. Delete Vlog */}
-                <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    gap: 10,
-                  }}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setShowOptionsMenu(false);
-                    setShowDeleteDialog(true);
-                  }}
-                >
-                  <Ionicons name="trash-outline" size={18} color="#FF3B30" />
-                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
-                    delete vlog
-                  </Text>
-                </TouchableOpacity>
+                    {/* 3. Delete Vlog */}
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 10,
+                        paddingHorizontal: 16,
+                        gap: 10,
+                      }}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowOptionsMenu(false);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                      <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                        delete video
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             </TouchableOpacity>
           </Modal>
@@ -632,6 +784,168 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             vlogList={vlogList}
             activeVideoUri={activeVideoUri}
           />
+
+          <ViewingPalsInstructionModal
+            visible={showInstructions}
+            onContinue={handleDismissInstructions}
+          />
+
+          {/* EDIT CAPTION DIALOG MODAL */}
+          <Modal
+            visible={showEditCaptionBox}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowEditCaptionBox(false)}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
+            >
+              <View
+                style={{
+                  width: '100%',
+                  maxWidth: 320,
+                  borderRadius: 24,
+                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+                  padding: 20,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 16,
+                  elevation: 10,
+                }}
+              >
+                <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000', marginBottom: 12 }}>
+                  edit caption
+                </Text>
+                <TextInput
+                  style={{
+                    width: '100%',
+                    backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
+                    borderRadius: 14,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    fontSize: 16,
+                    fontFamily: Fonts.SystemRoundedRegular,
+                    color: isDark ? '#FFFFFF' : '#000000',
+                    marginBottom: 20,
+                  }}
+                  value={editingCaptionText}
+                  onChangeText={setEditingCaptionText}
+                  placeholder="add a caption..."
+                  placeholderTextColor="#8E8E93"
+                  autoFocus={true}
+                />
+                <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 14,
+                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setShowEditCaptionBox(false)}
+                  >
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                      cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 14,
+                      backgroundColor: edgeColor,
+                      alignItems: 'center',
+                    }}
+                    onPress={() => {
+                      setShowEditCaptionBox(false);
+                      handleSaveCaption();
+                    }}
+                  >
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, color: '#000000' }}>
+                      save
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </Modal>
+
+          {/* DELETE VIDEO CONFIRMATION DIALOG MODAL */}
+          <Modal
+            visible={showDeleteDialog}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowDeleteDialog(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 24,
+              }}
+            >
+              <View
+                style={{
+                  width: '100%',
+                  maxWidth: 320,
+                  borderRadius: 24,
+                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+                  padding: 24,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 16,
+                  elevation: 10,
+                }}
+              >
+                <Ionicons name="trash-outline" size={36} color="#FF3B30" style={{ marginBottom: 12 }} />
+                <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000', marginBottom: 8, textAlign: 'center' }}>
+                  delete video pal?
+                </Text>
+                <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedRegular, color: '#8E8E93', textAlign: 'center', marginBottom: 24 }}>
+                  this action cannot be undone.
+                </Text>
+
+                <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 14,
+                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setShowDeleteDialog(false)}
+                  >
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                      cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 14,
+                      backgroundColor: '#FF3B30',
+                      alignItems: 'center',
+                    }}
+                    onPress={handleConfirmDelete}
+                  >
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, color: '#FFFFFF' }}>
+                      delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
       </DynamicGlowContainer>
     </Modal>
@@ -667,8 +981,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logsSmileyImg: {
-    width: 22,
-    height: 22,
+    width: 27,
+    height: 27,
   },
   zeroLogsText: {
     fontSize: 14,
@@ -680,7 +994,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    marginTop: 75,
+    marginTop: 55,
   },
   vlogLiquidPillBtn: {
     width: 96,

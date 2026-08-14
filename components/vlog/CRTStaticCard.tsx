@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { StyleSheet, View, Animated } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
+import { BouncingSmileyView } from './BouncingSmileyView';
 
 const vhsLightTexture = require('../../assets/images/vhs_static_light.png');
 const vhsDarkTexture = require('../../assets/images/vhs_static_dark.png');
@@ -10,6 +11,7 @@ interface CRTStaticCardProps {
   width: number;
   height: number;
   borderRadius?: number;
+  showBouncingSmiley?: boolean;
 }
 
 export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
@@ -17,6 +19,7 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
   width,
   height,
   borderRadius = 24,
+  showBouncingSmiley = false,
 }) => {
   const noiseAnimX = useRef(new Animated.Value(0)).current;
   const noiseAnimY = useRef(new Animated.Value(0)).current;
@@ -102,6 +105,10 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
           },
         ]}
       />
+
+      {showBouncingSmiley && (
+        <BouncingSmileyView cardWidth={width} cardHeight={height} />
+      )}
     </View>
   );
 };

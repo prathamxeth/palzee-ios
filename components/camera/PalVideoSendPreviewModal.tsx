@@ -24,6 +24,9 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import * as MediaLibrary from 'expo-media-library';
+import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
+import { Alert } from 'react-native';
 
 const shouldSuppressExpoAv = (...args: any[]) => {
   try {
@@ -170,6 +173,26 @@ export default function PalVideoSendPreviewModal({
 }: PalVideoSendPreviewModalProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(false);
+  const [activeSegmentIndex, setActiveSegmentIndex] = useState(0);
+  const [saveRawState, setSaveRawState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const handleSaveRawVideo = async () => {
+    if (saveRawState !== 'idle' || !videoUri) return;
+    setSaveRawState('saving');
+    try {
+      try {
+        await requestMediaLibraryPermissionsAsync();
+      } catch (e) {}
+      await MediaLibrary.saveToLibraryAsync(videoUri);
+      setSaveRawState('saved');
+      Alert.alert('Saved', 'Saved raw captured video to Photos!');
+      setTimeout(() => setSaveRawState('idle'), 2500);
+    } catch (err) {
+      console.log('Save raw video error:', err);
+      setSaveRawState('idle');
+      Alert.alert('Error', 'Could not save video to Photos.');
+    }
+  };
   const [captionText, setCaptionText] = useState('');
   const [isVertical, setIsVertical] = useState(isVerticalCapture);
   const [selectedTargets, setSelectedTargets] = useState<string[]>(
@@ -456,9 +479,17 @@ export default function PalVideoSendPreviewModal({
                       />
                     </TouchableOpacity>
 
-                    {/* Bottom Right Download / Save Icon */}
-                    <TouchableOpacity style={styles.videoOverlayIconRight} activeOpacity={0.8}>
-                      <Ionicons name="download-outline" size={24} color="#FFFFFF" />
+                    {/* Bottom Right Download / Save Icon: Saves raw video ONLY (NO overlays) */}
+                    <TouchableOpacity
+                      style={styles.videoOverlayIconRight}
+                      activeOpacity={0.8}
+                      onPress={handleSaveRawVideo}
+                    >
+                      <Ionicons
+                        name={saveRawState === 'saved' ? 'checkmark' : 'download-outline'}
+                        size={24}
+                        color="#FFFFFF"
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
