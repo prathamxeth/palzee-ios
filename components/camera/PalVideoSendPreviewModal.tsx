@@ -493,11 +493,10 @@ export default function PalVideoSendPreviewModal({
                       activeOpacity={0.8}
                       onPress={() => setIsMuted(!isMuted)}
                     >
-                      <SymbolView
-                        name={isMuted ? 'speaker.slash.fill' : 'speaker.wave.2.fill'}
-                        size={22}
-                        weight="medium"
-                        tintColor="#FFFFFF"
+                      <Ionicons
+                        name={isMuted ? 'volume-mute' : 'volume-high'}
+                        size={24}
+                        color="#FFFFFF"
                       />
                     </TouchableOpacity>
 
@@ -510,11 +509,10 @@ export default function PalVideoSendPreviewModal({
                       {saveRawState === 'saving' ? (
                         <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
-                        <SymbolView
-                          name={saveRawState === 'saved' ? 'checkmark' : 'arrow.down.circle.fill'}
-                          size={22}
-                          weight="medium"
-                          tintColor="#FFFFFF"
+                        <Ionicons
+                          name={saveRawState === 'saved' ? 'checkmark' : 'download-outline'}
+                          size={24}
+                          color="#FFFFFF"
                         />
                       )}
                     </TouchableOpacity>
