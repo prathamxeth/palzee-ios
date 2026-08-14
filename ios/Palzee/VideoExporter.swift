@@ -66,11 +66,11 @@ class VideoExporter: NSObject {
     let orientWidth = max(abs(transformedRect.width), 1)
     let orientHeight = max(abs(transformedRect.height), 1)
     
-    let isPortraitInput = orientHeight > orientWidth
+    let isVerticalPal = orientHeight > orientWidth
     
     var finalTransform = transform
     
-    if isPortraitInput {
+    if isVerticalPal {
       // Rotate 270 degrees counter-clockwise matching VlogSheet.tsx rotate: '270deg' logic
       let rot270 = CGAffineTransform(rotationAngle: 3.0 * .pi / 2.0)
       finalTransform = finalTransform.concatenating(rot270)
@@ -80,13 +80,17 @@ class VideoExporter: NSObject {
       
       let rotW = max(rotBounds.width, 1)
       let rotH = max(rotBounds.height, 1)
-      let scale = max(boxWidth / rotW, boxHeight / rotH)
+      
+      // Calculate scale based on rotated dimensions (rotW & rotH) to fill centered 16:9 card box (1080x607.5)
+      let scaleX = boxWidth / rotW
+      let scaleY = boxHeight / rotH
+      let scale = max(scaleX, scaleY)
       finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
       
       let fitW = rotW * scale
       let fitH = rotH * scale
       let offX = (boxWidth - fitW) / 2.0
-      let offY = (boxHeight - fitH) / 2.0
+      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
       finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
     } else {
       if transformedRect.origin.x < 0 {
@@ -95,12 +99,14 @@ class VideoExporter: NSObject {
       if transformedRect.origin.y < 0 {
         finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: orientHeight))
       }
-      let scale = max(boxWidth / orientWidth, boxHeight / orientHeight)
+      let scaleX = boxWidth / orientWidth
+      let scaleY = boxHeight / orientHeight
+      let scale = max(scaleX, scaleY)
       finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
       let fitW = orientWidth * scale
       let fitH = orientHeight * scale
       let offX = (boxWidth - fitW) / 2.0
-      let offY = (boxHeight - fitH) / 2.0
+      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
       finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
     }
     
@@ -114,34 +120,38 @@ class VideoExporter: NSObject {
     parentLayer.backgroundColor = UIColor.black.cgColor
     
     let videoLayer = CALayer()
-    videoLayer.frame = CGRect(x: 0, y: boxYOffset, width: boxWidth, height: boxHeight)
-    videoLayer.masksToBounds = true
+    videoLayer.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
     parentLayer.addSublayer(videoLayer)
     
-    // Exact vertical midpoint Y inside videoLayer (boxHeight = 607.5px, midY = 277.75px)
-    let cardMidY: CGFloat = (boxHeight - 52.0) / 2.0
+    // Midpoint Y of centered 16:9 card container box (boxYOffset = 656.25, boxHeight = 607.5)
+    let overlayCenterY: CGFloat = boxYOffset + (boxHeight - 80.0) / 2.0
     
-    // Overlay 1: "vlog" title (Left aligned, vertically centered in 16:9 box)
+    // Native Apple System CTFont bindings
+    let vlogCtFont = CTFontCreateUIFontForLanguage(.emphasizedSystem, 70, nil) ?? CTFontCreateWithName(".SFUI-Semibold" as CFString, 70, nil)
+    let semiboldCtFont = CTFontCreateUIFontForLanguage(.emphasizedSystem, 60, nil) ?? CTFontCreateWithName(".SFUI-Semibold" as CFString, 60, nil)
+    let regularCtFont = CTFontCreateUIFontForLanguage(.system, 60, nil) ?? CTFontCreateWithName(".SFUI-Regular" as CFString, 60, nil)
+    
+    // Overlay 1: "vlog" title (Left aligned, 70pt font to match 60pt timestamp cap-height)
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 44, weight: .bold)
-    vlogLayer.fontSize = 44
+    vlogLayer.font = vlogCtFont
+    vlogLayer.fontSize = 70
     vlogLayer.foregroundColor = UIColor.white.cgColor
     vlogLayer.alignmentMode = .left
     vlogLayer.shadowColor = UIColor.black.cgColor
     vlogLayer.shadowOpacity = 0.95
     vlogLayer.shadowRadius = 4
     vlogLayer.shadowOffset = CGSize(width: 0, height: 2)
-    vlogLayer.frame = CGRect(x: 40, y: cardMidY, width: 220, height: 52)
+    vlogLayer.frame = CGRect(x: 40, y: overlayCenterY - 4, width: 360, height: 86)
     vlogLayer.contentsScale = 2.0
-    videoLayer.addSublayer(vlogLayer)
+    parentLayer.addSublayer(vlogLayer)
     
-    // Overlay 2: Caption (Center aligned, vertically centered in 16:9 box)
+    // Overlay 2: Caption (Center aligned, 60pt Apple System Semibold font)
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 48, weight: .bold)
-      captionLayer.fontSize = 48
+      captionLayer.font = semiboldCtFont
+      captionLayer.fontSize = 60
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
       captionLayer.shadowColor = UIColor.black.cgColor
@@ -149,26 +159,26 @@ class VideoExporter: NSObject {
       captionLayer.shadowRadius = 4
       captionLayer.shadowOffset = CGSize(width: 0, height: 2)
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 270, y: cardMidY, width: 540, height: 52)
+      captionLayer.frame = CGRect(x: 320, y: overlayCenterY, width: 440, height: 80)
       captionLayer.contentsScale = 2.0
-      videoLayer.addSublayer(captionLayer)
+      parentLayer.addSublayer(captionLayer)
     }
     
-    // Overlay 3: Timestamp Text (Right aligned, vertically centered in 16:9 box)
+    // Overlay 3: Timestamp Text (Right aligned, 60pt Apple System Regular font)
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 40, weight: .semibold)
-      timeLayer.fontSize = 40
+      timeLayer.font = regularCtFont
+      timeLayer.fontSize = 60
       timeLayer.foregroundColor = UIColor.white.cgColor
       timeLayer.alignmentMode = .right
       timeLayer.shadowColor = UIColor.black.cgColor
       timeLayer.shadowOpacity = 0.95
       timeLayer.shadowRadius = 4
       timeLayer.shadowOffset = CGSize(width: 0, height: 2)
-      timeLayer.frame = CGRect(x: 820, y: cardMidY, width: 220, height: 52)
+      timeLayer.frame = CGRect(x: 770, y: overlayCenterY, width: 270, height: 80)
       timeLayer.contentsScale = 2.0
-      videoLayer.addSublayer(timeLayer)
+      parentLayer.addSublayer(timeLayer)
     }
     
     let animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: parentLayer)
