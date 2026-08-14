@@ -415,6 +415,7 @@ export default function PalVideoSendPreviewModal({
                     </TouchableOpacity>
                   ) : (
                     <LiquidGlassCircleButton
+                      onPress={() => {}}
                       idPrefix="sendBtnInactive"
                       isDark={isDark}
                     >
