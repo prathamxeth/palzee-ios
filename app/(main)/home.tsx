@@ -33,7 +33,16 @@ import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import * as WebBrowser from 'expo-web-browser';
+const openInAppBrowser = (url: string) => {
+  try {
+    const WebBrowser = require('expo-web-browser');
+    if (WebBrowser?.openBrowserAsync) {
+      WebBrowser.openBrowserAsync(url).catch(() => Linking.openURL(url));
+      return;
+    }
+  } catch (e) {}
+  Linking.openURL(url);
+};
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
@@ -1648,7 +1657,7 @@ export default function HomeScreen({
                     activeOpacity={0.7}
                     onPress={() => {
                       setShowProfileMenu(false);
-                      WebBrowser.openBrowserAsync('https://palzee.fun/feedback.html');
+                      openInAppBrowser('https://palzee.fun/feedback.html');
                     }}
                   >
                     <View style={styles.dropdownMenuLeft}>
@@ -1983,7 +1992,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
-                        WebBrowser.openBrowserAsync('https://palzee.fun/tos.html');
+                        openInAppBrowser('https://palzee.fun/tos.html');
                       }}
                     >
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
@@ -1996,7 +2005,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
-                        WebBrowser.openBrowserAsync('https://palzee.fun/csampolicy.html');
+                        openInAppBrowser('https://palzee.fun/csampolicy.html');
                       }}
                     >
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
@@ -2009,7 +2018,7 @@ export default function HomeScreen({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowProfileMenu(false);
-                        WebBrowser.openBrowserAsync('https://palzee.fun/privacy.html');
+                        openInAppBrowser('https://palzee.fun/privacy.html');
                       }}
                     >
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
