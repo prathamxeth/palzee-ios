@@ -532,8 +532,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         height="42.5"
                         rx="21.25"
                         fill="url(#vlogPillGrad)"
-                        stroke={isDark ? 'none' : 'url(#vlogPillBdr)'}
-                        strokeWidth={isDark ? 0 : 1.5}
+                        stroke="url(#vlogPillBdr)"
+                        strokeWidth={1.5}
                       />
                     </Svg>
                     <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>

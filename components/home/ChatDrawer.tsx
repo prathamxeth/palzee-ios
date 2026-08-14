@@ -264,7 +264,7 @@ export const ChatDrawer = ({
                           <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.08 : 0.08} />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0.75" y="0.75" width="94.5" height="42.5" rx="21.25" fill="url(#vlogHeaderPillGrad)" stroke={isDark ? 'none' : 'url(#vlogHeaderPillBdr)'} strokeWidth={isDark ? 0 : 1.5} />
+                      <Rect x="0.75" y="0.75" width="94.5" height="42.5" rx="21.25" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth={1.5} />
                     </Svg>
                     <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
                   </View>
@@ -365,9 +365,15 @@ export const ChatDrawer = ({
                   }}
                   style={[
                     styles.viewPalBtn,
-                    { backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA' },
+                    {
+                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(229, 229, 234, 0.75)',
+                      borderWidth: 1.2,
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                      overflow: 'hidden',
+                    },
                   ]}
                 >
+                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   <Text style={[styles.viewPalDayText, { color: textColor }]}>
                     {activeCycleDayLabel}
                   </Text>
@@ -384,8 +390,10 @@ export const ChatDrawer = ({
                     style={[
                       styles.smileyBtn,
                       {
-                        backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                        backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                        borderWidth: 1.2,
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                        overflow: 'hidden',
                       },
                     ]}
                     activeOpacity={0.85}
@@ -408,8 +416,10 @@ export const ChatDrawer = ({
                     style={[
                       styles.inputFieldContainer,
                       {
-                        backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                        backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                        borderWidth: 1.2,
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                        overflow: 'hidden',
                       },
                     ]}
                   >
