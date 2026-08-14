@@ -520,7 +520,18 @@ export default function HomeScreen({
         try {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setVlogList(parsed);
+            const nowInput = new Date();
+            const valid7DayList = parsed.filter((item: any) => {
+              const d = item.timestamp ? new Date(item.timestamp) : new Date();
+              const validDate = isNaN(d.getTime()) ? new Date() : d;
+              const clipShifted = new Date(validDate.getTime() - 4 * 3600 * 1000);
+              const nowShifted = new Date(nowInput.getTime() - 4 * 3600 * 1000);
+              const clipDayStart = new Date(clipShifted.getFullYear(), clipShifted.getMonth(), clipShifted.getDate()).getTime();
+              const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
+              const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
+              return diffDays >= 0 && diffDays < 7;
+            });
+            setVlogList(valid7DayList);
           }
         } catch (e) {}
       }

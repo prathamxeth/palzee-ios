@@ -27,7 +27,7 @@ import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 import { CRTStaticCard } from './CRTStaticCard';
 import { ChatDrawer } from './ChatDrawer';
 import { EditExportSheet } from './EditExportSheet';
-import { getNearestHourText } from '../../utils/mediaUtils';
+import { getNearestHourText, formatExactTime } from '../../utils/mediaUtils';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -489,7 +489,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         {currentCaption}
                       </Text>
                     )}
-                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>{currentTimestamp}</Text>
+                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>
+                      {formatExactTime((currentClip as any)?.displayTime || currentClip?.timestamp || timestamp)}
+                    </Text>
                   </>
                 ) : (
                   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

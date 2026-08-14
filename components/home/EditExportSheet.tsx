@@ -69,6 +69,21 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
   const currentClip = list.length > 0 ? list[Math.min(currentIndex, list.length - 1)] : null;
 
+  const formatExportTime = (ts?: string, displayTime?: string) => {
+    if (displayTime && (displayTime.includes('AM') || displayTime.includes('PM'))) {
+      return displayTime;
+    }
+    if (!ts) return '7:26 PM';
+    if (ts.includes('AM') || ts.includes('PM')) return ts;
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return ts;
+    let h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  };
+
   // Native AVFoundation Video Processing to 1080x1920 9:16 Portrait Canvas
   const processAndSaveVideo = async (): Promise<string> => {
     if (!currentClip || !currentClip.uri) return '';
@@ -281,7 +296,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                       textShadowRadius: 3,
                     }}
                   >
-                    {currentClip.timestamp || '7:26PM'}
+                    {formatExportTime(currentClip.timestamp, (currentClip as any).displayTime)}
                   </Text>
                 </View>
               </View>

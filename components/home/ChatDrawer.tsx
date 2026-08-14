@@ -11,17 +11,55 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+
+/**
+ * Calculates the Palzee 4 AM - 4 AM daily cycle for a timestamp.
+ * A Palzee Day starts at 04:00:00 AM and ends at 03:59:59 AM the next morning.
+ * Clips older than 7 Palzee cycles (8th day) are flushed.
+ */
+export const getPalzeeCycleInfo = (ts?: string | Date | number, nowInput: Date = new Date()) => {
+  const d = ts ? new Date(ts) : new Date();
+  const validDate = isNaN(d.getTime()) ? new Date() : d;
+
+  // Shift both dates back by 4 hours so 04:00:00 AM becomes 00:00:00 of that Palzee cycle
+  const clipShifted = new Date(validDate.getTime() - 4 * 3600 * 1000);
+  const nowShifted = new Date(nowInput.getTime() - 4 * 3600 * 1000);
+
+  const clipDayStart = new Date(clipShifted.getFullYear(), clipShifted.getMonth(), clipShifted.getDate()).getTime();
+  const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
+
+  const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
+
+  let dayLabel = 'Today';
+  if (diffDays <= 0) {
+    dayLabel = 'Today';
+  } else if (diffDays === 1) {
+    dayLabel = 'Yesterday';
+  } else if (diffDays > 1 && diffDays < 7) {
+    dayLabel = validDate.toLocaleDateString('en-US', { weekday: 'long' });
+  } else {
+    dayLabel = validDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  return {
+    diffDays,
+    isWithin7Days: diffDays >= 0 && diffDays < 7,
+    dayLabel,
+  };
+};
 
 export const ChatDrawer = ({
   visible,
@@ -44,6 +82,8 @@ export const ChatDrawer = ({
 
   const [messageText, setMessageText] = useState('');
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedPreviewClip, setSelectedPreviewClip] = useState<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Animations
   const expandAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
@@ -67,12 +107,70 @@ export const ChatDrawer = ({
     }).start();
   }, [previewVisible]);
 
+  const [localVlogList, setLocalVlogList] = useState<any[]>(vlogList || []);
+
+  useEffect(() => {
+    if (Array.isArray(vlogList) && vlogList.length > 0) {
+      setLocalVlogList(vlogList);
+    } else {
+      AsyncStorage.getItem('@palzee_vlog_list').then((cached) => {
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setLocalVlogList(parsed);
+            }
+          } catch (e) {}
+        }
+      });
+    }
+  }, [vlogList, visible]);
+
   if (!visible) return null;
 
+  const rawActiveList = Array.isArray(localVlogList) && localVlogList.length > 0 ? localVlogList : vlogList;
+
+  // Filter clips to 7-day 4 AM - 4 AM Palzee cycles (prune older clips)
+  const valid7DayClips = (Array.isArray(rawActiveList) ? rawActiveList : []).filter((clip) => {
+    return getPalzeeCycleInfo(clip.timestamp).isWithin7Days;
+  });
+
   // Direct active item resolution
-  const activePal = Array.isArray(vlogList) && vlogList.length > 0 ? vlogList[0] : null;
-  const currentVideoUri = activePal?.uri || activeVideoUri || '';
-  const currentThumbUri = activePal?.thumbnailUri || '';
+  const activePal = (valid7DayClips.length > 0)
+    ? valid7DayClips.find((v) => Boolean(v?.thumbnailUri || v?.uri)) || valid7DayClips[0]
+    : activeVideoUri
+    ? { id: 'default', uri: activeVideoUri, thumbnailUri: '', timestamp: new Date().toISOString() }
+    : null;
+
+  const activePreviewClip = selectedPreviewClip || activePal;
+  const currentVideoUri = activePreviewClip?.uri || activeVideoUri || '';
+  const currentThumbUri = activePreviewClip?.thumbnailUri || '';
+
+  const isVertical = Boolean(
+    activePreviewClip?.needsRotation ||
+    activePreviewClip?.mode === 'portrait' ||
+    activePreviewClip?.mode === 'vertical' ||
+    activePreviewClip?.mode === 'off'
+  );
+
+  // Preview Modal Rotation Math (cardWidth x cardHeight)
+  const cardWidth = screenWidth - 32;
+  const cardHeight = (screenWidth - 32) * (9 / 16);
+  const modalVideoWidth = cardHeight;
+  const modalVideoHeight = cardWidth;
+  const modalVideoTop = (cardHeight - modalVideoHeight) / 2;
+  const modalVideoLeft = (cardWidth - modalVideoWidth) / 2;
+
+  const modalRotatedStyle = isVertical
+    ? {
+        position: 'absolute' as const,
+        top: modalVideoTop,
+        left: modalVideoLeft,
+        width: modalVideoWidth,
+        height: modalVideoHeight,
+        transform: [{ rotate: '270deg' }],
+      }
+    : StyleSheet.absoluteFillObject;
 
   // Clean pure time formatters
   const formatTime = (ts?: string) => {
@@ -83,15 +181,6 @@ export const ChatDrawer = ({
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     return `${h}:${m} ${ampm}`;
-  };
-
-  const formatDay = (ts?: string) => {
-    const d = ts ? new Date(ts) : new Date();
-    const valid = isNaN(d.getTime()) ? new Date() : d;
-    const now = new Date();
-    return now.toDateString() === valid.toDateString()
-      ? 'Today'
-      : valid.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const formatNearestHour = (ts?: string) => {
@@ -131,7 +220,6 @@ export const ChatDrawer = ({
           },
         ]}
       >
-        {/* CRITICAL FIX: Ensure DynamicGlowContainer fills 100% height */}
         <View style={{ flex: 1 }}>
           <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
             <View
@@ -174,71 +262,107 @@ export const ChatDrawer = ({
                 <View style={{ width: 44 }} />
               </View>
 
-              {/* 2. CHAT FEED & THUMBNAIL SECTION */}
+              {/* 2. CHAT FEED SECTION: SCROLLABLE 7-DAY 4AM-4AM VLOG HISTORY */}
               <View style={styles.feedContainer}>
-                {Boolean(currentVideoUri || currentThumbUri) ? (
-                  <View style={{ width: '100%', alignItems: 'flex-end', paddingBottom: 8 }}>
-                    {/* Timestamp Header */}
-                    <Text
-                      style={[
-                        styles.timestampText,
-                        { color: isDark ? '#8E8E93' : '#636366', alignSelf: 'center' },
-                      ]}
-                    >
-                      {`${formatDay(activePal?.timestamp)} ${formatTime(activePal?.timestamp)}`}
-                    </Text>
+                <ScrollView
+                  ref={scrollViewRef}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 12 }}
+                  onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+                >
+                  {valid7DayClips.length > 0 ? (
+                    valid7DayClips.map((clip, idx) => {
+                      const cycleInfo = getPalzeeCycleInfo(clip.timestamp);
+                      const isClipVertical = Boolean(
+                        clip.needsRotation ||
+                        clip.mode === 'portrait' ||
+                        clip.mode === 'vertical' ||
+                        clip.mode === 'off'
+                      );
 
-                    {/* Thumbnail Bubble (146 x 86px) */}
-                    <TouchableOpacity
-                      activeOpacity={0.9}
-                      onPress={() => setPreviewVisible(true)}
-                      style={[
-                        styles.thumbnailCard,
-                        { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)' },
-                      ]}
-                    >
-                      {Boolean(currentThumbUri) ? (
-                        <Image
-                          source={{ uri: currentThumbUri }}
-                          style={{ width: 146, height: 86 }}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <Video
-                          source={{ uri: currentVideoUri }}
-                          style={{ width: 146, height: 86 }}
-                          videoStyle={{ width: 146, height: 86, borderRadius: 20 }}
-                          resizeMode={ResizeMode.COVER}
-                          shouldPlay={true}
-                          isLooping={true}
-                          isMuted={true}
-                        />
-                      )}
-                    </TouchableOpacity>
+                      const clipThumbRotatedStyle = isClipVertical
+                        ? {
+                            position: 'absolute' as const,
+                            top: (86 - 146) / 2,
+                            left: (146 - 86) / 2,
+                            width: 86,
+                            height: 146,
+                            transform: [{ rotate: '270deg' }],
+                          }
+                        : {
+                            width: 146,
+                            height: 86,
+                          };
 
-                    {/* View Pal Action Bar */}
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      onPress={() => {
-                        onClose();
-                        if (onOpenVlog) onOpenVlog();
-                      }}
-                      style={[
-                        styles.viewPalBtn,
-                        { backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA' },
-                      ]}
-                    >
-                      <Text style={[styles.viewPalDayText, { color: textColor }]}>
-                        {formatDay(activePal?.timestamp)}
-                      </Text>
-                      <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
-                        view pal
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View style={{ flex: 1 }} />
-                )}
+                      return (
+                        <View key={clip.id || `vlog_clip_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 16 }}>
+                          {/* Timestamp Header with 4 AM - 4 AM Day Label */}
+                          <Text
+                            style={[
+                              styles.timestampText,
+                              { color: isDark ? '#8E8E93' : '#636366', alignSelf: 'center' },
+                            ]}
+                          >
+                            {`${cycleInfo.dayLabel} ${formatTime(clip.timestamp)}`}
+                          </Text>
+
+                          {/* Thumbnail Bubble (146 x 86px) */}
+                          <TouchableOpacity
+                            activeOpacity={0.9}
+                            onPress={() => {
+                              setSelectedPreviewClip(clip);
+                              setPreviewVisible(true);
+                            }}
+                            style={[
+                              styles.thumbnailCard,
+                              { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)' },
+                            ]}
+                          >
+                            {Boolean(clip.thumbnailUri) ? (
+                              <Image
+                                source={{ uri: clip.thumbnailUri }}
+                                style={clipThumbRotatedStyle}
+                                contentFit="cover"
+                              />
+                            ) : (
+                              <Video
+                                source={{ uri: clip.uri }}
+                                style={clipThumbRotatedStyle}
+                                videoStyle={isClipVertical ? { width: '100%', height: '100%' } : { width: 146, height: 86, borderRadius: 20 }}
+                                resizeMode={ResizeMode.COVER}
+                                shouldPlay={true}
+                                isLooping={true}
+                                isMuted={true}
+                              />
+                            )}
+                          </TouchableOpacity>
+
+                          {/* View Pal Action Bar */}
+                          <TouchableOpacity
+                            activeOpacity={0.85}
+                            onPress={() => {
+                              onClose();
+                              if (onOpenVlog) onOpenVlog();
+                            }}
+                            style={[
+                              styles.viewPalBtn,
+                              { backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA' },
+                            ]}
+                          >
+                            <Text style={[styles.viewPalDayText, { color: textColor }]}>
+                              {cycleInfo.dayLabel}
+                            </Text>
+                            <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
+                              view pal
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <View style={{ flex: 1 }} />
+                  )}
+                </ScrollView>
               </View>
 
               {/* 3. BOTTOM INPUT BAR */}
@@ -263,7 +387,7 @@ export const ChatDrawer = ({
                       <Image
                         source={require('../../assets/images/custom_rotate_smiley.png')}
                         style={{ width: 30.5, height: 30.5 }}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </View>
                   </TouchableOpacity>
@@ -310,7 +434,7 @@ export const ChatDrawer = ({
                 </View>
               </KeyboardAvoidingView>
 
-              {/* 4. PREVIEW VIDEO MODAL */}
+              {/* 4. PREVIEW VIDEO MODAL OVERLAY */}
               {previewVisible && (
                 <Animated.View
                   style={[
@@ -347,7 +471,7 @@ export const ChatDrawer = ({
                     >
                       <Video
                         source={{ uri: currentVideoUri }}
-                        style={StyleSheet.absoluteFillObject}
+                        style={modalRotatedStyle}
                         videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
                         resizeMode={ResizeMode.COVER}
                         shouldPlay={true}
@@ -364,7 +488,7 @@ export const ChatDrawer = ({
                             <Image
                               source={require('../../assets/images/capture_smile.png')}
                               style={{ width: 23, height: 23 }}
-                              resizeMode="contain"
+                              contentFit="contain"
                             />
                           )}
                         </View>
@@ -374,10 +498,10 @@ export const ChatDrawer = ({
                       {/* Center Rounded Hour & Caption */}
                       <View style={styles.modalCenterOverlay} pointerEvents="none">
                         <Text style={styles.modalHourText}>
-                          {formatNearestHour(activePal?.timestamp)}
+                          {formatNearestHour(activePreviewClip?.timestamp)}
                         </Text>
-                        {Boolean(activePal?.caption) && (
-                          <Text style={styles.modalCaptionText}>{activePal?.caption}</Text>
+                        {Boolean(activePreviewClip?.caption) && (
+                          <Text style={styles.modalCaptionText}>{activePreviewClip?.caption}</Text>
                         )}
                       </View>
                     </View>
@@ -423,7 +547,6 @@ const styles = StyleSheet.create({
   },
   feedContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
     width: '100%',
   },
   timestampText: {
