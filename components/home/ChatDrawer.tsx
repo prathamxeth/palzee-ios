@@ -77,7 +77,7 @@ export const ChatDrawer = ({
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const edgeColor = (Colors?.BorderGlow as any)?.[selectedThemeColor] || '#FE9068';
   const textColor = isDark ? '#FFFFFF' : '#000000';
-  const screenBg = isDark ? '#09090B' : '#F2F2F7';
+  const screenBg = isDark ? '#000000' : '#F5F5F7';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
 
   const [messageText, setMessageText] = useState('');
@@ -452,7 +452,7 @@ export const ChatDrawer = ({
                   style={[
                     StyleSheet.absoluteFillObject,
                     {
-                      backgroundColor: isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(242, 242, 247, 0.95)',
+                      backgroundColor: isDark ? '#000000' : '#F5F5F7',
                       paddingTop: Math.max(insets.top, 12),
                       paddingBottom: Math.max(insets.bottom, 12),
                       zIndex: 200,

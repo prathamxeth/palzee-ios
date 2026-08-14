@@ -385,9 +385,9 @@ export default function PalCameraPreview({
               left: -0.75,
               right: -0.75,
               borderRadius: 32,
-              borderWidth: 1.5,
+              borderWidth: 1.375,
               borderColor: baseAccentColor,
-              opacity: 1.0,
+              opacity: 0.5,
               zIndex: 100,
             }}
             pointerEvents="none"
@@ -589,7 +589,7 @@ export default function PalCameraPreview({
               style={[
                 styles.progressBarGapCentered,
                 {
-                  width: 4.25,
+                  width: 4.15,
                   top: 32,
                   bottom: 32,
                   right: -5.0,
