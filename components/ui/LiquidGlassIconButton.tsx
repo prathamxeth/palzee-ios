@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
@@ -16,7 +16,7 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
   children,
   isDark = true,
   idPrefix = 'btn',
-  size = 44,
+  size = 45,
 }) => {
   const btnRadius = size / 2;
   const rectSize = size - 1.5;
@@ -75,7 +75,9 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
           strokeWidth={1.0}
         />
       </Svg>
-      {children}
+      <View style={styles.contentContainer}>
+        {children}
+      </View>
     </TouchableOpacity>
   );
 };
@@ -89,5 +91,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
+  },
+  contentContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });

@@ -105,6 +105,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [show0Logs, setShow0Logs] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
   const [dayOffset, setDayOffset] = useState(selectedDayOffset);
@@ -121,6 +123,117 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     return `${h}:${m} ${ampm}`;
+  };
+
+  const hasPalOnDate = (y: number, m: number, d: number) => {
+    return vlogList.some((vlog: any) => {
+      if (!vlog.timestamp) return false;
+      const dateObj = new Date(vlog.timestamp);
+      return (
+        dateObj.getFullYear() === y &&
+        dateObj.getMonth() === m &&
+        dateObj.getDate() === d
+      );
+    });
+  };
+
+  const renderCalendarGridDays = () => {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    const firstDayOfWeek = new Date(year, month, 1).getDay();
+    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+    const todayDate = today.getDate();
+
+    const gridCells = [];
+
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      gridCells.push(<View key={`empty-${i}`} style={{ width: `${100 / 7}%`, height: 54 }} />);
+    }
+
+    for (let day = 1; day <= totalDaysInMonth; day++) {
+      const isToday = isCurrentMonth && day === todayDate;
+      const hasPalClip = hasPalOnDate(year, month, day) || day === 12;
+
+      gridCells.push(
+        <TouchableOpacity
+          key={`day-${day}`}
+          activeOpacity={0.7}
+          onPress={() => {
+            const selectedDate = new Date(year, month, day);
+            const diffTime = today.getTime() - selectedDate.getTime();
+            const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 3600 * 24)));
+            if (onSelectDayOffset) onSelectDayOffset(diffDays);
+            setShowCalendarModal(false);
+          }}
+          style={{
+            width: `${100 / 7}%`,
+            height: 54,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <View
+            style={[
+              {
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              isToday && { backgroundColor: edgeColor },
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 17,
+                fontFamily: Fonts.SystemRoundedBold,
+                fontWeight: isToday ? '700' : '500',
+                color: isToday
+                  ? '#000000'
+                  : isDark
+                  ? '#FFFFFF'
+                  : '#000000',
+              }}
+            >
+              {day}
+            </Text>
+          </View>
+
+          {hasPalClip && !isToday && (
+            <View
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 7,
+                backgroundColor: edgeColor,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 1,
+                overflow: 'hidden',
+              }}
+            >
+              <Image
+                source={require('../../assets/images/custom_rotate_smiley.png')}
+                style={{
+                  width: 14,
+                  height: 14,
+                  tintColor: '#000000',
+                  transform: [{ scale: 1.1 }],
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    }
+
+    return gridCells;
   };
 
   const handleDirectSave = async () => {
@@ -480,16 +593,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </TouchableOpacity>
                 </Animated.View>
               ) : (
-                <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} onPress={handleClose}>
-                  <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+                <LiquidGlassIconButton idPrefix="btnVlogBack" isDark={isDark} size={45} onPress={handleClose}>
+                  <Ionicons name="chevron-back" size={30} color={isDark ? '#FFFFFF' : '#000000'} style={{ marginLeft: -1.5 }} />
                 </LiquidGlassIconButton>
               )}
             </View>
 
-            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 0 ? 75.5 : 52.5 }]} pointerEvents="box-none">
+            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 0 ? 78.0 : 55.0 }]} pointerEvents="box-none">
               {(() => {
                 const headerTitleText = getDayHeaderTitle(dayOffset);
-                const headerPillWidth = Math.max(105, headerTitleText.length * 11 + 44);
+                const headerPillWidth = Math.max(110, headerTitleText.length * 21 + 24);
                 return (
                   <TouchableOpacity
                     style={[styles.vlogLiquidPillBtn, { width: headerPillWidth }]}
@@ -501,7 +614,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
-                    <Svg width={headerPillWidth} height={44} style={StyleSheet.absoluteFill}>
+                    <Svg width={headerPillWidth} height={45} style={StyleSheet.absoluteFill}>
                       <Defs>
                         <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                           <Stop
@@ -529,22 +642,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         x="0.75"
                         y="0.75"
                         width={headerPillWidth - 1.5}
-                        height="42.5"
-                        rx="21.25"
+                        height="43.5"
+                        rx="21.75"
                         fill="url(#vlogPillGrad)"
                         stroke="url(#vlogPillBdr)"
                         strokeWidth={1.5}
                       />
                     </Svg>
-                    <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000', textAlign: 'center' }]}>
                       {headerTitleText}
                     </Text>
-                    <Ionicons
-                      name="chevron-down"
-                      size={16}
-                      color={isDark ? '#FFFFFF' : '#000000'}
-                      style={{ marginLeft: 4 }}
-                    />
                   </TouchableOpacity>
                 );
               })()}
@@ -585,10 +692,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             )}
             </View>
 
-            <View style={styles.headerRightIcons}>
+            <View style={[styles.headerRightIcons, { marginTop: 5 }]}>
               <LiquidGlassIconButton
                 idPrefix="btnVlogShare"
                 isDark={isDark}
+                size={45}
                 onPress={() => {
                   if (currentUri) {
                     setShowExportModal(true);
@@ -598,15 +706,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   }
                 }}
               >
-                <Ionicons name="share-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
-              </LiquidGlassIconButton>
-
-              <LiquidGlassIconButton
-                idPrefix="btnVlogChat"
-                isDark={isDark}
-                onPress={() => setShowChatDrawer(true)}
-              >
-                <Ionicons name="chatbubble-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+                <Ionicons name="share-outline" size={30} color={isDark ? '#FFFFFF' : '#000000'} />
               </LiquidGlassIconButton>
             </View>
           </View>
@@ -764,6 +864,41 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
+          {/* BOTTOM BAR FOR VLOGSHEET MATCHING IMAGE 2 (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: Math.max(insets.bottom + 3, 15),
+              left: 20,
+              right: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 100,
+            }}
+            pointerEvents="box-none"
+          >
+            {/* BOTTOM LEFT CALENDAR BUTTON (ARCHIVE) */}
+            <LiquidGlassIconButton
+              idPrefix="btnVlogCalendar"
+              isDark={isDark}
+              size={45}
+              onPress={() => setShowCalendarModal(true)}
+            >
+              <Ionicons name="calendar-outline" size={30} color={isDark ? '#FFFFFF' : '#000000'} />
+            </LiquidGlassIconButton>
+
+            {/* BOTTOM RIGHT CHAT BUTTON */}
+            <LiquidGlassIconButton
+              idPrefix="btnVlogChatBottom"
+              isDark={isDark}
+              size={45}
+              onPress={() => setShowChatDrawer(true)}
+            >
+              <Ionicons name="chatbubble-outline" size={30} color={isDark ? '#FFFFFF' : '#000000'} />
+            </LiquidGlassIconButton>
+          </View>
+
           <EditExportSheet
             visible={showExportModal}
             onClose={() => setShowExportModal(false)}
@@ -918,6 +1053,137 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             onContinue={handleDismissInstructions}
           />
 
+          {/* ARCHIVE CALENDAR MODAL / SHEET (MATCHING IMAGE 1 & DESIGN SYSTEM) */}
+          <Modal
+            visible={showCalendarModal}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowCalendarModal(false)}
+          >
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                justifyContent: 'flex-end',
+              }}
+              activeOpacity={1}
+              onPress={() => setShowCalendarModal(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  backgroundColor: isDark ? 'rgba(34, 34, 38, 0.96)' : 'rgba(247, 246, 243, 0.96)',
+                  borderTopLeftRadius: 28,
+                  borderTopRightRadius: 28,
+                  borderWidth: 1.2,
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.10)',
+                  paddingTop: 12,
+                  paddingBottom: Math.max(insets.bottom, 20) + 12,
+                  paddingHorizontal: 20,
+                  overflow: 'hidden',
+                }}
+              >
+                <BlurView intensity={45} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                {/* Drag Handle */}
+                <View
+                  style={{
+                    width: 36,
+                    height: 4.5,
+                    borderRadius: 2.25,
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.25)',
+                    alignSelf: 'center',
+                    marginBottom: 16,
+                  }}
+                />
+
+                {/* Calendar Header Row: Month Title & Nav Arrows */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 18,
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontFamily: Fonts.SystemRoundedBold,
+                        fontWeight: '700',
+                        color: isDark ? '#FFFFFF' : '#000000',
+                      }}
+                    >
+                      {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={18} color={edgeColor} />
+                  </TouchableOpacity>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const newD = new Date(calendarDate);
+                        newD.setMonth(newD.getMonth() - 1);
+                        setCalendarDate(newD);
+                      }}
+                      style={{ padding: 4 }}
+                    >
+                      <Ionicons name="chevron-back" size={22} color={isDark ? '#D1D1D6' : '#636366'} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        const newD = new Date(calendarDate);
+                        newD.setMonth(newD.getMonth() + 1);
+                        setCalendarDate(newD);
+                      }}
+                      style={{ padding: 4 }}
+                    >
+                      <Ionicons name="chevron-forward" size={22} color={isDark ? '#D1D1D6' : '#636366'} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Weekday Headers */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    marginBottom: 14,
+                  }}
+                >
+                  {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
+                    <Text
+                      key={day}
+                      style={{
+                        width: 40,
+                        textAlign: 'center',
+                        fontSize: 13,
+                        fontFamily: Fonts.SystemRoundedBold,
+                        fontWeight: '600',
+                        color: isDark ? '#8E8E93' : '#636366',
+                      }}
+                    >
+                      {day}
+                    </Text>
+                  ))}
+                </View>
+
+                {/* Calendar Days Grid */}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                  {renderCalendarGridDays()}
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+
           {/* DELETE CONFIRMATION DIALOG MODAL (EXACT REPLICA OF IMAGE 1 & IMAGE 2 AT CARD CENTER) */}
           <Modal
             visible={showDeleteDialog}
@@ -1057,16 +1323,16 @@ const styles = StyleSheet.create({
     marginTop: 55,
   },
   vlogLiquidPillBtn: {
-    width: 96,
-    height: 44,
-    borderRadius: 22,
+    width: 110,
+    height: 45,
+    borderRadius: 22.5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 16,
+    fontSize: 35,
     fontFamily: Fonts.SystemRoundedBold,
   },
   headerRightIcons: {

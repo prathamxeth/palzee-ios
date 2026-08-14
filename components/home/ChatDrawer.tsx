@@ -246,13 +246,13 @@ export const ChatDrawer = ({
               {/* 1. TOP HEADER */}
               <View style={styles.headerRow}>
                 <LiquidGlassIconButton idPrefix="btnChatBack" isDark={isDark} onPress={onClose}>
-                  <Ionicons name="chevron-back" size={24} color={textColor} />
+                  <Ionicons name="chevron-back" size={30} color={textColor} style={{ marginLeft: -1.5 }} />
                 </LiquidGlassIconButton>
 
                 <View style={styles.vlogPillWrapper} pointerEvents="box-none">
                   <View style={styles.vlogPill}>
                     <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                    <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+                    <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
                       <Defs>
                         <LinearGradient id="vlogHeaderPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                           <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
@@ -264,9 +264,9 @@ export const ChatDrawer = ({
                           <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.08 : 0.08} />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0.75" y="0.75" width="94.5" height="42.5" rx="21.25" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth={1.5} />
+                      <Rect x="0.75" y="0.75" width="108.5" height="43.5" rx="21.75" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth={1.5} />
                     </Svg>
-                    <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
+                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center' }]}>Vlog</Text>
                   </View>
                 </View>
 
@@ -476,7 +476,7 @@ export const ChatDrawer = ({
                       isDark={isDark}
                       onPress={() => setPreviewVisible(false)}
                     >
-                      <Ionicons name="close" size={24} color={textColor} />
+                      <Ionicons name="close" size={30} color={textColor} />
                     </LiquidGlassIconButton>
                     <View style={{ width: 44 }} />
                   </View>
@@ -556,15 +556,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   vlogPill: {
-    width: 96,
-    height: 44,
-    borderRadius: 22,
+    width: 110,
+    height: 45,
+    borderRadius: 22.5,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 16,
+    fontSize: 35,
     fontFamily: Fonts.SystemRoundedBold,
   },
   feedContainer: {

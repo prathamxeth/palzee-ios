@@ -274,7 +274,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
           <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 21.5, 29.5) }]}>
             <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
-              <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
+              <Ionicons name="chevron-back" size={30} color={isDark ? '#FFFFFF' : '#1C1C1E'} style={{ marginLeft: -1.5 }} />
             </LiquidGlassIconButton>
           </View>
 

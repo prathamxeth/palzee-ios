@@ -385,9 +385,9 @@ export default function PalCameraPreview({
               left: -0.75,
               right: -0.75,
               borderRadius: 32,
-              borderWidth: 1.375,
+              borderWidth: 1.625,
               borderColor: baseAccentColor,
-              opacity: 0.5,
+              opacity: 0.50,
               zIndex: 100,
             }}
             pointerEvents="none"
@@ -429,7 +429,7 @@ export default function PalCameraPreview({
                   isDark={isDark}
                   onPress={onClose}
                 >
-                  <SymbolView name="xmark" size={20} tintColor={iconColor} />
+                  <SymbolView name="xmark" size={30} tintColor={iconColor} />
                 </LiquidGlassIconButton>
               </View>
             )}

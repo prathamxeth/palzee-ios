@@ -11,6 +11,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlass } from '../ui/LiquidGlassView';
@@ -80,16 +82,19 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
           >
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View style={[styles.dialogWrapper, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
-                {/* 1. TOP FLOATING HEADER CARD (MATCHING REFERENCE IMAGE) */}
+                {/* 1. TOP FLOATING HEADER CARD */}
                 <View
                   style={[
                     styles.topCard,
                     {
-                      backgroundColor: isDark ? '#000000' : '#FFFFFF',
-                      borderColor: isDark ? '#222224' : '#E5E5EA',
+                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                      borderWidth: 1.2,
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                      overflow: 'hidden',
                     },
                   ]}
                 >
+                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   <Text style={[styles.titleText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                     join with code
                   </Text>
@@ -98,10 +103,21 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                   </Text>
                 </View>
 
-                {/* 2. BOTTOM INPUT CAPSULE CARD (WHITE CAPSULE MATCHING IMAGE) */}
-                <View style={styles.inputCapsule}>
+                {/* 2. BOTTOM INPUT CAPSULE CARD */}
+                <View
+                  style={[
+                    styles.inputCapsule,
+                    {
+                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                      borderWidth: 1.2,
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                      overflow: 'hidden',
+                    },
+                  ]}
+                >
+                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   {/* Left Hash Symbol # */}
-                  <Text style={styles.hashSymbol}>#</Text>
+                  <Text style={[styles.hashSymbol, { color: isDark ? '#FFFFFF' : '#000000' }]}>#</Text>
 
                   {/* Middle Text Area with Black Underline & Blinking Pink Cursor */}
                   <View style={styles.inputCenterArea}>
@@ -120,7 +136,7 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                         </View>
                       ) : (
                         <View style={styles.typedRow}>
-                          <Text style={styles.typedText}>{inputVal}</Text>
+                          <Text style={[styles.typedText, { color: isDark ? '#FFFFFF' : '#000000' }]}>{inputVal}</Text>
                           <Text
                             style={[
                               styles.blinkingCursor,
@@ -133,8 +149,8 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                       )}
                     </View>
 
-                    {/* Black Underline Bar */}
-                    <View style={styles.blackUnderlineBar} />
+                    {/* Underline Bar */}
+                    <View style={[styles.blackUnderlineBar, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]} />
 
                     {/* Hidden Native TextInput with AutoFocus */}
                     <TextInput
@@ -201,12 +217,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: 'flex-start',
     justifyContent: 'center',
-    borderWidth: 1,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
   },
   titleText: {
     fontFamily: SystemFont,
@@ -227,15 +237,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 68,
     borderRadius: 28,
-    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 6,
   },
   hashSymbol: {
     fontSize: 26,

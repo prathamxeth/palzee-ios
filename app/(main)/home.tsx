@@ -922,12 +922,12 @@ export default function HomeScreen({
             <View style={styles.headerRightIcons}>
               {/* 1. PLUS BUTTON (+ Icon) */}
               <LiquidGlassIconButton idPrefix="btnPlus" isDark={isDark} onPress={() => setShowAddMenu(true)}>
-                <LucidePlus size={26} color={iconColor} strokeWidth={1.8} />
+                <LucidePlus size={30} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
               {/* 2. NOTIFICATION BELL ICON */}
               <LiquidGlassIconButton idPrefix="btnBell" isDark={isDark} onPress={() => setShowActivityDrawer(true)}>
-                <LucideBell size={24} color={iconColor} strokeWidth={1.8} />
+                <LucideBell size={30} color={iconColor} strokeWidth={1.8} />
               </LiquidGlassIconButton>
 
               {/* 3. USER PROFILE PERSON ICON OR CHOSEN PFP */}
@@ -942,11 +942,11 @@ export default function HomeScreen({
                 {profilePhotoUri ? (
                   <Image
                     source={{ uri: profilePhotoUri }}
-                    style={{ width: 44, height: 44, borderRadius: 22 }}
+                    style={{ width: 30, height: 30, borderRadius: 15 }}
                     resizeMode="cover"
                   />
                 ) : (
-                  <MaterialPersonIcon size={24} color={iconColor} />
+                  <MaterialPersonIcon size={30} color={iconColor} />
                 )}
               </LiquidGlassIconButton>
             </View>
@@ -1433,11 +1433,11 @@ export default function HomeScreen({
                   })}
                 </Svg>
               ) : cameraTimerMode === 'jump_cut' ? (
-                <Ionicons name="cut-outline" size={22} color={iconColor} style={{ transform: [{ rotate: '90deg' }] }} />
+                <Ionicons name="cut-outline" size={30} color={iconColor} style={{ transform: [{ rotate: '90deg' }] }} />
               ) : (
                 <Image
                   source={require('../../assets/images/custom_timer_icon.png')}
-                  style={{ width: 28, height: 28, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
+                  style={{ width: 30, height: 30, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
                   resizeMode="contain"
                 />
               )}
@@ -1476,7 +1476,7 @@ export default function HomeScreen({
             >
               <Image
                 source={require('../../assets/images/custom_flip_icon.png')}
-                style={{ width: 30, height: 30, tintColor: iconColor }}
+                style={{ width: 35, height: 35, tintColor: iconColor }}
                 resizeMode="contain"
               />
             </LiquidGlassIconButton>
