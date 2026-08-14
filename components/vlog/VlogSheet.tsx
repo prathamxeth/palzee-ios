@@ -128,11 +128,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const hasPalOnDate = (y: number, m: number, d: number) => {
     return vlogList.some((vlog: any) => {
       if (!vlog.timestamp) return false;
-      const dateObj = new Date(vlog.timestamp);
+      const rawDate = typeof vlog.timestamp === 'number' ? new Date(vlog.timestamp) : new Date(vlog.timestamp);
+      if (isNaN(rawDate.getTime())) return false;
+      // Shift 4 hours back to align with Palzee 4AM cycle boundary (04:00 AM - 03:59:59 AM)
+      const cycleDate = new Date(rawDate.getTime() - 4 * 3600 * 1000);
       return (
-        dateObj.getFullYear() === y &&
-        dateObj.getMonth() === m &&
-        dateObj.getDate() === d
+        cycleDate.getFullYear() === y &&
+        cycleDate.getMonth() === m &&
+        cycleDate.getDate() === d
       );
     });
   };
@@ -156,7 +159,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const isToday = isCurrentMonth && day === todayDate;
-      const hasPalClip = hasPalOnDate(year, month, day) || day === 12;
+      const hasPalClip = hasPalOnDate(year, month, day);
 
       gridCells.push(
         <TouchableOpacity
