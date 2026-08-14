@@ -23,7 +23,6 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
   const noiseRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // REAL iOS CAMERA APP LOW-LIGHT SENSOR MICRO-GRAIN SHIMMER (33ms 30fps discrete micro-steps +10% movement & 90° rotations)
     const noiseSequence = Animated.loop(
       Animated.sequence([
         Animated.parallel([
@@ -71,7 +70,6 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
       ]}
       pointerEvents="none"
     >
-      {/* 1. REAL-TIME LOW-LIGHT CAMERA VIEWFINDER VIGNETTE GRADIENT BACKDROP */}
       <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
           <RadialGradient id="cameraVignette" cx="50%" cy="50%" r="70%">
@@ -83,7 +81,6 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
         <Rect width="100%" height="100%" fill="url(#cameraVignette)" />
       </Svg>
 
-      {/* 2. REAL-TIME iOS CAMERA ISO SENSOR MICRO-NOISE SHIMMER (1.65PX JITTER [+10%] & +0.1DP PARTICLE SCALE) */}
       <Animated.Image
         source={isDark ? vhsDarkTexture : vhsLightTexture}
         resizeMode="repeat"

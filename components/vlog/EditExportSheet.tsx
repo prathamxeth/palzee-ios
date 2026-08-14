@@ -91,12 +91,14 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
     const outputUri = `${cacheDir}collection_export.mp4`;
 
+    const TargetExporter = NativeModules.VideoExporter || VideoExporter;
     try {
-      if (VideoExporter && VideoExporter.exportPortraitVideo) {
-        const exportedUri = await VideoExporter.exportPortraitVideo(
+      if (TargetExporter && TargetExporter.exportPortraitVideo) {
+        const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
+        const exportedUri = await TargetExporter.exportPortraitVideo(
           currentClip.uri,
           currentClip.caption || '',
-          currentClip.timestamp || ''
+          formattedTimeText || '7:26 PM'
         );
         return exportedUri;
       }
@@ -150,7 +152,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }
   };
 
-  // Launch iOS native Share Sheet with physical collection_export.mp4 file to display horizontal video preview thumbnail (matching Image 2)
+  // Launch iOS native Share Sheet with physical collection_export.mp4 file
   const handleSharePress = async () => {
     try {
       if (currentClip && currentClip.uri) {
@@ -200,19 +202,18 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
             styles.container,
             {
               backgroundColor: isDark ? '#000000' : '#F2F2F7',
-              paddingTop: Math.max(insets.top, 12),
               paddingBottom: Math.max(insets.bottom, 12),
             },
           ]}
         >
           {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
-          <View style={styles.headerBar}>
+          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 21.5, 29.5) }]}>
             <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
               <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#1C1C1E'} />
             </LiquidGlassIconButton>
           </View>
 
-          {/* 2. CENTER 16:9 VIDEO PREVIEW BOX (MATCHING REFERENCE IMAGE) */}
+          {/* 2. CENTER 16:9 VIDEO PREVIEW BOX */}
           <View style={styles.centerContent}>
             {currentClip && currentClip.uri ? (
               <View
@@ -248,7 +249,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                 />
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
-                {/* OVERLAY TEXT: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) EXACTLY AS PER REFERENCE IMAGE 1 */}
+                {/* OVERLAY TEXT: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
                 <View
                   style={{
                     position: 'absolute',
@@ -303,7 +304,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
             ) : null}
           </View>
 
-          {/* 3. BOTTOM 4 ACTION BUTTONS ROW (INCREASED TEXT BY 1.5DP AND ICON BY 2.5DP) */}
+          {/* 3. BOTTOM 4 ACTION BUTTONS ROW */}
           <View
             style={{
               position: 'absolute',
@@ -318,7 +319,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
             }}
             pointerEvents="box-none"
           >
-            {/* 1. DISCARD BUTTON (WORKS AS CLOSE BUTTON) */}
+            {/* 1. DISCARD BUTTON */}
             <View style={{ alignItems: 'center' }}>
               <LiquidGlassIconButton
                 idPrefix="btnExportDiscard"
@@ -364,7 +365,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               </Text>
             </View>
 
-            {/* 3. SAVE BUTTON (EXACT FLOW AS IMAGES 3 & 4) */}
+            {/* 3. SAVE BUTTON */}
             <View style={{ alignItems: 'center' }}>
               <LiquidGlassIconButton
                 idPrefix="btnExportSave"
@@ -393,7 +394,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
               </Text>
             </View>
 
-            {/* 4. SHARE BUTTON (SOLID SCREEN EDGE ACCENT COLOR BACKGROUND - OPENS IOS NATIVE SHARE SHEET AS PER IMAGE 2) */}
+            {/* 4. SHARE BUTTON */}
             <View style={{ alignItems: 'center' }}>
               <TouchableOpacity
                 style={{

@@ -37,9 +37,8 @@ import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { ActivityDrawer } from '../../components/home/ActivityDrawer';
-import { VlogSheet } from '../../components/home/VlogSheet';
+import { VlogSheet, EditExportSheet, CRTStaticCard } from '../../components/vlog';
 import { Video, ResizeMode } from 'expo-av';
-import { CRTStaticCard } from '../../components/home/CRTStaticCard';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
@@ -340,6 +339,7 @@ export default function HomeScreen({
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showActivityDrawer, setShowActivityDrawer] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
+  const [showEditExportSheet, setShowEditExportSheet] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color'>('main');
@@ -541,6 +541,11 @@ export default function HomeScreen({
   const [homeVlogProgress, setHomeVlogProgress] = useState(0);
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
   const [isHomeVlogVertical, setIsHomeVlogVertical] = useState(true);
+  const vlogFadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    vlogFadeAnim.setValue(0);
+  }, [homeVlogIndex]);
 
   useEffect(() => {
     Animated.timing(homeProgressAnim, {
@@ -835,49 +840,80 @@ export default function HomeScreen({
                     activeOpacity={0.9}
                     onPress={() => setShowExportSheet(true)}
                   >
-                    <Video
-                      key={vlogList[homeVlogIndex]?.id || homeVlogIndex}
-                      source={{ uri: vlogList[homeVlogIndex]?.uri || vlogList[0]?.uri }}
-                      style={
-                        isHomeVlogVertical
-                          ? {
-                              position: 'absolute',
-                              top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                              left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                              width: (screenWidth - 20) * (9 / 16),
-                              height: screenWidth - 20,
-                              transform: [{ rotate: '270deg' }],
-                            }
-                          : StyleSheet.absoluteFill
-                      }
-                      resizeMode={ResizeMode.COVER}
-                      shouldPlay={activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
-                      isLooping={vlogList.length === 1}
-                      isMuted={!(activeTab === 'pals' && !showExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
-                      rate={vlogList[homeVlogIndex]?.rate || 1.0}
-                      shouldCorrectPitch={true}
-                      progressUpdateIntervalMillis={16}
-                      onPlaybackStatusUpdate={(status) => {
-                        if (status.isLoaded) {
-                          if (status.durationMillis && status.durationMillis > 0) {
-                            const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
-                            setHomeVlogProgress(p);
-                          }
-                          if (status.didJustFinish) {
-                            setHomeVlogProgress(0);
-                            if (vlogList.length > 1) {
-                              setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
-                            }
-                          }
+                    {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
+                    {Boolean(vlogList[homeVlogIndex]?.thumbnailUri) && (
+                      <Image
+                        source={{ uri: vlogList[homeVlogIndex]?.thumbnailUri }}
+                        style={
+                          isHomeVlogVertical
+                            ? {
+                                position: 'absolute',
+                                top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                                left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                                width: (screenWidth - 20) * (9 / 16),
+                                height: screenWidth - 20,
+                                transform: [{ rotate: '270deg' }],
+                              }
+                            : StyleSheet.absoluteFill
                         }
-                      }}
-                      onReadyForDisplay={(event) => {
-                        if (event?.naturalSize) {
-                          const { width, height } = event.naturalSize;
-                          setIsHomeVlogVertical(height > width);
+                        contentFit="cover"
+                      />
+                    )}
+                    <Animated.View
+                      style={[
+                        StyleSheet.absoluteFillObject,
+                        { opacity: vlogFadeAnim },
+                      ]}
+                    >
+                      <Video
+                        key={vlogList[homeVlogIndex]?.id || homeVlogIndex}
+                        source={{ uri: vlogList[homeVlogIndex]?.uri || vlogList[0]?.uri }}
+                        style={
+                          isHomeVlogVertical
+                            ? {
+                                position: 'absolute',
+                                top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                                left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                                width: (screenWidth - 20) * (9 / 16),
+                                height: screenWidth - 20,
+                                transform: [{ rotate: '270deg' }],
+                              }
+                            : StyleSheet.absoluteFill
                         }
-                      }}
-                    />
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
+                        isLooping={vlogList.length === 1}
+                        isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
+                        rate={vlogList[homeVlogIndex]?.rate || 1.0}
+                        shouldCorrectPitch={true}
+                        progressUpdateIntervalMillis={16}
+                        onPlaybackStatusUpdate={(status) => {
+                          if (status.isLoaded) {
+                            if (status.durationMillis && status.durationMillis > 0) {
+                              const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
+                              setHomeVlogProgress(p);
+                            }
+                            if (status.didJustFinish) {
+                              setHomeVlogProgress(0);
+                              if (vlogList.length > 1) {
+                                setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
+                              }
+                            }
+                          }
+                        }}
+                        onReadyForDisplay={(event) => {
+                          if (event?.naturalSize) {
+                            const { width, height } = event.naturalSize;
+                            setIsHomeVlogVertical(height > width);
+                          }
+                          Animated.timing(vlogFadeAnim, {
+                            toValue: 1,
+                            duration: 250,
+                            useNativeDriver: true,
+                          }).start();
+                        }}
+                      />
+                    </Animated.View>
                     <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
                     {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
@@ -1942,7 +1978,10 @@ export default function HomeScreen({
         <ChatDrawer
           visible={showChatDrawer}
           onClose={() => setShowChatDrawer(false)}
-          onOpenVlog={() => setShowExportSheet(true)}
+          onOpenVlog={() => {
+            setShowChatDrawer(false);
+            setShowEditExportSheet(true);
+          }}
           palCode="palzee_space"
           user={user}
           isDark={isDark}
@@ -1974,6 +2013,15 @@ export default function HomeScreen({
           onOpenChat={() => {
             setShowChatDrawer(true);
           }}
+        />
+
+        <EditExportSheet
+          visible={showEditExportSheet}
+          onClose={() => setShowEditExportSheet(false)}
+          vlogList={vlogList}
+          selectedThemeColor={selectedThemeColor}
+          onDeleteVideo={handleDeleteVideo}
+          onUpdateCaption={handleUpdateCaption}
         />
       </View>
     </DynamicGlowContainer>

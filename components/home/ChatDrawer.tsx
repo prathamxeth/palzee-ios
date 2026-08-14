@@ -28,7 +28,7 @@ import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 /**
  * Calculates the Palzee 4 AM - 4 AM daily cycle for a timestamp.
  * A Palzee Day starts at 04:00:00 AM and ends at 03:59:59 AM the next morning.
- * Clips older than 7 Palzee cycles (8th day) are flushed.
+ * Clips older than 7 Palzee cycles (8th day) are flushed out.
  */
 export const getPalzeeCycleInfo = (ts?: string | Date | number, nowInput: Date = new Date()) => {
   const d = ts ? new Date(ts) : new Date();
@@ -130,10 +130,21 @@ export const ChatDrawer = ({
 
   const rawActiveList = Array.isArray(localVlogList) && localVlogList.length > 0 ? localVlogList : vlogList;
 
-  // Filter clips to 7-day 4 AM - 4 AM Palzee cycles (prune older clips)
+  // Filter clips to 7-day 4 AM - 4 AM Palzee cycles (flush clips older than 7 days)
   const valid7DayClips = (Array.isArray(rawActiveList) ? rawActiveList : []).filter((clip) => {
     return getPalzeeCycleInfo(clip.timestamp).isWithin7Days;
   });
+
+  // Determine active cycle day label for the fixed bottom "view pal" box
+  const latestClip = valid7DayClips.length > 0 ? valid7DayClips[valid7DayClips.length - 1] : null;
+  const latestCycleInfo = latestClip ? getPalzeeCycleInfo(latestClip.timestamp) : null;
+  const activeCycleDayLabel = (latestCycleInfo && latestCycleInfo.diffDays === 0)
+    ? 'Today'
+    : (latestCycleInfo && latestCycleInfo.diffDays === 1)
+    ? 'Yesterday'
+    : latestCycleInfo
+    ? latestCycleInfo.dayLabel
+    : 'Today';
 
   // Direct active item resolution
   const activePal = (valid7DayClips.length > 0)
@@ -221,7 +232,7 @@ export const ChatDrawer = ({
         ]}
       >
         <View style={{ flex: 1 }}>
-          <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+          <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={false} showGlow={false}>
             <View
               style={[
                 styles.container,
@@ -262,12 +273,13 @@ export const ChatDrawer = ({
                 <View style={{ width: 44 }} />
               </View>
 
-              {/* 2. CHAT FEED SECTION: SCROLLABLE 7-DAY 4AM-4AM VLOG HISTORY */}
+              {/* 2. CHAT FEED & THUMBNAILS SECTION */}
               <View style={styles.feedContainer}>
+                {/* Scrollable Thumbnails Stacked Above Fixed Bottom Box */}
                 <ScrollView
                   ref={scrollViewRef}
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 12 }}
+                  contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 8 }}
                   onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
                 >
                   {valid7DayClips.length > 0 ? (
@@ -295,8 +307,8 @@ export const ChatDrawer = ({
                           };
 
                       return (
-                        <View key={clip.id || `vlog_clip_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 16 }}>
-                          {/* Timestamp Header with 4 AM - 4 AM Day Label */}
+                        <View key={clip.id || `vlog_clip_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 14 }}>
+                          {/* Timestamp Header Above Thumbnail */}
                           <Text
                             style={[
                               styles.timestampText,
@@ -336,26 +348,6 @@ export const ChatDrawer = ({
                               />
                             )}
                           </TouchableOpacity>
-
-                          {/* View Pal Action Bar */}
-                          <TouchableOpacity
-                            activeOpacity={0.85}
-                            onPress={() => {
-                              onClose();
-                              if (onOpenVlog) onOpenVlog();
-                            }}
-                            style={[
-                              styles.viewPalBtn,
-                              { backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA' },
-                            ]}
-                          >
-                            <Text style={[styles.viewPalDayText, { color: textColor }]}>
-                              {cycleInfo.dayLabel}
-                            </Text>
-                            <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
-                              view pal
-                            </Text>
-                          </TouchableOpacity>
                         </View>
                       );
                     })
@@ -363,6 +355,26 @@ export const ChatDrawer = ({
                     <View style={{ flex: 1 }} />
                   )}
                 </ScrollView>
+
+                {/* FIXED BOTTOM "VIEW PAL" ACTION CARD (LOCKED DIRECTLY ABOVE INPUT BAR) */}
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    onClose();
+                    if (onOpenVlog) onOpenVlog();
+                  }}
+                  style={[
+                    styles.viewPalBtn,
+                    { backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA' },
+                  ]}
+                >
+                  <Text style={[styles.viewPalDayText, { color: textColor }]}>
+                    {activeCycleDayLabel}
+                  </Text>
+                  <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
+                    view pal
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               {/* 3. BOTTOM INPUT BAR */}
@@ -386,7 +398,7 @@ export const ChatDrawer = ({
                     <View style={[styles.smileyCircle, { backgroundColor: edgeColor }]}>
                       <Image
                         source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={{ width: 30.5, height: 30.5 }}
+                        style={{ width: 25, height: 25 }}
                         contentFit="contain"
                       />
                     </View>
@@ -595,18 +607,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   smileyBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   smileyCircle: {
-    width: 31.5,
-    height: 31.5,
-    borderRadius: 15.75,
+    width: 26.5,
+    height: 26.5,
+    borderRadius: 13.25,
     justifyContent: 'center',
     alignItems: 'center',
   },

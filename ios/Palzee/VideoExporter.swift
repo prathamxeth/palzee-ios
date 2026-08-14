@@ -39,8 +39,12 @@ class VideoExporter: NSObject {
       return
     }
     
-    // Output Canvas Geometry: 16:9 Horizontal (1920x1080) for Video 1 style
-    let renderSize = CGSize(width: 1920, height: 1080)
+    // Output Canvas Geometry: 9:16 Native Portrait (1080x1920)
+    let renderSize = CGSize(width: 1080, height: 1920)
+    let boxWidth: CGFloat = 1080.0
+    let boxHeight: CGFloat = 607.5 // (1080 * 9 / 16)
+    let boxYOffset: CGFloat = (1920.0 - boxHeight) / 2.0 // 656.25px (Centered vertically in 9:16 canvas)
+
     let videoComposition = AVMutableVideoComposition()
     videoComposition.renderSize = renderSize
     videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
@@ -50,75 +54,93 @@ class VideoExporter: NSObject {
     
     let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
     
-    // Calculate transform based on camera recording orientation
     let transform = videoTrack.preferredTransform
     let naturalSize = videoTrack.naturalSize
     let transformedRect = CGRect(origin: .zero, size: naturalSize).applying(transform)
     let videoWidth = max(abs(transformedRect.width), 1)
     let videoHeight = max(abs(transformedRect.height), 1)
     
-    let scaleX = renderSize.width / videoWidth
-    let scaleY = renderSize.height / videoHeight
+    let scaleX = boxWidth / videoWidth
+    let scaleY = boxHeight / videoHeight
+    let scale = max(scaleX, scaleY)
     
-    // Apply camera rotation + scale to 1920x1080 frame
-    var finalTransform = transform.concatenating(CGAffineTransform(scaleX: scaleX, y: scaleY))
-    
-    // Adjust translation offset if transform rotated origin off-screen
+    var finalTransform = transform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
     if transformedRect.origin.x < 0 {
-      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: renderSize.width, y: 0))
+      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: boxWidth, y: 0))
     }
     if transformedRect.origin.y < 0 {
-      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: renderSize.height))
+      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: boxHeight))
     }
+    
+    let clipWidth = videoWidth * scale
+    let clipHeight = videoHeight * scale
+    let offsetX = (boxWidth - clipWidth) / 2.0
+    let offsetY = (boxHeight - clipHeight) / 2.0 + boxYOffset
+    
+    finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offsetX, y: offsetY))
     
     layerInstruction.setTransform(finalTransform, at: .zero)
     instruction.layerInstructions = [layerInstruction]
     videoComposition.instructions = [instruction]
     
-    // CALayer Setup for 1920x1080
+    // Parent CALayer (1080x1920 Portrait Canvas with Black Letterbox Fill)
     let parentLayer = CALayer()
-    parentLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+    parentLayer.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
+    parentLayer.backgroundColor = UIColor.black.cgColor
     
     let videoLayer = CALayer()
-    videoLayer.frame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+    videoLayer.frame = CGRect(x: 0, y: boxYOffset, width: boxWidth, height: boxHeight)
     parentLayer.addSublayer(videoLayer)
     
-    // Overlay 1: "vlog" badge
+    // Center Overlay Y Midpoint (In CoreAnimation, Y=0 is bottom: 656.25 + 303.75 = 960)
+    let overlayCenterY: CGFloat = 960.0
+    
+    // Overlay 1: "vlog" title (Left aligned)
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-    vlogLayer.fontSize = 28
-    vlogLayer.foregroundColor = UIColor.white.withAlphaComponent(0.9).cgColor
-    vlogLayer.backgroundColor = UIColor.black.withAlphaComponent(0.4).cgColor
-    vlogLayer.cornerRadius = 10
-    vlogLayer.alignmentMode = .center
-    vlogLayer.frame = CGRect(x: 48, y: 1080 - 80, width: 120, height: 44)
+    vlogLayer.font = UIFont.systemFont(ofSize: 42, weight: .bold)
+    vlogLayer.fontSize = 42
+    vlogLayer.foregroundColor = UIColor.white.cgColor
+    vlogLayer.alignmentMode = .left
+    vlogLayer.shadowColor = UIColor.black.cgColor
+    vlogLayer.shadowOpacity = 0.8
+    vlogLayer.shadowRadius = 4
+    vlogLayer.shadowOffset = CGSize(width: 0, height: 2)
+    vlogLayer.frame = CGRect(x: 40, y: overlayCenterY - 26, width: 200, height: 52)
     vlogLayer.contentsScale = 2.0
     parentLayer.addSublayer(vlogLayer)
     
-    // Overlay 2: Caption
+    // Overlay 2: Caption (Center aligned)
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 36, weight: .semibold)
-      captionLayer.fontSize = 36
+      captionLayer.font = UIFont.systemFont(ofSize: 34, weight: .bold)
+      captionLayer.fontSize = 34
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
+      captionLayer.shadowColor = UIColor.black.cgColor
+      captionLayer.shadowOpacity = 0.8
+      captionLayer.shadowRadius = 4
+      captionLayer.shadowOffset = CGSize(width: 0, height: 2)
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 60, y: 540 - 40, width: 1800, height: 80)
+      captionLayer.frame = CGRect(x: 220, y: overlayCenterY - 26, width: 640, height: 52)
       captionLayer.contentsScale = 2.0
       parentLayer.addSublayer(captionLayer)
     }
     
-    // Overlay 3: Timestamp
+    // Overlay 3: Timestamp Text (Right aligned)
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 26, weight: .medium)
-      timeLayer.fontSize = 26
-      timeLayer.foregroundColor = UIColor.white.withAlphaComponent(0.75).cgColor
+      timeLayer.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
+      timeLayer.fontSize = 32
+      timeLayer.foregroundColor = UIColor.white.cgColor
       timeLayer.alignmentMode = .right
-      timeLayer.frame = CGRect(x: 1560, y: 1080 - 74, width: 300, height: 38)
+      timeLayer.shadowColor = UIColor.black.cgColor
+      timeLayer.shadowOpacity = 0.8
+      timeLayer.shadowRadius = 4
+      timeLayer.shadowOffset = CGSize(width: 0, height: 2)
+      timeLayer.frame = CGRect(x: 840, y: overlayCenterY - 26, width: 200, height: 52)
       timeLayer.contentsScale = 2.0
       parentLayer.addSublayer(timeLayer)
     }
