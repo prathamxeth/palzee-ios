@@ -485,11 +485,15 @@ export default function PalVideoSendPreviewModal({
                       activeOpacity={0.8}
                       onPress={handleSaveRawVideo}
                     >
-                      <Ionicons
-                        name={saveRawState === 'saved' ? 'checkmark' : 'download-outline'}
-                        size={24}
-                        color="#FFFFFF"
-                      />
+                      {saveRawState === 'saving' ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Ionicons
+                          name={saveRawState === 'saved' ? 'checkmark' : 'download-outline'}
+                          size={24}
+                          color="#FFFFFF"
+                        />
+                      )}
                     </TouchableOpacity>
                   </View>
                 </View>
