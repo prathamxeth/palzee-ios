@@ -21,6 +21,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -512,6 +513,19 @@ export default function HomeScreen({
       mode?: string;
     }>
   >([]);
+
+  useEffect(() => {
+    AsyncStorage.getItem('@palzee_vlog_list').then((cached) => {
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setVlogList(parsed);
+          }
+        } catch (e) {}
+      }
+    });
+  }, []);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
   const [homeVlogProgress, setHomeVlogProgress] = useState(0);
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
@@ -596,7 +610,11 @@ export default function HomeScreen({
 
     console.log('📦 Vlog State Saved:', newLog);
 
-    setVlogList((prev) => [newLog, ...prev]);
+    setVlogList((prev) => {
+      const updated = [newLog, ...prev];
+      AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updated));
+      return updated;
+    });
     setHomeVlogIndex(0);
     setHomeVlogProgress(0);
     setShowCamera(false);
