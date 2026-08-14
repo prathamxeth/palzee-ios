@@ -14,6 +14,7 @@ export const Fonts = {
   SpaceMono: 'space_mono_regular',
   Unpack: 'unpack',
   SystemRounded: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Regular' : 'sans-serif-rounded',
+  SystemRoundedRegular: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Regular' : 'sans-serif-rounded',
   SystemRoundedBold: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Bold' : 'sans-serif-rounded',
   SystemRoundedMedium: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Medium' : 'sans-serif-rounded',
   SystemRoundedSemibold: Platform.OS === 'ios' ? '.AppleSystemUIFontRounded-Semibold' : 'sans-serif-rounded',

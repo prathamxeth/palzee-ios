@@ -16,6 +16,7 @@ import {
   Animated,
   Easing,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -177,7 +178,11 @@ export default function PalVideoSendPreviewModal({
   const [saveRawState, setSaveRawState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const handleSaveRawVideo = async () => {
-    if (saveRawState !== 'idle' || !videoUri) return;
+    if (!videoUri) return;
+    if (saveRawState === 'saved') {
+      setSaveRawState('idle');
+      return;
+    }
     setSaveRawState('saving');
     try {
       try {
@@ -185,14 +190,17 @@ export default function PalVideoSendPreviewModal({
       } catch (e) {}
       await MediaLibrary.saveToLibraryAsync(videoUri);
       setSaveRawState('saved');
-      Alert.alert('Saved', 'Saved raw captured video to Photos!');
-      setTimeout(() => setSaveRawState('idle'), 2500);
     } catch (err) {
       console.log('Save raw video error:', err);
       setSaveRawState('idle');
-      Alert.alert('Error', 'Could not save video to Photos.');
     }
   };
+
+  useEffect(() => {
+    if (visible) {
+      setSaveRawState('idle');
+    }
+  }, [visible]);
   const [captionText, setCaptionText] = useState('');
   const [isVertical, setIsVertical] = useState(isVerticalCapture);
   const [selectedTargets, setSelectedTargets] = useState<string[]>(

@@ -15,6 +15,7 @@ import {
   Platform,
   Keyboard,
   PanResponder,
+  NativeModules,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import Svg, { Defs, LinearGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
@@ -24,6 +25,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
+import { ActivityIndicator } from 'react-native';
+import * as MediaLibrary from 'expo-media-library';
 
 import { CRTStaticCard } from './CRTStaticCard';
 import { ChatDrawer } from '../home/ChatDrawer';
@@ -106,6 +109,64 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
   const [dayOffset, setDayOffset] = useState(selectedDayOffset);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const formatExportTime = (ts?: string, rawDisplay?: string) => {
+    if (rawDisplay) return rawDisplay;
+    if (!ts) return '7:26 PM';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return '7:26 PM';
+    let h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  };
+
+  const handleDirectSave = async () => {
+    if (!currentUri) return;
+    if (saveState === 'saved') {
+      setSaveState('idle');
+      setShowOptionsMenu(false);
+      return;
+    }
+    if (saveState === 'saving') return;
+    setSaveState('saving');
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === 'granted') {
+        const TargetExporter = NativeModules.VideoExporter;
+        if (TargetExporter && TargetExporter.exportPortraitVideoWithCaption) {
+          const formattedTimeText = formatExportTime(currentClip?.timestamp || timestamp, (currentClip as any)?.displayTime);
+          const exportedUri = await TargetExporter.exportPortraitVideoWithCaption(
+            currentUri,
+            currentClip?.caption || caption || '',
+            formattedTimeText || '7:26 PM'
+          );
+          if (exportedUri) {
+            await MediaLibrary.saveToLibraryAsync(exportedUri);
+          } else {
+            await MediaLibrary.saveToLibraryAsync(currentUri);
+          }
+        } else {
+          await MediaLibrary.saveToLibraryAsync(currentUri);
+        }
+        setSaveState('saved');
+      } else {
+        setShowExportModal(true);
+        setSaveState('idle');
+        setShowOptionsMenu(false);
+      }
+    } catch (e) {
+      console.log('Direct save error:', e);
+      setShowExportModal(true);
+      setSaveState('idle');
+    }
+  };
+
+  useEffect(() => {
+    setSaveState('idle');
+  }, [currentVlogIndex, dayOffset]);
 
   useEffect(() => {
     if (visible) {
@@ -345,6 +406,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     };
   }, [visible]);
 
+  const logoTextColor = Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
+
   return (
     <Modal
       visible={visible}
@@ -487,29 +550,37 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               })()}
 
             {list.length > 0 && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
-                {Array.from({ length: list.length }).map((_, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      backgroundColor: edgeColor,
-                      borderWidth: 1.5,
-                      borderColor: isDark ? '#2C2C2E' : '#E5E5EA',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Image
-                      source={require('../../assets/images/custom_rotate_smiley.png')}
-                      style={{ width: 15.05, height: 15.05, tintColor: '#000000', transform: [{ scale: 1.035 }] }}
-                      resizeMode="contain"
-                    />
-                  </View>
-                ))}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 }}>
+                {Array.from({ length: list.length }).map((_, idx) => {
+                  const isActive = idx === Math.min(currentVlogIndex, list.length - 1);
+                  return (
+                    <View
+                      key={idx}
+                      style={{
+                        width: isActive ? 24 : 22,
+                        height: isActive ? 24 : 22,
+                        borderRadius: isActive ? 12 : 11,
+                        backgroundColor: logoTextColor,
+                        borderWidth: isActive ? 2.5 : 1.5,
+                        borderColor: isActive ? edgeColor : (isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)'),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <Image
+                        source={require('../../assets/images/custom_rotate_smiley.png')}
+                        style={{
+                          width: isActive ? 16 : 15.05,
+                          height: isActive ? 16 : 15.05,
+                          tintColor: '#000000',
+                          transform: [{ scale: 1.035 }],
+                        }}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  );
+                })}
               </View>
             )}
             </View>
@@ -637,6 +708,59 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               >
                 <Ionicons name="ellipsis-horizontal" size={22} color="#FFFFFF" />
               </TouchableOpacity>
+
+              {/* IN-CARD EDIT CAPTION OVERLAY WITH CENTER BLINKING CURSOR & TOP CONTROLS */}
+              {showEditCaptionBox && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center' }]}>
+                  {/* TOP LEFT CROSS BUTTON */}
+                  <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
+                    <LiquidGlassIconButton
+                      idPrefix="btnCaptionClose"
+                      isDark={true}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowEditCaptionBox(false);
+                      }}
+                    >
+                      <Ionicons name="close" size={20} color="#FFFFFF" />
+                    </LiquidGlassIconButton>
+                  </View>
+
+                  {/* TOP RIGHT TICK BUTTON */}
+                  <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
+                    <LiquidGlassIconButton
+                      idPrefix="btnCaptionSave"
+                      isDark={true}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowEditCaptionBox(false);
+                        handleSaveCaption();
+                      }}
+                    >
+                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    </LiquidGlassIconButton>
+                  </View>
+
+                  {/* CENTER BLINKING CURSOR CAPTION INPUT */}
+                  <TextInput
+                    style={{
+                      width: '85%',
+                      textAlign: 'center',
+                      color: '#FFFFFF',
+                      fontSize: 22,
+                      fontFamily: Fonts.SystemRoundedBold,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                    }}
+                    value={editingCaptionText}
+                    onChangeText={setEditingCaptionText}
+                    placeholder=""
+                    placeholderTextColor="transparent"
+                    autoFocus={true}
+                    selectionColor="#4FFFB0"
+                  />
+                </View>
+              )}
             </View>
           </View>
 
@@ -670,7 +794,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             >
               <View
                 style={{
-                  width: 190,
+                  width: 155,
                   borderRadius: 20,
                   overflow: 'hidden',
                   borderWidth: 1.5,
@@ -685,14 +809,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               >
                 <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                <Svg width={190} height={currentUri ? 120 : 44} style={StyleSheet.absoluteFill}>
+                <Svg width={155} height={currentUri ? 120 : 44} style={StyleSheet.absoluteFill}>
                   <Defs>
                     <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                       <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
                       <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="190" height={currentUri ? 120 : 44} rx="20" fill="url(#optionsPillGrad)" />
+                  <Rect x="0" y="0" width="155" height={currentUri ? 120 : 44} rx="20" fill="url(#optionsPillGrad)" />
                 </Svg>
 
                 {/* 1. Edit Caption */}
@@ -701,7 +825,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingVertical: 10,
-                    paddingHorizontal: 16,
+                    paddingLeft: 18.5,
+                    paddingRight: 12,
                     gap: 10,
                   }}
                   activeOpacity={0.7}
@@ -724,28 +849,31 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         flexDirection: 'row',
                         alignItems: 'center',
                         paddingVertical: 10,
-                        paddingHorizontal: 16,
+                        paddingLeft: 18.5,
+                        paddingRight: 12,
                         gap: 10,
                       }}
                       activeOpacity={0.7}
-                      onPress={() => {
-                        setShowOptionsMenu(false);
-                        setShowExportModal(true);
-                      }}
+                      onPress={handleDirectSave}
                     >
-                      <Ionicons name="download-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                      {saveState === 'saving' ? (
+                        <ActivityIndicator size="small" color={isDark ? '#FFFFFF' : '#000000'} style={{ width: 20, height: 20 }} />
+                      ) : (
+                        <Ionicons name={saveState === 'saved' ? "checkmark" : "download-outline"} size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                      )}
                       <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
-                        save
+                        {saveState === 'saved' ? 'saved' : 'save'}
                       </Text>
                     </TouchableOpacity>
 
-                    {/* 3. Delete Vlog */}
+                    {/* 3. Delete */}
                     <TouchableOpacity
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         paddingVertical: 10,
-                        paddingHorizontal: 16,
+                        paddingLeft: 18.5,
+                        paddingRight: 12,
                         gap: 10,
                       }}
                       activeOpacity={0.7}
@@ -756,7 +884,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     >
                       <Ionicons name="trash-outline" size={20} color="#FF3B30" />
                       <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
-                        delete video
+                        delete
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -790,161 +918,93 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             onContinue={handleDismissInstructions}
           />
 
-          {/* EDIT CAPTION DIALOG MODAL */}
-          <Modal
-            visible={showEditCaptionBox}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowEditCaptionBox(false)}
-          >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
-            >
-              <View
-                style={{
-                  width: '100%',
-                  maxWidth: 320,
-                  borderRadius: 24,
-                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
-                  padding: 20,
-                  alignItems: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 16,
-                  elevation: 10,
-                }}
-              >
-                <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000', marginBottom: 12 }}>
-                  edit caption
-                </Text>
-                <TextInput
-                  style={{
-                    width: '100%',
-                    backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
-                    borderRadius: 14,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    fontSize: 16,
-                    fontFamily: Fonts.SystemRoundedRegular,
-                    color: isDark ? '#FFFFFF' : '#000000',
-                    marginBottom: 20,
-                  }}
-                  value={editingCaptionText}
-                  onChangeText={setEditingCaptionText}
-                  placeholder="add a caption..."
-                  placeholderTextColor="#8E8E93"
-                  autoFocus={true}
-                />
-                <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: 14,
-                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
-                      alignItems: 'center',
-                    }}
-                    onPress={() => setShowEditCaptionBox(false)}
-                  >
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
-                      cancel
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: 14,
-                      backgroundColor: edgeColor,
-                      alignItems: 'center',
-                    }}
-                    onPress={() => {
-                      setShowEditCaptionBox(false);
-                      handleSaveCaption();
-                    }}
-                  >
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, color: '#000000' }}>
-                      save
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </KeyboardAvoidingView>
-          </Modal>
-
-          {/* DELETE VIDEO CONFIRMATION DIALOG MODAL */}
+          {/* DELETE CONFIRMATION DIALOG MODAL (EXACT REPLICA OF IMAGE 1 & IMAGE 2 AT CARD CENTER) */}
           <Modal
             visible={showDeleteDialog}
             transparent={true}
             animationType="fade"
             onRequestClose={() => setShowDeleteDialog(false)}
           >
-            <View
+            <TouchableOpacity
               style={{
                 flex: 1,
-                backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                backgroundColor: 'rgba(0, 0, 0, 0.60)',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: 24,
+                paddingHorizontal: 24,
               }}
+              activeOpacity={1}
+              onPress={() => setShowDeleteDialog(false)}
             >
-              <View
+              <TouchableOpacity
                 style={{
-                  width: '100%',
-                  maxWidth: 320,
-                  borderRadius: 24,
+                  width: Math.min(cardWidth * 0.88, 300),
+                  borderRadius: 28,
                   backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
-                  padding: 24,
+                  paddingHorizontal: 20,
+                  paddingTop: 24,
+                  paddingBottom: 20,
                   alignItems: 'center',
+                  marginTop: 55,
                   shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 8 },
+                  shadowOffset: { width: 0, height: 10 },
                   shadowOpacity: 0.35,
-                  shadowRadius: 16,
-                  elevation: 10,
+                  shadowRadius: 20,
+                  elevation: 12,
                 }}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
               >
-                <Ionicons name="trash-outline" size={36} color="#FF3B30" style={{ marginBottom: 12 }} />
-                <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000', marginBottom: 8, textAlign: 'center' }}>
-                  delete video pal?
-                </Text>
-                <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedRegular, color: '#8E8E93', textAlign: 'center', marginBottom: 24 }}>
-                  this action cannot be undone.
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontFamily: Fonts.SystemRoundedRegular,
+                    color: isDark ? '#FFFFFF' : '#000000',
+                    textAlign: 'center',
+                    lineHeight: 22,
+                    marginBottom: 20,
+                  }}
+                >
+                  are you sure you want to delete this log permanently?
                 </Text>
 
                 <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
                   <TouchableOpacity
                     style={{
                       flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: 14,
+                      height: 46,
+                      borderRadius: 23,
                       backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
                       alignItems: 'center',
+                      justifyContent: 'center',
                     }}
+                    activeOpacity={0.7}
                     onPress={() => setShowDeleteDialog(false)}
                   >
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                       cancel
                     </Text>
                   </TouchableOpacity>
+
                   <TouchableOpacity
                     style={{
                       flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: 14,
-                      backgroundColor: '#FF3B30',
+                      height: 46,
+                      borderRadius: 23,
+                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
                       alignItems: 'center',
+                      justifyContent: 'center',
                     }}
+                    activeOpacity={0.7}
                     onPress={handleConfirmDelete}
                   >
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, color: '#FFFFFF' }}>
-                      delete
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                      delete log
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-            </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
           </Modal>
         </View>
       </DynamicGlowContainer>

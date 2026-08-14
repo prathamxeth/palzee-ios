@@ -184,7 +184,12 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
 
   // Save video directly into the device's iOS Photos app / Camera Roll gallery
   const handleSavePress = async () => {
-    if (saveState !== 'idle' || !currentClip || !currentClip.uri) return;
+    if (!currentClip || !currentClip.uri) return;
+    if (saveState === 'saved') {
+      setSaveState('idle');
+      return;
+    }
+    if (saveState === 'saving') return;
 
     setSaveState('saving');
     try {
@@ -203,15 +208,9 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           console.log('MediaLibrary save exception:', mediaErr);
         }
         setSaveState('saved');
-        Alert.alert('Success', 'Saved vertical 9:16 video to Photos!');
       } else {
         setSaveState('idle');
-        Alert.alert('Export Error', 'Could not generate export file.');
       }
-
-      setTimeout(() => {
-        setSaveState('idle');
-      }, 2500);
     } catch (error) {
       console.log('Save error:', error);
       setSaveState('idle');

@@ -19,7 +19,10 @@ import {
   View,
   useColorScheme,
   useWindowDimensions,
+  NativeModules,
+  ActivityIndicator,
 } from 'react-native';
+import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop, Text as SvgText } from 'react-native-svg';
@@ -583,6 +586,46 @@ export default function HomeScreen({
     loop.start();
   }, []);
 
+  const [homeSaveState, setHomeSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const handleHomeCardSave = async () => {
+    const activeVideoUri = vlogList[homeVlogIndex]?.uri;
+    const activeCaption = vlogList[homeVlogIndex]?.caption || '';
+    if (!activeVideoUri) return;
+    if (homeSaveState === 'saved') {
+      setHomeSaveState('idle');
+      return;
+    }
+    if (homeSaveState === 'saving') return;
+    setHomeSaveState('saving');
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === 'granted') {
+        const TargetExporter = NativeModules.VideoExporter;
+        if (TargetExporter && TargetExporter.exportRotatedCardVideoOnly) {
+          const exportedUri = await TargetExporter.exportRotatedCardVideoOnly(String(activeVideoUri || ''), String(activeCaption || ''));
+          if (exportedUri) {
+            await MediaLibrary.saveToLibraryAsync(exportedUri);
+          } else {
+            await MediaLibrary.saveToLibraryAsync(activeVideoUri);
+          }
+        } else {
+          await MediaLibrary.saveToLibraryAsync(activeVideoUri);
+        }
+        setHomeSaveState('saved');
+      } else {
+        setHomeSaveState('idle');
+      }
+    } catch (e) {
+      console.log('Home card save error:', e);
+      setHomeSaveState('idle');
+    }
+  };
+
+  useEffect(() => {
+    setHomeSaveState('idle');
+  }, [homeVlogIndex]);
+
   const handleVideoSent = async (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
     console.log('🎥 [handleVideoSent] Processing video:', uri);
 
@@ -1027,18 +1070,30 @@ export default function HomeScreen({
                       </View>
                     )}
 
-                    {/* BOTTOM RIGHT: EXPORT BUTTON */}
+                    {/* BOTTOM RIGHT: SAVE BUTTON (SAVED AS ROTATED CARD VIDEO ONLY, NO TEXT OVERLAYS) */}
                     <TouchableOpacity
                       style={{
                         position: 'absolute',
                         bottom: 12,
                         right: 14,
                         padding: 6,
+                        zIndex: 20,
                       }}
                       activeOpacity={0.7}
-                      onPress={() => setShowExportSheet(true)}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleHomeCardSave();
+                      }}
                     >
-                      <Ionicons name="share-outline" size={22} color="#FFFFFF" />
+                      {homeSaveState === 'saving' ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Ionicons
+                          name={homeSaveState === 'saved' ? 'checkmark' : 'download-outline'}
+                          size={22}
+                          color="#FFFFFF"
+                        />
+                      )}
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
