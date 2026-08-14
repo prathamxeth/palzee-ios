@@ -717,8 +717,8 @@ const styles = StyleSheet.create({
   },
   cardHeaderRow: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 12,
+    left: 14,
     right: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -731,9 +731,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   avatarCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -743,13 +743,13 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   smileyIcon: {
-    width: 24,
-    height: 24,
+    width: 18,
+    height: 18,
   },
   userNameText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: Fonts.SystemRoundedMedium,
+    fontSize: 18,
+    fontFamily: Fonts.SystemRoundedSemibold,
   },
   cardBottomRightDots: {
     position: 'absolute',

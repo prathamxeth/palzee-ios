@@ -499,7 +499,7 @@ export const ChatDrawer = ({
                           ) : (
                             <Image
                               source={require('../../assets/images/capture_smile.png')}
-                              style={{ width: 23, height: 23 }}
+                              style={{ width: 18, height: 18 }}
                               contentFit="contain"
                             />
                           )}
@@ -652,24 +652,24 @@ const styles = StyleSheet.create({
   },
   modalBadge: {
     position: 'absolute',
-    top: 14,
-    left: 16,
+    top: 12,
+    left: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     zIndex: 20,
   },
   avatarCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   modalUserText: {
-    fontSize: 15,
-    fontFamily: Fonts.SystemRoundedMedium,
+    fontSize: 18,
+    fontFamily: Fonts.SystemRoundedSemibold,
     color: '#FFFFFF',
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 0, height: 1 },
