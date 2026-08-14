@@ -269,7 +269,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   <Text
                     style={{
                       color: '#FFFFFF',
-                      fontSize: 22,
+                      fontSize: 25,
                       fontFamily: Fonts.SystemRoundedBold,
                       textShadowColor: 'rgba(0, 0, 0, 0.8)',
                       textShadowOffset: { width: 0, height: 1 },
@@ -293,7 +293,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   <Text
                     style={{
                       color: '#FFFFFF',
-                      fontSize: 18,
+                      fontSize: 20,
                       fontFamily: Fonts.SystemRoundedSemibold,
                       textShadowColor: 'rgba(0, 0, 0, 0.8)',
                       textShadowOffset: { width: 0, height: 1 },

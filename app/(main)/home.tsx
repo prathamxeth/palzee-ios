@@ -971,15 +971,15 @@ export default function HomeScreen({
                       }}
                       pointerEvents="none"
                     >
-                      <Text style={{ color: '#FFFFFF', fontSize: 24, fontFamily: Fonts.SystemRoundedBold }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold }}>
                         vlog
                       </Text>
                       {!!vlogList[homeVlogIndex]?.caption && (
-                        <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
                           {vlogList[homeVlogIndex]?.caption}
                         </Text>
                       )}
-                      <Text style={{ color: '#FFFFFF', fontSize: 17, fontFamily: Fonts.SystemRoundedSemibold }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
                         {getNearestHourText(vlogList[homeVlogIndex]?.timestamp || vlogList[homeVlogIndex]?.displayTime)}
                       </Text>
                     </View>

@@ -455,7 +455,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <>
                     <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
                     {!!currentCaption && (
-                      <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
                         {currentCaption}
                       </Text>
                     )}
@@ -770,11 +770,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   cardVlogTitle: {
-    fontSize: 24,
+    fontSize: 25,
     fontFamily: Fonts.SystemRoundedBold,
   },
   timestampText: {
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: Fonts.SystemRoundedMedium,
   },
   centerCaptureBtn: {
