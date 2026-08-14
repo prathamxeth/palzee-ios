@@ -15,9 +15,10 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
@@ -120,19 +121,40 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     }
   }, [activeThumbUri]);
 
-  const getDisplayTimestamp = (item?: any) => {
-    if (!item) return '7:26 PM';
-    return formatExactTime(item.timestamp || item.date);
+  const parseDateSafe = (timeInput?: any): Date => {
+    if (!timeInput) return new Date();
+    if (timeInput instanceof Date) return isNaN(timeInput.getTime()) ? new Date() : timeInput;
+    const parsed = new Date(timeInput);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
   };
 
-  const getDayLabel = (item?: any) => {
-    if (!item) return 'Yesterday';
-    return formatRelativeDay(item.date || item.createdAt || item.timestamp);
+  const getDisplayTimestamp = (item?: any): string => {
+    const date = parseDateSafe(item?.timestamp || item?.createdAt || item?.date);
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  const getDayLabel = (item?: any): string => {
+    const date = parseDateSafe(item?.timestamp || item?.createdAt || item?.date);
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((startOfToday.getTime() - startOfTarget.getTime()) / (1000 * 3600 * 24));
+
+    if (diffDays <= 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   const [messageText, setMessageText] = useState('');
   const [modalVisible, setModalVisible] = useState(visible);
   const [previewVideoModal, setPreviewVideoModal] = useState(false);
+  const thumbnailVideoRef = useRef<Video>(null);
+
+  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+    if (status.isLoaded && status.isPlaying && status.positionMillis > 0) {
+      thumbnailVideoRef.current?.pauseAsync();
+    }
+  };
 
   const getNearestHourText = (rawTimestamp?: string) => {
     return formatRoundedHour(rawTimestamp);
@@ -144,12 +166,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
   const openPreviewModal = () => {
     setPreviewVideoModal(true);
-    previewAnim.setValue(0);
     Animated.spring(previewAnim, {
       toValue: 1,
-      useNativeDriver: true,
       tension: 65,
       friction: 11,
+      useNativeDriver: true,
     }).start();
   };
 
@@ -158,40 +179,34 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       toValue: 0,
       duration: 220,
       useNativeDriver: true,
-    }).start(() => setPreviewVideoModal(false));
+    }).start(() => {
+      setPreviewVideoModal(false);
+    });
   };
-
-  useEffect(() => {
-    smileyRotateAnim.setValue(0);
-    const rotateLoop = Animated.loop(
-      Animated.timing(smileyRotateAnim, {
-        toValue: 1,
-        duration: 1600,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    rotateLoop.start();
-    return () => rotateLoop.stop();
-  }, [modalVisible]);
 
   useEffect(() => {
     if (visible) {
       setModalVisible(true);
-      expandAnim.setValue(0);
-
       Animated.spring(expandAnim, {
         toValue: 1,
-        mass: 0.7,
-        damping: 17,
-        stiffness: 160,
+        tension: 60,
+        friction: 9,
         useNativeDriver: true,
       }).start();
-    } else if (modalVisible) {
+
+      smileyRotateAnim.setValue(0);
+      Animated.loop(
+        Animated.timing(smileyRotateAnim, {
+          toValue: 1,
+          duration: 3500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
       Animated.timing(expandAnim, {
         toValue: 0,
-        duration: 220,
-        easing: Easing.out(Easing.quad),
+        duration: 250,
         useNativeDriver: true,
       }).start(() => {
         setModalVisible(false);
@@ -200,461 +215,521 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   }, [visible]);
 
   const handleClose = () => {
-    Keyboard.dismiss();
     Animated.timing(expandAnim, {
       toValue: 0,
       duration: 220,
-      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
+      setModalVisible(false);
       onClose();
     });
   };
 
-  const screenBg = isDark ? '#000000' : '#F5F5F7';
-  const textColor = isDark ? '#FFFFFF' : '#000000';
-
   if (!modalVisible) return null;
 
-  // iOS App Open / Close Hover Expand Interpolations (Origin from Top Right Chat Icon)
-  const scale = expandAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.08, 1],
-  });
-
-  const opacity = expandAnim.interpolate({
-    inputRange: [0, 0.2, 1],
-    outputRange: [0, 0.9, 1],
-  });
+  const screenBg = isDark ? '#000000' : '#F2F2F7';
+  const textColor = isDark ? '#FFFFFF' : '#000000';
 
   const translateX = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [140, 0],
+    outputRange: [0, 0],
   });
 
   const translateY = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-260, 0],
+    outputRange: [400, 0],
+  });
+
+  const scale = expandAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.85, 1],
   });
 
   return (
-    <Modal
-      visible={modalVisible}
-      transparent={true}
-      animationType="none"
-      onRequestClose={handleClose}
-    >
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFillObject,
-            {
-              opacity,
-              transform: [
-                { translateX },
-                { translateY },
-                { scale },
-              ],
-            },
-          ]}
-        >
-          <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
-            <View
-              style={[
-                styles.container,
-                {
-                  backgroundColor: screenBg,
-                  paddingTop: Math.max(insets.top, 12),
-                  paddingBottom: Math.max(insets.bottom, 12),
-                },
-              ]}
-            >
-              {/* 1. TOP NAVIGATION HEADER BAR (MATCHING IMAGE 1 & IMAGE 2) */}
-              <View style={styles.headerRow}>
-                {/* LEFT: BACK CHEVRON BUTTON */}
-                <LiquidGlassIconButton idPrefix="btnChatBack" isDark={isDark} onPress={handleClose}>
-                  <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
-                </LiquidGlassIconButton>
+    <View style={[StyleSheet.absoluteFillObject, { zIndex: 100 }]} pointerEvents="box-none">
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            opacity: expandAnim,
+          },
+        ]}
+      >
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
+      </Animated.View>
 
-                {/* CENTER: VLOG LIQUID GLASS PILL BUTTON */}
-                <View style={styles.vlogCenterPillWrapper} pointerEvents="box-none">
-                  <View
-                    style={[
-                      styles.vlogLiquidPillBtn,
-                      {
-                        backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                      },
-                    ]}
-                  >
-                    <BlurView
-                      intensity={35}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            opacity: expandAnim,
+            transform: [
+              { translateX },
+              { translateY },
+              { scale },
+            ],
+          },
+        ]}
+      >
+        <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+          <View
+            style={[
+              styles.container,
+              {
+                backgroundColor: screenBg,
+                paddingTop: Math.max(insets.top, 12),
+                paddingBottom: Math.max(insets.bottom, 12),
+              },
+            ]}
+          >
+            {/* 1. TOP NAVIGATION HEADER BAR */}
+            <View style={styles.headerRow}>
+              <LiquidGlassIconButton idPrefix="btnChatBack" isDark={isDark} onPress={handleClose}>
+                <Ionicons name="chevron-back" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+              </LiquidGlassIconButton>
+
+              <View style={styles.vlogCenterPillWrapper} pointerEvents="box-none">
+                <View style={styles.vlogLiquidPillBtn}>
+                  <BlurView
+                    intensity={35}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+                    <Defs>
+                      <LinearGradient id="vlogHeaderPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop
+                          offset="0%"
+                          stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                          stopOpacity={isDark ? 0.75 : 0.88}
+                        />
+                        <Stop
+                          offset="50%"
+                          stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                          stopOpacity={isDark ? 0.6 : 0.75}
+                        />
+                        <Stop
+                          offset="100%"
+                          stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                          stopOpacity={isDark ? 0.85 : 0.65}
+                        />
+                      </LinearGradient>
+                      <LinearGradient id="vlogHeaderPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop
+                          offset="0%"
+                          stopColor="#FFFFFF"
+                          stopOpacity={isDark ? 0.35 : 0.95}
+                        />
+                        <Stop
+                          offset="100%"
+                          stopColor={isDark ? '#FFFFFF' : '#000000'}
+                          stopOpacity={isDark ? 0.08 : 0.08}
+                        />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width="94.5"
+                      height="42.5"
+                      rx="21.25"
+                      fill="url(#vlogHeaderPillGrad)"
+                      stroke="url(#vlogHeaderPillBdr)"
+                      strokeWidth="1.5"
                     />
-                    <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
-                  </View>
+                  </Svg>
+                  <Text style={[styles.vlogPillText, { color: textColor }]}>Vlog</Text>
                 </View>
-
-                {/* BALANCING SPACER */}
-                <View style={{ width: 44 }} />
               </View>
 
-              {/* 2. FLEXIBLE CHAT CONTENT AREA (DISMISS KEYBOARD ON TOUCH) */}
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={[styles.bodyContainer, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
-                  {/* STRICT GUARD: Only render thumbnail & log card if a valid Pal item and resolved video URI exists */}
-                  {activePal && resolvedActiveVideoUri ? (
-                    <>
-                      {/* DYNAMIC TIMESTAMP ABOVE THUMBNAIL */}
-                      <Text
-                        style={{
-                          textAlign: 'center',
-                          fontSize: 14,
-                          fontFamily: Fonts.SystemRoundedMedium,
-                          color: isDark ? '#8E8E93' : '#636366',
-                          marginBottom: 10,
-                        }}
-                      >
-                        {`${getDayLabel(activePal)} ${getDisplayTimestamp(activePal)}`}
-                      </Text>
+              <View style={{ width: 44 }} />
+            </View>
 
-                      {/* DYNAMIC 1ST FRAME THUMBNAIL BUBBLE */}
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={() => {
-                          if (activePal) openPreviewModal();
-                        }}
-                        style={{
-                          alignSelf: 'flex-end',
-                          marginRight: 16,
-                          marginBottom: 14,
-                          width: 146,
-                          height: 86,
-                          borderRadius: 20,
-                          overflow: 'hidden',
-                          backgroundColor: '#1C1C1E',
-                          borderWidth: 1,
-                          borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)',
-                        }}
-                      >
-                        {activeThumbUri ? (
-                          <Image
-                            source={{ uri: activeThumbUri }}
-                            style={
-                              activePal?.needsRotation || isSideways
-                                ? {
-                                    width: 86,
-                                    height: 146,
-                                    transform: [{ rotate: '90deg' }],
-                                  }
-                                : StyleSheet.absoluteFill
-                            }
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <Video
-                            source={{ uri: resolvedActiveVideoUri }}
-                            style={StyleSheet.absoluteFill}
-                            videoStyle={{ width: '100%', height: '100%', borderRadius: 20 }}
-                            resizeMode={ResizeMode.COVER}
-                            shouldPlay={true}
-                            isLooping={true}
-                            isMuted={true}
-                            rate={activePal?.rate || 1.0}
-                            shouldCorrectPitch={true}
-                          />
-                        )}
-                      </TouchableOpacity>
+            {/* 2. FLEXIBLE CHAT CONTENT AREA */}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={[styles.bodyContainer, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
+                {activePal && resolvedActiveVideoUri ? (
+                  <>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontFamily: Fonts.SystemRoundedMedium,
+                        color: isDark ? '#8E8E93' : '#636366',
+                        marginBottom: 10,
+                      }}
+                    >
+                      {`${getDayLabel(activePal)} ${getDisplayTimestamp(activePal)}`}
+                    </Text>
 
-                      {/* ACTION CARD BAR */}
-                      <TouchableOpacity
-                        activeOpacity={0.85}
-                        onPress={() => {
-                          setModalVisible(false);
-                          onClose();
-                          if (onOpenVlog) onOpenVlog();
-                        }}
-                        style={{
-                          marginHorizontal: 16,
-                          height: 58,
-                          borderRadius: 24,
-                          backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          paddingHorizontal: 22,
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Text style={{ fontSize: 17, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000' }}>
-                          {getDayLabel(activePal)}
-                        </Text>
-                        <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: edgeColor }}>
-                          view pal
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  ) : (
-                    /* OPTIONAL EMPTY STATE: Render nothing when no Pal is sent */
-                    <View style={{ flex: 1 }} />
-                  )}
-                </View>
-              </TouchableWithoutFeedback>
-
-              {/* 3. BOTTOM FLOATING MESSAGE INPUT BAR WITH KEYBOARD AVOIDING */}
-              <KeyboardAvoidingView
-                behavior="padding"
-                keyboardVerticalOffset={8}
-              >
-                <View style={styles.bottomInputBarRow}>
-                  {/* LEFT: LIQUID GLASS PILL BUTTON WITH ROTATING SMILEY AVATAR (OPENS CAMERA INSTANTLY) */}
-                  <TouchableOpacity
-                    style={[
-                      styles.smileyGlassPillBtn,
-                      {
-                        backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                      },
-                    ]}
-                    activeOpacity={0.85}
-                    onPress={() => {
-                      setModalVisible(false);
-                      onClose();
-                      if (onOpenCamera) onOpenCamera();
-                    }}
-                  >
-                    <BlurView
-                      intensity={35}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <View style={[styles.innerSmileyCircle, { backgroundColor: edgeColor }]}>
-                      <Animated.Image
-                        source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={[
-                          styles.smileyAvatarImg,
-                          {
-                            transform: [
-                              {
-                                rotate: smileyRotateAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: ['0deg', '360deg'],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}
-                      />
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* CENTER/RIGHT: LIQUID GLASS MESSAGE INPUT PILL WITH INTEGRATED SEND BUTTON */}
-                  <View
-                    style={[
-                      styles.messageInputPillContainer,
-                      {
-                        backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                        borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                      },
-                    ]}
-                  >
-                    <BlurView
-                      intensity={35}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-
-                    <TextInput
-                      style={[styles.textInputStyle, { color: textColor }]}
-                      placeholder="message"
-                      placeholderTextColor="#8E8E93"
-                      value={messageText}
-                      onChangeText={setMessageText}
-                    />
-
-                    {/* RIGHT SEND ARROW BUTTON INSIDE INPUT PILL */}
                     <TouchableOpacity
-                      style={[
-                        styles.sendArrowBtn,
-                        {
-                          backgroundColor:
-                            messageText.trim().length > 0
-                              ? edgeColor
-                              : isDark
-                              ? 'rgba(255, 255, 255, 0.12)'
-                              : 'rgba(0, 0, 0, 0.08)',
-                        },
-                      ]}
-                      activeOpacity={0.75}
-                      onPress={() => setMessageText('')}
+                      activeOpacity={0.9}
+                      onPress={() => {
+                        if (activePal) openPreviewModal();
+                      }}
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginRight: 16,
+                        marginBottom: 14,
+                        width: 146,
+                        height: 86,
+                        borderRadius: 20,
+                        overflow: 'hidden',
+                        backgroundColor: '#1C1C1E',
+                        borderWidth: 1,
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
                     >
-                      <Ionicons
-                        name="arrow-up"
-                        size={18}
-                        color={messageText.trim().length > 0 ? '#000000' : isDark ? '#8E8E93' : '#666666'}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </KeyboardAvoidingView>
-              {/* FULL-SCREEN VIDEO PREVIEW OVERLAY (INSIDE CONTAINER FOR 1:1 ZERO-OFFSET HEADER OVERLAP & SPRING SLIDE-UP ANIMATION) */}
-              {previewVideoModal && (
-                <Animated.View
-                  style={[
-                    StyleSheet.absoluteFillObject,
-                    {
-                      backgroundColor: isDark ? 'rgba(0, 0, 0, 0.92)' : 'rgba(242, 242, 247, 0.95)',
-                      paddingTop: Math.max(insets.top, 12),
-                      paddingBottom: Math.max(insets.bottom, 12),
-                      borderRadius: 36,
-                      overflow: 'hidden',
-                      zIndex: 200,
-                      opacity: previewAnim,
-                      transform: [
-                        {
-                          translateY: previewAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [150, 0],
-                          }),
-                        },
-                        {
-                          scale: previewAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0.94, 1],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                >
-                  {/* TOP HEADER BAR INSIDE OVERLAY: EXACT 1:1 OVERLAP WITH CHAT DRAWER HEADER ROW */}
-                  <View style={styles.headerRow}>
-                    {/* LEFT CLOSE CROSS BUTTON (EXACT MATCH FOR BACK CHEVRON BUTTON POSITION) */}
-                    <LiquidGlassIconButton
-                      idPrefix="btnClosePreviewOverlay"
-                      isDark={isDark}
-                      onPress={closePreviewModal}
-                    >
-                      <Ionicons name="close" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
-                    </LiquidGlassIconButton>
-
-                    {/* CENTER VLOG PILL (EXACT MATCH FOR CHAT DRAWER CENTER VLOG PILL) */}
-                    <View style={styles.vlogCenterPillWrapper} pointerEvents="box-none">
-                      <View
-                        style={[
-                          styles.vlogLiquidPillBtn,
-                          {
-                            backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
-                            borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                          },
-                        ]}
-                      >
-                        <BlurView
-                          intensity={35}
-                          tint={isDark ? 'dark' : 'light'}
-                          style={StyleSheet.absoluteFill}
+                      {Boolean(activeThumbUri) ? (
+                        <Image
+                          source={{ uri: activeThumbUri! }}
+                          style={
+                            activePal?.needsRotation || isSideways
+                              ? {
+                                  width: 86,
+                                  height: 146,
+                                  transform: [{ rotate: '90deg' }],
+                                }
+                              : StyleSheet.absoluteFill
+                          }
+                          resizeMode="cover"
                         />
-                        <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>Vlog</Text>
-                      </View>
-                    </View>
-
-                    {/* BALANCING SPACER */}
-                    <View style={{ width: 44 }} />
-                  </View>
-
-                  {/* CENTER 16:9 VIDEO PREVIEW CARD BOX (STRICT GUARDED) */}
-                  {activePal && resolvedActiveVideoUri ? (
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                      <View
-                        style={{
-                          width: screenWidth - 32,
-                          height: (screenWidth - 32) * (9 / 16),
-                          borderRadius: 28,
-                          overflow: 'hidden',
-                          position: 'relative',
-                          backgroundColor: '#000000',
-                          shadowColor: '#000000',
-                          shadowOffset: { width: 0, height: 8 },
-                          shadowOpacity: 0.4,
-                          shadowRadius: 16,
-                          elevation: 8,
-                        }}
-                      >
+                      ) : (
                         <Video
+                          ref={thumbnailVideoRef}
                           source={{ uri: resolvedActiveVideoUri }}
-                          style={StyleSheet.absoluteFill}
-                          videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
+                          style={
+                            activePal?.needsRotation || isSideways
+                              ? { width: 86, height: 146, transform: [{ rotate: '90deg' }] }
+                              : StyleSheet.absoluteFill
+                          }
+                          videoStyle={{ width: '100%', height: '100%', borderRadius: 20 }}
                           resizeMode={ResizeMode.COVER}
                           shouldPlay={true}
                           isLooping={true}
-                          isMuted={false}
+                          isMuted={true}
+                          rate={activePal?.rate || 1.0}
+                          shouldCorrectPitch={true}
                         />
-                        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
+                      )}
+                    </TouchableOpacity>
 
-                        {/* TOP-LEFT USER BADGE (EXACT MATCH FOR VLOGSHEET POSITION & SIZE) */}
-                        <View style={{ position: 'absolute', top: 10, left: 14.5, flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 20 }}>
-                          <View
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 12,
-                              backgroundColor: activePal?.sender?.themeColor || edgeColor,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              overflow: 'hidden',
-                            }}
-                          >
-                            {activePal?.sender?.avatarUri ? (
-                              <Image
-                                source={{ uri: activePal?.sender?.avatarUri }}
-                                style={{ width: '100%', height: '100%' }}
-                                resizeMode="cover"
-                              />
-                            ) : (
-                              <Image
-                                source={require('../../assets/images/capture_smile.png')}
-                                style={{ width: 23, height: 23 }}
-                                resizeMode="contain"
-                              />
-                            )}
-                          </View>
-                          
-                          <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedMedium, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
-                            {activePal?.sender?.username || username}
-                          </Text>
-                        </View>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        setModalVisible(false);
+                        onClose();
+                        if (onOpenVlog) onOpenVlog();
+                      }}
+                      style={{
+                        marginHorizontal: 16,
+                        height: 58,
+                        borderRadius: 24,
+                        backgroundColor: isDark ? '#1C1C1E' : '#E5E5EA',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 22,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text style={{ fontSize: 17, fontFamily: Fonts.SystemRoundedBold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                        {getDayLabel(activePal)}
+                      </Text>
+                      <Text style={{ fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold, color: edgeColor }}>
+                        view pal
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={{ flex: 1 }} />
+                )}
+              </View>
+            </TouchableWithoutFeedback>
 
-                        {/* CENTER TIME & CAPTION OVERLAY (REDUCED TIME TEXT BY 5DP: 28 -> 23) */}
+            {/* 3. BOTTOM FLOATING MESSAGE INPUT BAR WITH KEYBOARD AVOIDING */}
+            <KeyboardAvoidingView
+              behavior="padding"
+              keyboardVerticalOffset={8}
+            >
+              <View style={styles.bottomInputBarRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.smileyGlassPillBtn,
+                    {
+                      backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
+                      borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                    },
+                  ]}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    setModalVisible(false);
+                    onClose();
+                    if (onOpenCamera) onOpenCamera();
+                  }}
+                >
+                  <BlurView
+                    intensity={35}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={[styles.innerSmileyCircle, { backgroundColor: edgeColor }]}>
+                    <Animated.Image
+                      source={require('../../assets/images/custom_rotate_smiley.png')}
+                      style={[
+                        styles.smileyAvatarImg,
+                        {
+                          transform: [
+                            {
+                              rotate: smileyRotateAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '360deg'],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                <View
+                  style={[
+                    styles.messageInputPillContainer,
+                    {
+                      backgroundColor: isDark ? 'rgba(30,30,34,0.75)' : 'rgba(255,255,255,0.85)',
+                      borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                    },
+                  ]}
+                >
+                  <BlurView
+                    intensity={35}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+
+                  <TextInput
+                    style={[styles.textInputStyle, { color: textColor }]}
+                    placeholder="message"
+                    placeholderTextColor="#8E8E93"
+                    value={messageText}
+                    onChangeText={setMessageText}
+                  />
+
+                  <TouchableOpacity
+                    style={[
+                      styles.sendArrowBtn,
+                      {
+                        backgroundColor:
+                          messageText.trim().length > 0
+                            ? edgeColor
+                            : isDark
+                            ? 'rgba(255, 255, 255, 0.12)'
+                            : 'rgba(0, 0, 0, 0.08)',
+                      },
+                    ]}
+                    activeOpacity={0.75}
+                    onPress={() => setMessageText('')}
+                  >
+                    <Ionicons
+                      name="arrow-up"
+                      size={18}
+                      color={messageText.trim().length > 0 ? '#000000' : isDark ? '#8E8E93' : '#666666'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+
+            {/* FULL-SCREEN VIDEO PREVIEW OVERLAY */}
+            {previewVideoModal && (
+              <Animated.View
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.92)' : 'rgba(242, 242, 247, 0.95)',
+                    paddingTop: Math.max(insets.top, 12),
+                    paddingBottom: Math.max(insets.bottom, 12),
+                    borderRadius: 36,
+                    overflow: 'hidden',
+                    zIndex: 200,
+                    opacity: previewAnim,
+                    transform: [
+                      {
+                        translateY: previewAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [150, 0],
+                        }),
+                      },
+                      {
+                        scale: previewAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.94, 1],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View style={styles.headerRow}>
+                  <LiquidGlassIconButton
+                    idPrefix="btnClosePreviewOverlay"
+                    isDark={isDark}
+                    onPress={closePreviewModal}
+                  >
+                    <Ionicons name="close" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+                  </LiquidGlassIconButton>
+
+                  <View style={styles.vlogCenterPillWrapper} pointerEvents="box-none">
+                    <View style={styles.vlogLiquidPillBtn}>
+                      <BlurView
+                        intensity={35}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Svg width={96} height={44} style={StyleSheet.absoluteFill}>
+                        <Defs>
+                          <LinearGradient id="vlogOverlayPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop
+                              offset="0%"
+                              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                              stopOpacity={isDark ? 0.75 : 0.88}
+                            />
+                            <Stop
+                              offset="50%"
+                              stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                              stopOpacity={isDark ? 0.6 : 0.75}
+                            />
+                            <Stop
+                              offset="100%"
+                              stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                              stopOpacity={isDark ? 0.85 : 0.65}
+                            />
+                          </LinearGradient>
+                          <LinearGradient id="vlogOverlayPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop
+                              offset="0%"
+                              stopColor="#FFFFFF"
+                              stopOpacity={isDark ? 0.35 : 0.95}
+                            />
+                            <Stop
+                              offset="100%"
+                              stopColor={isDark ? '#FFFFFF' : '#000000'}
+                              stopOpacity={isDark ? 0.08 : 0.08}
+                            />
+                          </LinearGradient>
+                        </Defs>
+                        <Rect
+                          x="0.75"
+                          y="0.75"
+                          width="94.5"
+                          height="42.5"
+                          rx="21.25"
+                          fill="url(#vlogOverlayPillGrad)"
+                          stroke="url(#vlogOverlayPillBdr)"
+                          strokeWidth="1.5"
+                        />
+                      </Svg>
+                      <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000' }]}>Vlog</Text>
+                    </View>
+                  </View>
+
+                  <View style={{ width: 44 }} />
+                </View>
+
+                {activePal && resolvedActiveVideoUri ? (
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <View
+                      style={{
+                        width: screenWidth - 32,
+                        height: (screenWidth - 32) * (9 / 16),
+                        borderRadius: 28,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#000000',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 8 },
+                        shadowOpacity: 0.4,
+                        shadowRadius: 16,
+                        elevation: 8,
+                      }}
+                    >
+                      <Video
+                        source={{ uri: resolvedActiveVideoUri }}
+                        style={StyleSheet.absoluteFill}
+                        videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={true}
+                        isLooping={true}
+                        isMuted={false}
+                      />
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.20)' }]} pointerEvents="none" />
+
+                      <View style={{ position: 'absolute', top: 10, left: 14.5, flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 20 }}>
                         <View
                           style={{
-                            ...StyleSheet.absoluteFillObject,
+                            width: 24,
+                            height: 24,
+                            borderRadius: 12,
+                            backgroundColor: activePal?.sender?.themeColor || edgeColor,
                             justifyContent: 'center',
                             alignItems: 'center',
-                            zIndex: 20,
+                            overflow: 'hidden',
                           }}
-                          pointerEvents="none"
                         >
-                          <Text style={{ fontSize: 23, fontFamily: Fonts.DelaGothicOne, color: '#FFFFFF', textAlign: 'center', textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>
-                            {getNearestHourText(activePal?.timestamp || activePal?.createdAt)}
-                          </Text>
-
-                          {Boolean(activePal?.caption) && (
-                            <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF', textAlign: 'center', marginTop: 4, textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>
-                              {activePal?.caption}
-                            </Text>
+                          {activePal?.sender?.avatarUri ? (
+                            <Image
+                              source={{ uri: activePal?.sender?.avatarUri }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <Image
+                              source={require('../../assets/images/capture_smile.png')}
+                              style={{ width: 23, height: 23 }}
+                              resizeMode="contain"
+                            />
                           )}
                         </View>
+                        
+                        <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedMedium, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
+                          {activePal?.sender?.username || username}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={{
+                          ...StyleSheet.absoluteFillObject,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          zIndex: 20,
+                        }}
+                        pointerEvents="none"
+                      >
+                        <Text style={{ fontSize: 23, fontFamily: Fonts.DelaGothicOne, color: '#FFFFFF', textAlign: 'center', textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 }}>
+                          {getNearestHourText(activePal?.timestamp || activePal?.createdAt)}
+                        </Text>
+
+                        {Boolean(activePal?.caption) && (
+                          <Text style={{ fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold, color: '#FFFFFF', textAlign: 'center', marginTop: 4, textShadowColor: 'rgba(0, 0, 0, 0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>
+                            {activePal?.caption}
+                          </Text>
+                        )}
                       </View>
                     </View>
-                  ) : null}
-                </Animated.View>
-              )}
-            </View>
-          </DynamicGlowContainer>
-        </Animated.View>
-      </View>
-    </Modal>
+                  </View>
+                ) : null}
+              </Animated.View>
+            )}
+          </View>
+        </DynamicGlowContainer>
+      </Animated.View>
+    </View>
   );
 };
 
@@ -663,34 +738,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerRow: {
-    height: 52,
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    position: 'relative',
   },
   vlogCenterPillWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
-    pointerEvents: 'box-none',
+    alignItems: 'center',
   },
   vlogLiquidPillBtn: {
-    width: 80,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    overflow: 'hidden',
+    width: 96,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: Fonts.SystemRoundedSemibold,
+    fontSize: 16,
+    fontFamily: Fonts.SystemRoundedBold,
   },
   bodyContainer: {
     flex: 1,
@@ -703,51 +773,48 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   smileyGlassPillBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    overflow: 'hidden',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   innerSmileyCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 31.5,
+    height: 31.5,
+    borderRadius: 15.75,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   smileyAvatarImg: {
-    width: 30.8,
-    height: 30.8,
-    tintColor: '#000000',
+    width: 30.5,
+    height: 30.5,
     resizeMode: 'contain',
   },
   messageInputPillContainer: {
     flex: 1,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 16,
+    paddingLeft: 18,
     paddingRight: 6,
-    position: 'relative',
+    overflow: 'hidden',
   },
   textInputStyle: {
     flex: 1,
-    fontSize: 17,
-    fontFamily: Fonts.SystemRounded,
+    fontSize: 16,
+    fontFamily: Fonts.SystemRoundedMedium,
     paddingVertical: 0,
-    paddingRight: 8,
   },
   sendArrowBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

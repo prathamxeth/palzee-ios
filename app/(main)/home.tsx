@@ -26,6 +26,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { getNearestHourText, generateVideoThumbnail } from '../../utils/mediaUtils';
@@ -541,55 +543,58 @@ export default function HomeScreen({
   }, []);
 
   const handleVideoSent = async (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
-    console.log('🎥 [handleVideoSent] Triggered with URI:', uri);
+    console.log('🎥 [handleVideoSent] Processing video:', uri);
+
+    let permanentUri = uri;
+    let thumbnailUri = '';
+
+    try {
+      // 1. Copy video to permanent Documents directory
+      const fileName = `vlog_${Date.now()}.mov`;
+      const destPath = `${FileSystem.documentDirectory}${fileName}`;
+      await FileSystem.copyAsync({ from: uri, to: destPath });
+      permanentUri = destPath;
+      console.log('💾 Permanent Video Saved:', permanentUri);
+
+      // 2. Extract thumbnail using the newly installed package
+      const thumbResult = await VideoThumbnails.getThumbnailAsync(permanentUri, {
+        time: 100,
+        quality: 0.85,
+      });
+
+      if (thumbResult?.uri) {
+        thumbnailUri = thumbResult.uri;
+        console.log('✅ THUMBNAIL CREATED:', thumbnailUri);
+      }
+    } catch (err) {
+      console.error('Thumbnail generation error:', err);
+    }
+
     const now = new Date();
     let hours = now.getHours();
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
     hours = hours ? hours : 12;
-    const timestamp = `${hours}:${minutes} ${ampm}`;
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
 
-    let thumbnailUri = '';
-    let needsRotation = false;
-    try {
-      console.log('⏳ Generating 1st frame thumbnail...');
-      const thumb = await generateVideoThumbnail(uri);
-      if (thumb) {
-        thumbnailUri = thumb;
-        console.log('✅ Thumbnail Generated Successfully:', thumbnailUri);
+    const isPortrait = mode === 'portrait' || mode === 'vertical' || mode === 'off';
 
-        await new Promise((resolve) => {
-          Image.getSize(
-            thumb,
-            (w, h) => {
-              if (w > h && mode !== 'landscape') {
-                needsRotation = true;
-              }
-              resolve(true);
-            },
-            () => resolve(false)
-          );
-        });
-      }
-    } catch (e) {
-      console.error('❌ Native Thumbnail Generation Error:', e);
-    }
-
+    // 3. Payload with guaranteed thumbnailUri
     const newLog = {
       id: Date.now().toString(),
-      uri,
-      thumbnailUri,
-      needsRotation,
+      uri: permanentUri,
+      thumbnailUri: thumbnailUri || '',
+      needsRotation: isPortrait,
       caption: caption || '',
       timestamp: now.toISOString(),
-      displayTime: timestamp,
+      displayTime: formattedTime,
       isMuted: isMuted ?? false,
       rate: rate || 1.0,
       mode: mode || 'off',
     };
 
-    console.log('📦 New Vlog Payload:', newLog);
+    console.log('📦 Vlog State Saved:', newLog);
 
     setVlogList((prev) => [newLog, ...prev]);
     setHomeVlogIndex(0);
