@@ -1,1 +1,35 @@
-node_modules
+# Dependencies
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Expo / React Native
+.env
+.env*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# macOS System & Media Assets
+.DS_Store
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.mov
+
+# iOS Native Build Files & Xcode DerivedData
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/
+ios/.xcode.env.local
+
+# Android (if added in future)
+android/app/build/
+android/.gradle/
+android/local.properties
