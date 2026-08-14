@@ -31,7 +31,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { getNearestHourText, generateVideoThumbnail } from '../../utils/mediaUtils';
+import { getNearestHourText, generateVideoThumbnail, getLiveSandboxUri } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
@@ -515,7 +515,7 @@ export default function HomeScreen({
   >([]);
 
   useEffect(() => {
-    AsyncStorage.getItem('@palzee_vlog_list').then((cached) => {
+    AsyncStorage.getItem('@palzee_vlog_list').then(async (cached) => {
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
@@ -531,7 +531,27 @@ export default function HomeScreen({
               const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
               return diffDays >= 0 && diffDays < 7;
             });
-            setVlogList(valid7DayList);
+
+            // Sanitize URIs and verify file existence on disk
+            const existingClips: any[] = [];
+            for (const item of valid7DayList) {
+              const liveUri = getLiveSandboxUri(item.uri);
+              try {
+                const info = await FileSystem.getInfoAsync(liveUri);
+                if (info && info.exists) {
+                  existingClips.push({
+                    ...item,
+                    uri: liveUri,
+                    thumbnailUri: item.thumbnailUri ? getLiveSandboxUri(item.thumbnailUri) : '',
+                  });
+                }
+              } catch (e) {}
+            }
+
+            setVlogList(existingClips);
+            if (existingClips.length !== parsed.length) {
+              AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(existingClips));
+            }
           }
         } catch (e) {}
       }
@@ -642,12 +662,32 @@ export default function HomeScreen({
     setActiveTab('pals');
   };
 
-  const handleDeleteVideo = (targetId?: string) => {
+  const handleDeleteVideo = async (targetId?: string) => {
+    let updatedList: typeof vlogList = [];
     if (targetId) {
-      setVlogList((prev) => prev.filter((item) => item.id !== targetId));
+      const targetClip = vlogList.find((item) => item.id === targetId);
+      if (targetClip) {
+        if (targetClip.uri) {
+          try { await FileSystem.deleteAsync(getLiveSandboxUri(targetClip.uri), { idempotent: true }); } catch (e) {}
+        }
+        if (targetClip.thumbnailUri) {
+          try { await FileSystem.deleteAsync(getLiveSandboxUri(targetClip.thumbnailUri), { idempotent: true }); } catch (e) {}
+        }
+      }
+      updatedList = vlogList.filter((item) => item.id !== targetId);
     } else {
-      setVlogList([]);
+      for (const item of vlogList) {
+        if (item.uri) {
+          try { await FileSystem.deleteAsync(getLiveSandboxUri(item.uri), { idempotent: true }); } catch (e) {}
+        }
+        if (item.thumbnailUri) {
+          try { await FileSystem.deleteAsync(getLiveSandboxUri(item.thumbnailUri), { idempotent: true }); } catch (e) {}
+        }
+      }
+      updatedList = [];
     }
+    setVlogList(updatedList);
+    AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updatedList));
     setHomeVlogIndex(0);
     setHomeVlogProgress(0);
     setShowExportSheet(false);

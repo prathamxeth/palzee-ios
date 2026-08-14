@@ -88,31 +88,34 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const processAndSaveVideo = async (): Promise<string> => {
     if (!currentClip || !currentClip.uri) return '';
 
-    const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
-    const outputUri = `${cacheDir}collection_export.mp4`;
+    const TargetExporter = NativeModules.VideoExporter;
 
-    const TargetExporter = NativeModules.VideoExporter || VideoExporter;
-    try {
-      if (TargetExporter && TargetExporter.exportPortraitVideo) {
-        const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
-        const exportedUri = await TargetExporter.exportPortraitVideo(
-          currentClip.uri,
-          currentClip.caption || '',
-          formattedTimeText || '7:26 PM'
-        );
-        return exportedUri;
-      }
-    } catch (nativeErr) {
-      console.log('Native VideoExporter error:', nativeErr);
+    if (TargetExporter && TargetExporter.exportPortraitVideoWithCaption) {
+      const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
+      const exportedUri = await TargetExporter.exportPortraitVideoWithCaption(
+        currentClip.uri,
+        currentClip.caption || '',
+        formattedTimeText || '7:26 PM'
+      );
+      return exportedUri;
+    } else if (TargetExporter && TargetExporter.exportPortraitVideo) {
+      const formattedTimeText = formatExportTime(currentClip.timestamp, (currentClip as any).displayTime);
+      const exportedUri = await TargetExporter.exportPortraitVideo(
+        currentClip.uri,
+        currentClip.caption || '',
+        formattedTimeText || '7:26 PM'
+      );
+      return exportedUri;
     }
 
+    const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
+    const outputUri = `${cacheDir}collection_export.mp4`;
     try {
       await FileSystem.copyAsync({
         from: currentClip.uri,
         to: outputUri,
       });
     } catch (copyErr) {}
-
     return outputUri;
   };
 

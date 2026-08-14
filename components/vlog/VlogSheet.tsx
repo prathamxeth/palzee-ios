@@ -89,6 +89,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
   const [showVlogDropdown, setShowVlogDropdown] = useState(false);
   const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [show0Logs, setShow0Logs] = useState(false);
@@ -98,7 +99,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
 
   const rawList = vlogList && vlogList.length > 0 ? vlogList : (activeVideoUri ? [{ id: 'default', uri: activeVideoUri, caption, timestamp, isMuted }] : []);
-  const list = [...rawList].reverse();
+  const list = rawList;
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
   const currentUri = currentClip ? currentClip.uri : activeVideoUri;
   const currentCaption = currentClip ? (currentClip.caption || '') : caption;
@@ -113,6 +114,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       setShowExportModal(Boolean(initialOpenExport));
       setShowVlogDropdown(false);
       setShowEditCaptionBox(false);
+      setShowOptionsMenu(false);
       setShowDeleteDialog(false);
       setIsEditingCaption(false);
       if (!vlogList || vlogList.length === 0) {
@@ -446,16 +448,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </View>
                   <Text style={styles.userNameText}>{username}</Text>
                 </View>
-
-                {!!currentUri && (
-                  <TouchableOpacity
-                    style={styles.threeDotsBtn}
-                    activeOpacity={0.7}
-                    onPress={() => setShowEditCaptionBox(true)}
-                  >
-                    <Ionicons name="ellipsis-horizontal" size={20} color="#FFFFFF" />
-                  </TouchableOpacity>
-                )}
               </View>
 
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
@@ -486,6 +478,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   </View>
                 )}
               </View>
+
+              {/* BOTTOM RIGHT TRIPLE DOT BUTTON (PLAIN ICON, NO PILL BG) */}
+              {!!currentUri && (
+                <TouchableOpacity
+                  style={styles.cardBottomRightDots}
+                  activeOpacity={0.7}
+                  onPress={() => setShowOptionsMenu(true)}
+                >
+                  <Ionicons name="ellipsis-horizontal" size={22} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
             </View>
           </TouchableOpacity>
 
@@ -497,6 +500,118 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             onDeleteVideo={onDeleteVideo}
             onUpdateCaption={onUpdateCaption}
           />
+
+          {/* TRIPLE DOT 3-OPTIONS MENU POPUP SHEET (FLOATING ABOVE CARD BOTTOM BOUNDARY) */}
+          <Modal
+            visible={showOptionsMenu}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowOptionsMenu(false)}
+          >
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-end',
+                paddingBottom: 282.5,
+                paddingRight: 9,
+              }}
+              activeOpacity={1}
+              onPress={() => setShowOptionsMenu(false)}
+            >
+              <View
+                style={{
+                  width: 190,
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  borderWidth: 1.5,
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.95)',
+                  backgroundColor: isDark ? 'rgba(30, 30, 34, 0.82)' : 'rgba(255, 255, 255, 0.88)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 10,
+                }}
+              >
+                <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                <Svg width={190} height={120} style={StyleSheet.absoluteFill}>
+                  <Defs>
+                    <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
+                      <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0" y="0" width="190" height="120" rx="20" fill="url(#optionsPillGrad)" />
+                </Svg>
+
+                {/* 1. Edit Caption */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    gap: 10,
+                  }}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setShowOptionsMenu(false);
+                    setShowEditCaptionBox(true);
+                  }}
+                >
+                  <Ionicons name="create-outline" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
+                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                    edit caption
+                  </Text>
+                </TouchableOpacity>
+
+                {/* 2. Save & Export */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    gap: 10,
+                  }}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setShowOptionsMenu(false);
+                    setShowExportModal(true);
+                  }}
+                >
+                  <Ionicons name="share-outline" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
+                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                    save & export
+                  </Text>
+                </TouchableOpacity>
+
+                {/* 3. Delete Vlog */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    gap: 10,
+                  }}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setShowOptionsMenu(false);
+                    setShowDeleteDialog(true);
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                  <Text style={{ fontSize: 14, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                    delete vlog
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
 
           <ChatDrawer
             visible={showChatDrawer}
@@ -636,8 +751,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.SystemRoundedMedium,
   },
-  threeDotsBtn: {
+  cardBottomRightDots: {
+    position: 'absolute',
+    bottom: 14,
+    right: 16,
     padding: 6,
+    zIndex: 20,
   },
   cardMiddleRow: {
     position: 'absolute',

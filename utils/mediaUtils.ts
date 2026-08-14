@@ -22,6 +22,18 @@ try {
 const thumbnailCache = new Map<string, string>();
 
 /**
+ * Dynamic iOS Sandbox Container GUID Resolver
+ * Fixes "attempted to load an asset that doesn't exist" across app re-installs/re-builds.
+ */
+export const getLiveSandboxUri = (storedUri?: string): string => {
+  if (!storedUri) return '';
+  if (!storedUri.includes('/Documents/')) return storedUri;
+  const fileName = storedUri.split('/Documents/').pop();
+  if (!fileName || !FileSystem || !FileSystem.documentDirectory) return storedUri;
+  return `${FileSystem.documentDirectory}${fileName}`;
+};
+
+/**
  * Extracts the 1st frame (time: 100ms keyframe) from a video URI with caching.
  */
 export const generateVideoThumbnail = async (videoUri: string): Promise<string | null> => {

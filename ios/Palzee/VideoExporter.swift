@@ -10,14 +10,18 @@ class VideoExporter: NSObject {
     return false
   }
 
-  @objc(exportPortraitVideo:caption:timestamp:resolver:rejecter:)
-  func exportPortraitVideo(_ inputPath: String, caption: String, timestamp: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    let cleanPath = inputPath.replacingOccurrences(of: "file://", with: "")
+  @objc(exportPortraitVideoWithCaption:caption:timestamp:resolver:rejecter:)
+  func exportPortraitVideoWithCaption(_ inputPath: String, caption: String, timestamp: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    var cleanPath = inputPath.replacingOccurrences(of: "file://", with: "")
+    if let decoded = cleanPath.removingPercentEncoding {
+      cleanPath = decoded
+    }
+    
     let inputURL = URL(fileURLWithPath: cleanPath)
     let asset = AVAsset(url: inputURL)
     
     guard let videoTrack = asset.tracks(withMediaType: .video).first else {
-      reject("ERR_NO_VIDEO", "No video track found", nil)
+      reject("ERR_NO_VIDEO", "No video track found at path: \(cleanPath)", nil)
       return
     }
     
@@ -39,11 +43,13 @@ class VideoExporter: NSObject {
       return
     }
     
-    // Output Canvas Geometry: 9:16 Native Portrait (1080x1920)
+    // 9:16 Full Screen Canvas (1080x1920px)
     let renderSize = CGSize(width: 1080, height: 1920)
+    
+    // Centered 16:9 Card Container Box (1080x607.5px, Y=656.25px)
     let boxWidth: CGFloat = 1080.0
     let boxHeight: CGFloat = 607.5 // (1080 * 9 / 16)
-    let boxYOffset: CGFloat = (1920.0 - boxHeight) / 2.0 // 656.25px (Centered vertically in 9:16 canvas)
+    let boxYOffset: CGFloat = (1920.0 - boxHeight) / 2.0 // 656.25px (Centered vertically)
 
     let videoComposition = AVMutableVideoComposition()
     videoComposition.renderSize = renderSize
@@ -57,33 +63,52 @@ class VideoExporter: NSObject {
     let transform = videoTrack.preferredTransform
     let naturalSize = videoTrack.naturalSize
     let transformedRect = CGRect(origin: .zero, size: naturalSize).applying(transform)
-    let videoWidth = max(abs(transformedRect.width), 1)
-    let videoHeight = max(abs(transformedRect.height), 1)
+    let orientWidth = max(abs(transformedRect.width), 1)
+    let orientHeight = max(abs(transformedRect.height), 1)
     
-    let scaleX = boxWidth / videoWidth
-    let scaleY = boxHeight / videoHeight
-    let scale = max(scaleX, scaleY)
+    let isPortraitInput = orientHeight > orientWidth
     
-    var finalTransform = transform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
-    if transformedRect.origin.x < 0 {
-      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: boxWidth, y: 0))
+    var finalTransform = transform
+    
+    if isPortraitInput {
+      // 1. Rotate 270 degrees counter-clockwise matching VlogSheet.tsx rotate: '270deg' logic
+      let rot270 = CGAffineTransform(rotationAngle: 3.0 * .pi / 2.0)
+      finalTransform = finalTransform.concatenating(rot270)
+      
+      let rotBounds = CGRect(origin: .zero, size: naturalSize).applying(finalTransform)
+      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: -rotBounds.origin.x, y: -rotBounds.origin.y))
+      
+      let rotW = max(rotBounds.width, 1)
+      let rotH = max(rotBounds.height, 1)
+      let scale = max(boxWidth / rotW, boxHeight / rotH)
+      finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
+      
+      let fitW = rotW * scale
+      let fitH = rotH * scale
+      let offX = (boxWidth - fitW) / 2.0
+      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
+      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
+    } else {
+      if transformedRect.origin.x < 0 {
+        finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: orientWidth, y: 0))
+      }
+      if transformedRect.origin.y < 0 {
+        finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: orientHeight))
+      }
+      let scale = max(boxWidth / orientWidth, boxHeight / orientHeight)
+      finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: scale, y: scale))
+      let fitW = orientWidth * scale
+      let fitH = orientHeight * scale
+      let offX = (boxWidth - fitW) / 2.0
+      let offY = (boxHeight - fitH) / 2.0 + boxYOffset
+      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offX, y: offY))
     }
-    if transformedRect.origin.y < 0 {
-      finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: 0, y: boxHeight))
-    }
-    
-    let clipWidth = videoWidth * scale
-    let clipHeight = videoHeight * scale
-    let offsetX = (boxWidth - clipWidth) / 2.0
-    let offsetY = (boxHeight - clipHeight) / 2.0 + boxYOffset
-    
-    finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: offsetX, y: offsetY))
     
     layerInstruction.setTransform(finalTransform, at: .zero)
     instruction.layerInstructions = [layerInstruction]
     videoComposition.instructions = [instruction]
     
-    // Parent CALayer (1080x1920 Portrait Canvas with Black Letterbox Fill)
+    // Parent CALayer (1080x1920 Portrait Canvas with Solid Black Letterbox Margins)
     let parentLayer = CALayer()
     parentLayer.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
     parentLayer.backgroundColor = UIColor.black.cgColor
@@ -92,55 +117,55 @@ class VideoExporter: NSObject {
     videoLayer.frame = CGRect(x: 0, y: boxYOffset, width: boxWidth, height: boxHeight)
     parentLayer.addSublayer(videoLayer)
     
-    // Center Overlay Y Midpoint (In CoreAnimation, Y=0 is bottom: 656.25 + 303.75 = 960)
+    // Center Overlay Y Midpoint (In CoreAnimation, Y=0 is bottom: 656.25 + 303.75 = 960px)
     let overlayCenterY: CGFloat = 960.0
     
-    // Overlay 1: "vlog" title (Left aligned)
+    // Overlay 1: "vlog" title (Left aligned, 44pt text matching VlogSheet ratio)
     let vlogLayer = CATextLayer()
     vlogLayer.string = "vlog"
-    vlogLayer.font = UIFont.systemFont(ofSize: 42, weight: .bold)
-    vlogLayer.fontSize = 42
+    vlogLayer.font = UIFont.systemFont(ofSize: 44, weight: .bold)
+    vlogLayer.fontSize = 44
     vlogLayer.foregroundColor = UIColor.white.cgColor
     vlogLayer.alignmentMode = .left
     vlogLayer.shadowColor = UIColor.black.cgColor
-    vlogLayer.shadowOpacity = 0.8
+    vlogLayer.shadowOpacity = 0.85
     vlogLayer.shadowRadius = 4
     vlogLayer.shadowOffset = CGSize(width: 0, height: 2)
-    vlogLayer.frame = CGRect(x: 40, y: overlayCenterY - 26, width: 200, height: 52)
+    vlogLayer.frame = CGRect(x: 50, y: overlayCenterY - 26, width: 220, height: 52)
     vlogLayer.contentsScale = 2.0
     parentLayer.addSublayer(vlogLayer)
     
-    // Overlay 2: Caption (Center aligned)
+    // Overlay 2: Caption (Center aligned, 48pt text matching VlogSheet ratio)
     if !caption.isEmpty {
       let captionLayer = CATextLayer()
       captionLayer.string = caption
-      captionLayer.font = UIFont.systemFont(ofSize: 34, weight: .bold)
-      captionLayer.fontSize = 34
+      captionLayer.font = UIFont.systemFont(ofSize: 48, weight: .bold)
+      captionLayer.fontSize = 48
       captionLayer.foregroundColor = UIColor.white.cgColor
       captionLayer.alignmentMode = .center
       captionLayer.shadowColor = UIColor.black.cgColor
-      captionLayer.shadowOpacity = 0.8
+      captionLayer.shadowOpacity = 0.85
       captionLayer.shadowRadius = 4
       captionLayer.shadowOffset = CGSize(width: 0, height: 2)
       captionLayer.isWrapped = true
-      captionLayer.frame = CGRect(x: 220, y: overlayCenterY - 26, width: 640, height: 52)
+      captionLayer.frame = CGRect(x: 270, y: overlayCenterY - 28, width: 540, height: 56)
       captionLayer.contentsScale = 2.0
       parentLayer.addSublayer(captionLayer)
     }
     
-    // Overlay 3: Timestamp Text (Right aligned)
+    // Overlay 3: Timestamp Text (Right aligned, 40pt text matching VlogSheet ratio)
     if !timestamp.isEmpty {
       let timeLayer = CATextLayer()
       timeLayer.string = timestamp
-      timeLayer.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
-      timeLayer.fontSize = 32
+      timeLayer.font = UIFont.systemFont(ofSize: 40, weight: .semibold)
+      timeLayer.fontSize = 40
       timeLayer.foregroundColor = UIColor.white.cgColor
       timeLayer.alignmentMode = .right
       timeLayer.shadowColor = UIColor.black.cgColor
-      timeLayer.shadowOpacity = 0.8
+      timeLayer.shadowOpacity = 0.85
       timeLayer.shadowRadius = 4
       timeLayer.shadowOffset = CGSize(width: 0, height: 2)
-      timeLayer.frame = CGRect(x: 840, y: overlayCenterY - 26, width: 200, height: 52)
+      timeLayer.frame = CGRect(x: 820, y: overlayCenterY - 24, width: 210, height: 48)
       timeLayer.contentsScale = 2.0
       parentLayer.addSublayer(timeLayer)
     }
@@ -169,8 +194,8 @@ class VideoExporter: NSObject {
     }
   }
 
-  @objc(exportPortraitVideo:resolver:rejecter:)
+  @objc(exportPortraitVideoSimple:resolver:rejecter:)
   func exportPortraitVideoSimple(_ inputPath: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    exportPortraitVideo(inputPath, caption: "", timestamp: "", resolve: resolve, reject: reject)
+    exportPortraitVideoWithCaption(inputPath, caption: "", timestamp: "", resolve: resolve, reject: reject)
   }
 }
