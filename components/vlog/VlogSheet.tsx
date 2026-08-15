@@ -34,6 +34,7 @@ import { EditExportSheet } from './EditExportSheet';
 import { ViewingPalsInstructionModal } from './ViewingPalsInstructionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getNearestHourText, formatExactTime, getClipsForDayOffset } from '../../utils/mediaUtils';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 export interface VlogSheetProps {
   visible: boolean;
@@ -58,24 +59,23 @@ export interface VlogSheetProps {
 export const VlogSheet: React.FC<VlogSheetProps> = ({
   visible,
   onClose,
-  user,
-  selectedThemeColor = 'cyan',
-  onOpenCamera,
-  onOpenChat,
-  vlogList = [],
   activeVideoUri,
-  caption = 'Hi',
-  timestamp = '18:33',
-  isVertical = true,
+  caption = '',
+  timestamp = '',
   isMuted = false,
   onDeleteVideo,
   onUpdateCaption,
+  selectedThemeColor = 'cyan',
+  vlogList = [],
+  user,
   initialOpenExport = false,
+  onOpenCamera,
+  onOpenChat,
   selectedDayOffset = 0,
   onSelectDayOffset,
 }) => {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
+  const colorScheme = useFastColorScheme();
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth - 20;
   const cardHeight = cardWidth * (9.5 / 16) + 20;
@@ -107,7 +107,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [showExportModal, setShowExportModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
-  const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(isVertical);
+  const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(true);
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
   const [dayOffset, setDayOffset] = useState(selectedDayOffset);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -524,15 +524,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
   const logoTextColor = Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#310BED';
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="none"
-      presentationStyle="fullScreen"
-      onRequestClose={handleClose}
-    >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
-        <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
           {/* 1. TOP NAVIGATION HEADER BAR */}
           <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
             <View style={{ width: 100, height: 44, justifyContent: 'center' }}>
@@ -544,6 +540,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     onPress={handleClose}
                   >
                     <BlurView
+                      key={isDark ? 'dark' : 'light'}
                       intensity={35}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
@@ -613,6 +610,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     onPress={() => setShowVlogDropdown(!showVlogDropdown)}
                   >
                     <BlurView
+                      key={isDark ? 'dark' : 'light'}
                       intensity={35}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
@@ -793,6 +791,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       }}
                     >
                       <BlurView
+                        key={isDark ? 'dark' : 'light'}
                         intensity={30}
                         tint={isDark ? 'dark' : 'light'}
                         style={StyleSheet.absoluteFill}
@@ -947,7 +946,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   elevation: 10,
                 }}
               >
-                <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                 <Svg width={155} height={currentUri ? 125.0 : 49.0} style={StyleSheet.absoluteFill}>
                   <Defs>
@@ -1090,7 +1089,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   overflow: 'hidden',
                 }}
               >
-                <BlurView intensity={45} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={45} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                 {/* Drag Handle */}
                 <View
@@ -1229,7 +1228,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
               >
-                <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                 <Text
                   style={{
@@ -1260,7 +1259,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     activeOpacity={0.7}
                     onPress={() => setShowDeleteDialog(false)}
                   >
-                    <BlurView intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                       cancel
                     </Text>
@@ -1281,7 +1280,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     activeOpacity={0.7}
                     onPress={handleConfirmDelete}
                   >
-                    <BlurView intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
                       delete pal
                     </Text>
@@ -1291,8 +1290,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </TouchableOpacity>
           </Modal>
         </View>
-      </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 };
 

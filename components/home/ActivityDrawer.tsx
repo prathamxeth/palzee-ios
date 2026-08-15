@@ -21,6 +21,8 @@ interface ActivityDrawerProps {
   selectedThemeColor?: string;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
   visible,
   onClose,
@@ -28,21 +30,17 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
   selectedThemeColor = 'cyan',
 }) => {
   const insets = useSafeAreaInsets();
-  const systemScheme = useColorScheme();
-  const isDark = isDarkProp !== undefined ? isDarkProp : systemScheme === 'dark';
+  const systemScheme = useFastColorScheme();
+  const isDark = systemScheme === 'dark';
 
   const screenBg = isDark ? '#121212' : '#FFFFFF';
   const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
   const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
-    >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: screenBg }]}>
         <View
           style={[
             styles.container,
@@ -64,7 +62,7 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
               activeOpacity={0.8}
               onPress={onClose}
             >
-              <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+              <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
               <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
                 <Defs>
                   <LinearGradient id="actCloseBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -116,8 +114,7 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
           {/* CONTENT BODY AREA */}
           <View style={styles.bodyContainer} />
         </View>
-      </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 };
 

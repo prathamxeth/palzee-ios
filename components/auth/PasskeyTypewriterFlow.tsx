@@ -20,6 +20,7 @@ import { passkeyService } from '../../services/passkeyService';
 import { authService } from '../../services/authService';
 import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
 import { User } from '../../types';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -326,7 +327,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
     }
   };
 
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const flowBg = isDark ? '#000000' : '#F7F6F3';
   const textColor = isDark ? '#FFFFFF' : '#1A1A1A';

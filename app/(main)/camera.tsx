@@ -87,11 +87,13 @@ function CameraTimerIcon({ timerMode, iconColor }: { timerMode: TimerMode; iconC
   );
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export default function CameraScreen({ onCapture, onClose, selectedThemeColor = 'cyan' }: CameraScreenProps) {
   const { width: windowWidth } = useWindowDimensions();
   const screenWidth = windowWidth > 0 ? windowWidth : 390;
   const insets = useSafeAreaInsets();
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
 

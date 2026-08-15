@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -348,7 +349,7 @@ export default function HomeScreen({
   autoOpenCreateModal = false,
 }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const accentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#11D5F3';
@@ -2411,6 +2412,7 @@ export default function HomeScreen({
 
         {/* OVERLAY MODALS */}
         <CreatePalModal
+          key={isDark ? 'create_dark' : 'create_light'}
           visible={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateRoom}
@@ -2420,6 +2422,7 @@ export default function HomeScreen({
         />
 
         <ActivityDrawer
+          key={isDark ? 'act_dark' : 'act_light'}
           visible={showActivityDrawer}
           onClose={() => setShowActivityDrawer(false)}
           isDark={isDark}
@@ -2427,6 +2430,7 @@ export default function HomeScreen({
         />
 
         <ChatDrawer
+          key={isDark ? 'chat_dark' : 'chat_light'}
           visible={showChatDrawer}
           onClose={() => setShowChatDrawer(false)}
           onOpenVlog={() => {
@@ -2443,6 +2447,7 @@ export default function HomeScreen({
         />
 
         <VlogSheet
+          key={isDark ? 'vlog_dark' : 'vlog_light'}
           visible={showExportSheet}
           onClose={() => {
             setShowChatDrawer(false);
@@ -2470,6 +2475,7 @@ export default function HomeScreen({
         />
 
         <EditExportSheet
+          key={isDark ? 'export_dark' : 'export_light'}
           visible={showEditExportSheet}
           onClose={() => setShowEditExportSheet(false)}
           vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
@@ -2480,6 +2486,7 @@ export default function HomeScreen({
 
         {/* VIEWING PALS GUIDE OVERLAY MODAL */}
         <ViewingPalsInstructionModal
+          key={isDark ? 'guide_dark' : 'guide_light'}
           visible={showViewingPalsGuide}
           onContinue={() => setShowViewingPalsGuide(false)}
         />

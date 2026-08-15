@@ -49,6 +49,8 @@ export interface EditExportSheetProps {
   onUpdateCaption?: (newCaption: string, id?: string) => void;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   visible,
   onClose,
@@ -60,7 +62,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const screenWidth = windowWidth > 0 ? windowWidth : 390;
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
@@ -255,13 +257,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
-    >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: isDark ? '#000000' : '#F2F2F7' }]}>
         <View
           style={[
             styles.container,
@@ -518,8 +514,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
             </View>
           </View>
         </View>
-      </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 };
 

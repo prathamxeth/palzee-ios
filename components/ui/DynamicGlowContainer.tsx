@@ -11,6 +11,8 @@ interface DynamicGlowContainerProps {
   style?: ViewStyle;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   selectedThemeColor,
   showBorder = true,
@@ -18,7 +20,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   children,
   style,
 }) => {
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const containerBg = isDark ? '#000000' : Colors.PalBackground;
 

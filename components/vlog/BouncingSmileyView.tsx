@@ -21,11 +21,13 @@ export interface BouncingSmileyViewProps {
   cardHeight: number;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
   cardWidth,
   cardHeight,
 }) => {
-  const colorScheme = useColorScheme();
+  const colorScheme = useFastColorScheme();
   const isDark = colorScheme === 'dark';
 
   const smileySize = 62.5;

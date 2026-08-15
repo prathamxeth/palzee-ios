@@ -17,18 +17,20 @@ import {
   Easing,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect, Circle, Path } from 'react-native-svg';
-import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
+import { Fonts } from '../../constants/typography';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import * as MediaLibrary from 'expo-media-library';
 import { requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
-import { Alert } from 'react-native';
 
 const shouldSuppressExpoAv = (...args: any[]) => {
   try {
@@ -122,7 +124,7 @@ const LiquidGlassCircleButton = ({
     activeOpacity={0.8}
     onPress={onPress}
   >
-    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
     <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
       <Defs>
         <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -185,6 +187,7 @@ export default function PalVideoSendPreviewModal({
   onRetake,
   onSend,
 }: PalVideoSendPreviewModalProps) {
+  const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const [isMuted, setIsMuted] = useState(false);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(0);
@@ -346,7 +349,7 @@ export default function PalVideoSendPreviewModal({
     });
   };
 
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const containerBg = isDark ? '#000000' : Colors.PalBackground;
   const titleColor = isDark ? '#FFFFFF' : '#000000';
@@ -384,21 +387,14 @@ export default function PalVideoSendPreviewModal({
     transform: [],
   };
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      transparent={false}
-      supportedOrientations={['portrait']}
-      onRequestClose={handleClose}
-    >
-      <DynamicGlowContainer selectedThemeColor={selectedThemeColor} showBorder={true} showGlow={false}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: containerBg }]}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
             behavior="padding"
             style={[styles.modalContainer, { backgroundColor: containerBg }]}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: 50, paddingBottom: 20 }}>
+              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top - 46, 0), paddingBottom: 20 }}>
                 {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
@@ -707,8 +703,7 @@ export default function PalVideoSendPreviewModal({
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </Animated.View>
-      </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 }
 

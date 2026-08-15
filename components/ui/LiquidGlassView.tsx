@@ -16,13 +16,15 @@ interface LiquidGlassProps {
   enableBackgroundExtension?: boolean;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   style,
   children,
   isDark: isDarkProp,
   borderRadius = 26,
 }) => {
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = isDarkProp ?? (systemScheme === 'dark');
   return (
     <View
@@ -37,6 +39,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     >
       {/* 1. FROSTED BACKDROP BLUR MATCHING ICON BUTTONS */}
       <BlurView
+        key={isDark ? 'dark' : 'light'}
         intensity={35}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}

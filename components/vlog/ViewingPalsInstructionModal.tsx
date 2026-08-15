@@ -16,11 +16,13 @@ export interface ViewingPalsInstructionModalProps {
   onContinue: () => void;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const ViewingPalsInstructionModal: React.FC<ViewingPalsInstructionModalProps> = ({
   visible,
   onContinue,
 }) => {
-  const colorScheme = useColorScheme();
+  const colorScheme = useFastColorScheme();
   const isDark = colorScheme === 'dark';
   const { width: screenWidth } = useWindowDimensions();
 
@@ -32,7 +34,7 @@ export const ViewingPalsInstructionModal: React.FC<ViewingPalsInstructionModalPr
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent={false} animationType="fade">
+    <View style={[StyleSheet.absoluteFill, { zIndex: 99999 }]}>
       <TouchableOpacity
         style={[styles.container, { backgroundColor: bg }]}
         activeOpacity={1}
@@ -137,7 +139,7 @@ export const ViewingPalsInstructionModal: React.FC<ViewingPalsInstructionModalPr
           </View>
         </View>
       </TouchableOpacity>
-    </Modal>
+    </View>
   );
 };
 

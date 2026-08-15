@@ -15,6 +15,7 @@ import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { JoinPalModal } from './JoinPalModal';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 interface CreatePalModalProps {
   visible: boolean;
@@ -145,7 +146,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
     onClose();
   };
 
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const modalBg = isDark ? '#000000' : Colors.PalBackground;
   const textColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
@@ -162,9 +163,10 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
     );
   }
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent={false} animationType="slide">
-      <DynamicGlowContainer selectedThemeColor={themeColor} showBorder={true}>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: modalBg }]}>
         <View
           style={[
             styles.container,
@@ -393,8 +395,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
             </View>
           )}
         </View>
-      </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 };
 

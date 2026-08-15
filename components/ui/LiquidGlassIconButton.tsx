@@ -31,7 +31,7 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
       activeOpacity={0.8}
       onPress={onPress}
     >
-      <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+      <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">

@@ -18,6 +18,7 @@ import { SymbolView } from 'expo-symbols';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
@@ -53,7 +54,7 @@ export default function PalCameraPreview({
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const screenWidth = windowWidth > 0 ? windowWidth : 390;
   const screenHeight = windowHeight > 0 ? windowHeight : 844;
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
   const insets = useSafeAreaInsets();
@@ -589,7 +590,7 @@ export default function PalCameraPreview({
               style={[
                 styles.progressBarGapCentered,
                 {
-                  width: 4.15,
+                  width: 4.25,
                   top: 32,
                   bottom: 32,
                   right: -5.0,

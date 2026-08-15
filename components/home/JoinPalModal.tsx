@@ -25,6 +25,8 @@ interface JoinPalModalProps {
   onSwitchToCreate?: () => void;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const JoinPalModal: React.FC<JoinPalModalProps> = ({
   visible,
   onClose,
@@ -32,7 +34,7 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
   themeColor = 'pink',
 }) => {
   const insets = useSafeAreaInsets();
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
 
   // Screen Edge Pink Accent Color (Exact match to device border glow in screenshot)

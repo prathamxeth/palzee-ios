@@ -22,6 +22,8 @@ export interface InAppBrowserModalProps {
   accentColor?: string;
 }
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const InAppBrowserModal: React.FC<InAppBrowserModalProps> = ({
   visible,
   url,
@@ -29,7 +31,7 @@ export const InAppBrowserModal: React.FC<InAppBrowserModalProps> = ({
   onClose,
   accentColor = '#8A2BE2',
 }) => {
-  const colorScheme = useColorScheme();
+  const colorScheme = useFastColorScheme();
   const isDark = colorScheme === 'dark';
 
   if (!visible || !url) return null;

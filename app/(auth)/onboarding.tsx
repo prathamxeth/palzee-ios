@@ -18,6 +18,7 @@ import { PasskeyTypewriterFlow } from '../../components/auth/PasskeyTypewriterFl
 import { authService } from '../../services/authService';
 import { passkeyService } from '../../services/passkeyService';
 import { User } from '../../types';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 interface OnboardingProps {
   onAuthSuccess: (user: User) => void;
@@ -109,7 +110,7 @@ export default function OnboardingScreen({
     outputRange: [20, 0],
   });
 
-  const systemScheme = useColorScheme();
+  const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const onboardingBg = isDark ? '#000000' : '#FFFFF2';
   const titleColor = isDark ? '#FFFFFF' : '#000000';

@@ -61,6 +61,8 @@ export const getPalzeeCycleInfo = (ts?: string | Date | number, nowInput: Date =
   };
 };
 
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+
 export const ChatDrawer = ({
   visible,
   onClose,
@@ -68,12 +70,13 @@ export const ChatDrawer = ({
   onOpenVlog,
   palCode = 'palzee_space',
   user,
-  isDark = true,
   selectedThemeColor = 'orange',
   vlogList = [],
   activeVideoUri,
 }: any) => {
   const insets = useSafeAreaInsets();
+  const systemScheme = useFastColorScheme();
+  const isDark = systemScheme === 'dark';
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const edgeColor = (Colors?.BorderGlow as any)?.[selectedThemeColor] || '#FE9068';
   const textColor = isDark ? '#FFFFFF' : '#000000';
@@ -251,7 +254,7 @@ export const ChatDrawer = ({
 
                 <View style={styles.vlogPillWrapper} pointerEvents="box-none">
                   <View style={styles.vlogPill}>
-                    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
                       <Defs>
                         <LinearGradient id="vlogHeaderPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -387,7 +390,7 @@ export const ChatDrawer = ({
                     },
                   ]}
                 >
-                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   <Text style={[styles.viewPalDayText, { color: textColor }]}>
                     {activeCycleDayLabel}
                   </Text>
@@ -416,7 +419,7 @@ export const ChatDrawer = ({
                       if (onOpenCamera) onOpenCamera();
                     }}
                   >
-                    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <View style={[styles.smileyCircle, { backgroundColor: edgeColor }]}>
                       <Image
                         source={require('../../assets/images/custom_rotate_smiley.png')}
@@ -437,7 +440,7 @@ export const ChatDrawer = ({
                       },
                     ]}
                   >
-                    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <TextInput
                       style={[styles.input, { color: textColor }]}
                       placeholder="message"
