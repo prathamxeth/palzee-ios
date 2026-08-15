@@ -78,7 +78,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const colorScheme = useColorScheme();
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth - 20;
-  const cardHeight = cardWidth * (9 / 16);
+  const cardHeight = cardWidth * (9.5 / 16) + 20;
   const isDark = colorScheme === 'dark';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
@@ -757,7 +757,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       />
                     )}
                   </View>
-                  <Text style={styles.userNameText}>{username}</Text>
+                  <Text style={[styles.userNameText, { color: currentUri ? '#FFFFFF' : '#636366' }]}>{username}</Text>
                 </View>
               </View>
 
@@ -766,7 +766,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <>
                     <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
                     {!!currentCaption && (
-                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center', flex: 1, marginHorizontal: 8 }}>
                         {currentCaption}
                       </Text>
                     )}
@@ -797,7 +797,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         tint={isDark ? 'dark' : 'light'}
                         style={StyleSheet.absoluteFill}
                       />
-                      <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold }}>
+                      <Text style={{ color: isDark ? '#000000' : '#FFFFFF', fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold }}>
                         tap to capture
                       </Text>
                     </TouchableOpacity>
@@ -811,7 +811,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 activeOpacity={0.7}
                 onPress={() => setShowOptionsMenu(true)}
               >
-                <Ionicons name="ellipsis-horizontal" size={22} color="#FFFFFF" />
+                <Ionicons name="ellipsis-horizontal" size={29.5} color={currentUri ? '#FFFFFF' : (isDark ? '#8E8E93' : '#636366')} />
               </TouchableOpacity>
 
               {/* IN-CARD EDIT CAPTION OVERLAY WITH CENTER BLINKING CURSOR & TOP CONTROLS */}
@@ -926,7 +926,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: 'rgba(0, 0, 0, 0.45)',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-                paddingBottom: 295.0,
+                paddingBottom: 302.5,
                 paddingRight: 10.0,
               }}
               activeOpacity={1}
@@ -1211,12 +1211,15 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 style={{
                   width: Math.min(cardWidth * 0.88, 300),
                   borderRadius: 28,
-                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+                  overflow: 'hidden',
                   paddingHorizontal: 20,
                   paddingTop: 24,
                   paddingBottom: 20,
                   alignItems: 'center',
-                  marginTop: 55,
+                  marginTop: 32.5,
+                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.85)' : 'rgba(255, 255, 255, 0.90)',
+                  borderWidth: 1.5,
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.95)',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 10 },
                   shadowOpacity: 0.35,
@@ -1226,6 +1229,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
               >
+                <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
                 <Text
                   style={{
                     fontSize: 16,
@@ -1236,7 +1241,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     marginBottom: 20,
                   }}
                 >
-                  are you sure you want to delete this log permanently?
+                  are you sure you want to delete this pal completely?
                 </Text>
 
                 <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
@@ -1245,13 +1250,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       flex: 1,
                       height: 46,
                       borderRadius: 23,
-                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
-                      alignItems: 'center',
+                      overflow: 'hidden',
                       justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)',
+                      borderWidth: 1,
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.08)',
                     }}
                     activeOpacity={0.7}
                     onPress={() => setShowDeleteDialog(false)}
                   >
+                    <BlurView intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                       cancel
                     </Text>
@@ -1262,13 +1271,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       flex: 1,
                       height: 46,
                       borderRadius: 23,
-                      backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
-                      alignItems: 'center',
+                      overflow: 'hidden',
                       justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? 'rgba(255, 59, 48, 0.15)' : 'rgba(255, 59, 48, 0.10)',
+                      borderWidth: 1,
+                      borderColor: isDark ? 'rgba(255, 59, 48, 0.40)' : 'rgba(255, 59, 48, 0.35)',
                     }}
                     activeOpacity={0.7}
                     onPress={handleConfirmDelete}
                   >
+                    <BlurView intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
                       delete pal
                     </Text>
@@ -1349,7 +1362,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -55,
+    marginTop: -100,
   },
   cardOuter: {
     borderRadius: 28,
@@ -1376,9 +1389,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   avatarCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 23.0,
+    height: 23.0,
+    borderRadius: 11.5,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -1388,18 +1401,18 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   smileyIcon: {
-    width: 18,
-    height: 18,
+    width: 23.0,
+    height: 23.0,
   },
   userNameText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: '#636366',
+    fontSize: 23.0,
     fontFamily: Fonts.SystemRoundedSemibold,
   },
   cardBottomRightDots: {
     position: 'absolute',
-    bottom: 6.5,
-    right: 16,
+    bottom: 14.0,
+    right: 16.0,
     padding: 6,
     zIndex: 20,
   },
@@ -1407,8 +1420,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    top: '50%',
-    transform: [{ translateY: -12 }],
+    top: 0,
+    bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -165,8 +165,8 @@ export const ChatDrawer = ({
   );
 
   // Preview Modal Rotation Math (cardWidth x cardHeight)
-  const cardWidth = screenWidth - 32;
-  const cardHeight = (screenWidth - 32) * (9 / 16);
+  const cardWidth = screenWidth - 20;
+  const cardHeight = cardWidth * (9.5 / 16) + 20;
   const modalVideoWidth = cardHeight;
   const modalVideoHeight = cardWidth;
   const modalVideoTop = (cardHeight - modalVideoHeight) / 2;

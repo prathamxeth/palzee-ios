@@ -240,8 +240,8 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }
   };
 
-  const cardWidth = screenWidth;
-  const cardHeight = cardWidth * (9 / 16);
+  const cardWidth = screenWidth - 20;
+  const cardHeight = cardWidth * (9.5 / 16) + 20;
 
   const rotatedStyle: StyleProp<ViewStyle> = {
     position: 'absolute',
