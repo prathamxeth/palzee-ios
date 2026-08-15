@@ -343,9 +343,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     })
   ).current;
 
-  // Filter clips strictly for the active day offset
+  // Filter clips strictly for the active day offset with fallback for current day
   const dayClips = getClipsForDayOffset(vlogList, dayOffset);
-  const list = dayClips;
+  const list = dayClips.length > 0 ? dayClips : (dayOffset === 0 && vlogList.length > 0 ? vlogList : []);
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
   const currentUri = currentClip ? currentClip.uri : (dayOffset === 0 ? activeVideoUri : null);
   const currentCaption = currentClip ? (currentClip.caption || '') : (dayOffset === 0 ? caption : '');
@@ -664,8 +664,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 {Array.from({ length: list.length }).map((_, idx) => {
                   const isActive = idx === Math.min(currentVlogIndex, list.length - 1);
                   return (
-                    <View
+                    <TouchableOpacity
                       key={idx}
+                      activeOpacity={0.7}
+                      onPress={() => setCurrentVlogIndex(idx)}
                       style={{
                         width: isActive ? 24 : 22,
                         height: isActive ? 24 : 22,
@@ -688,7 +690,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         }}
                         resizeMode="contain"
                       />
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
               </View>
@@ -924,7 +926,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: 'rgba(0, 0, 0, 0.45)',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-                paddingBottom: 297.5,
+                paddingBottom: 295.0,
                 paddingRight: 10.0,
               }}
               activeOpacity={1}
@@ -947,14 +949,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               >
                 <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                <Svg width={155} height={currentUri ? 120 : 44} style={StyleSheet.absoluteFill}>
+                <Svg width={155} height={currentUri ? 125.0 : 49.0} style={StyleSheet.absoluteFill}>
                   <Defs>
                     <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                       <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
                       <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="155" height={currentUri ? 120 : 44} rx="20" fill="url(#optionsPillGrad)" />
+                  <Rect x="0" y="0" width="155" height={currentUri ? 125.0 : 49.0} rx="20" fill="url(#optionsPillGrad)" />
                 </Svg>
 
                 {/* 1. Edit Caption */}
@@ -1396,7 +1398,7 @@ const styles = StyleSheet.create({
   },
   cardBottomRightDots: {
     position: 'absolute',
-    bottom: 9,
+    bottom: 6.5,
     right: 16,
     padding: 6,
     zIndex: 20,
