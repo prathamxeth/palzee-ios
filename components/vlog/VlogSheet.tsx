@@ -303,12 +303,55 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     setDayOffset(selectedDayOffset);
   }, [selectedDayOffset, visible]);
 
-  const getDayHeaderTitle = (offset: number) => {
-    if (offset === 0) return 'vlog';
-    if (offset === 1) return 'yesterday';
+  const getAccountMaxDays = () => {
+    try {
+      const created = user?.metadata?.creationTime || user?.createdAt || (user as any)?.created_at;
+      if (created) {
+        const createdMs = new Date(created).getTime();
+        if (!isNaN(createdMs)) {
+          const days = Math.ceil((Date.now() - createdMs) / (1000 * 60 * 60 * 24));
+          return Math.max(days, 30);
+        }
+      }
+    } catch (e) {}
+    return 365;
+  };
+  const maxDayOffset = getAccountMaxDays();
+
+  const formatDatePillText = (offset: number) => {
+    if (offset === 1) return 'Yesterday';
     const d = new Date();
     d.setDate(d.getDate() - offset);
-    return d.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const day = d.getDate();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
+  const datePillOpacityAnim = useRef(new Animated.Value(0)).current;
+  const datePillTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerDatePillOverlay = () => {
+    if (datePillTimerRef.current) clearTimeout(datePillTimerRef.current);
+    datePillOpacityAnim.setValue(1);
+    datePillTimerRef.current = setTimeout(() => {
+      Animated.timing(datePillOpacityAnim, {
+        toValue: 0,
+        duration: 350,
+        useNativeDriver: true,
+      }).start();
+    }, 2000);
+  };
+
+  useEffect(() => {
+    if (visible && dayOffset > 0) {
+      triggerDatePillOverlay();
+    }
+  }, [visible, dayOffset]);
+
+  const getDayHeaderTitle = (offset: number) => {
+    return 'vlog';
   };
 
   const panResponder = useRef(
@@ -323,11 +366,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx < -30) {
-          // SWIPE LEFT -> Move to Previous Day (up to 6)
-          if (dayOffset < 6) {
+          // SWIPE LEFT -> Move to Previous Day (older, up to account creation date)
+          if (dayOffset < maxDayOffset) {
             const nextOffset = dayOffset + 1;
             setDayOffset(nextOffset);
             setCurrentVlogIndex(0);
+            triggerDatePillOverlay();
             if (onSelectDayOffset) onSelectDayOffset(nextOffset);
           }
         } else if (gestureState.dx > 30) {
@@ -336,6 +380,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             const prevOffset = dayOffset - 1;
             setDayOffset(prevOffset);
             setCurrentVlogIndex(0);
+            triggerDatePillOverlay();
             if (onSelectDayOffset) onSelectDayOffset(prevOffset);
           }
         }
@@ -343,12 +388,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     })
   ).current;
 
-  // Filter clips strictly for the active day offset with fallback for current day
+  // Filter clips strictly for the active 4 AM - 4 AM cycle day offset
   const dayClips = getClipsForDayOffset(vlogList, dayOffset);
-  const list = dayClips.length > 0 ? dayClips : (dayOffset === 0 && vlogList.length > 0 ? vlogList : []);
+  const list = dayClips;
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
-  const currentUri = currentClip ? currentClip.uri : (dayOffset === 0 ? activeVideoUri : null);
-  const currentCaption = currentClip ? (currentClip.caption || '') : (dayOffset === 0 ? caption : '');
+  const currentUri = currentClip ? currentClip.uri : null;
+  const currentCaption = currentClip ? (currentClip.caption || '') : '';
   const currentTimestamp = getNearestHourText(currentClip ? ((currentClip as any).displayTime || currentClip.timestamp) : timestamp);
   const currentIsMuted = currentClip ? (currentClip.isMuted ?? false) : isMuted;
 
@@ -419,14 +464,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           const nextOffset = dayOffset - 1;
           setDayOffset(nextOffset);
           setCurrentVlogIndex(0);
+          triggerDatePillOverlay();
           if (onSelectDayOffset) onSelectDayOffset(nextOffset);
         }
       } else if (dx > 0) {
-        // SWIPE RIGHT -> PREVIOUS DAY (away from today, up to 6)
-        if (dayOffset < 6) {
+        // SWIPE RIGHT -> PREVIOUS DAY (away from today, up to account creation date)
+        if (dayOffset < maxDayOffset) {
           const prevOffset = dayOffset + 1;
           setDayOffset(prevOffset);
           setCurrentVlogIndex(0);
+          triggerDatePillOverlay();
           if (onSelectDayOffset) onSelectDayOffset(prevOffset);
         }
       }
@@ -599,66 +646,60 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 0 ? 78.0 : 55.0 }]} pointerEvents="box-none">
-              {(() => {
-                const headerTitleText = getDayHeaderTitle(dayOffset).toLowerCase();
-                const headerPillWidth = Math.max(96, headerTitleText.length * 14 + 24);
-                return (
-                  <TouchableOpacity
-                    style={[styles.vlogLiquidPillBtn, { width: headerPillWidth }]}
-                    activeOpacity={0.8}
-                    onPress={() => setShowVlogDropdown(!showVlogDropdown)}
-                  >
-                    <BlurView
-                      key={isDark ? 'dark' : 'light'}
-                      intensity={35}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Svg width={headerPillWidth} height={45} style={StyleSheet.absoluteFill}>
-                      <Defs>
-                        <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop
-                            offset="0%"
-                            stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                            stopOpacity={isDark ? 0.75 : 0.88}
-                          />
-                          <Stop
-                            offset="50%"
-                            stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                            stopOpacity={isDark ? 0.6 : 0.75}
-                          />
-                          <Stop
-                            offset="100%"
-                            stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                            stopOpacity={isDark ? 0.85 : 0.65}
-                          />
-                        </LinearGradient>
-                        <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect
-                        x="0.75"
-                        y="0.75"
-                        width={headerPillWidth - 1.5}
-                        height="43.5"
-                        rx="21.75"
-                        fill="url(#vlogPillGrad)"
-                        stroke="url(#vlogPillBdr)"
-                        strokeWidth={1.5}
+            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 1 ? 52.5 : 50.0 }]} pointerEvents="box-none">
+              <TouchableOpacity
+                style={[styles.vlogLiquidPillBtn, { width: 110 }]}
+                activeOpacity={0.8}
+                onPress={() => setShowVlogDropdown(!showVlogDropdown)}
+              >
+                <BlurView
+                  key={isDark ? 'dark' : 'light'}
+                  intensity={35}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
+                  <Defs>
+                    <LinearGradient id="vlogPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop
+                        offset="0%"
+                        stopColor={isDark ? '#28282E' : '#FFFFFF'}
+                        stopOpacity={isDark ? 0.75 : 0.88}
                       />
-                    </Svg>
-                    <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000', textAlign: 'center' }]}>
-                      {headerTitleText}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })()}
+                      <Stop
+                        offset="50%"
+                        stopColor={isDark ? '#18181B' : '#F7F6F3'}
+                        stopOpacity={isDark ? 0.6 : 0.75}
+                      />
+                      <Stop
+                        offset="100%"
+                        stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+                        stopOpacity={isDark ? 0.85 : 0.65}
+                      />
+                    </LinearGradient>
+                    <LinearGradient id="vlogPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect
+                    x="0.75"
+                    y="0.75"
+                    width={108.5}
+                    height="43.5"
+                    rx="21.75"
+                    fill="url(#vlogPillGrad)"
+                    stroke="url(#vlogPillBdr)"
+                    strokeWidth={1.5}
+                  />
+                </Svg>
+                <Text style={[styles.vlogPillText, { color: isDark ? '#FFFFFF' : '#000000', textAlign: 'center', zIndex: 10 }]}>
+                  vlog
+                </Text>
+              </TouchableOpacity>
 
             {list.length > 0 && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 }}>
+              <View style={{ position: 'absolute', top: 51, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 {Array.from({ length: list.length }).map((_, idx) => {
                   const isActive = idx === Math.min(currentVlogIndex, list.length - 1);
                   return (
@@ -714,6 +755,43 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
+          {/* DATE OVERLAY PILL (VANISHES AFTER 2s, ADAPTS LIGHT/DARK CONSTRAINTS) */}
+          {dayOffset > 0 && (
+            <Animated.View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: Math.max(insets.top + 4, 12) + (dayOffset === 1 ? 12.5 : 15.0),
+                alignSelf: 'center',
+                zIndex: 99999,
+                opacity: datePillOpacityAnim,
+                backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF',
+                paddingHorizontal: 24.5,
+                paddingVertical: 11.5,
+                borderRadius: 24.5,
+                borderWidth: 1.2,
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)',
+                shadowColor: '#000000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: isDark ? 0.45 : 0.18,
+                shadowRadius: 10,
+                elevation: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: isDark ? '#FFFFFF' : '#000000',
+                  fontFamily: Fonts.SystemRoundedMedium,
+                  fontSize: 19.0,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}
+              >
+                {formatDatePillText(dayOffset)}
+              </Text>
+            </Animated.View>
+          )}
+
           {/* 2. MAIN 16:9 CARD VIEW CONTAINER */}
           <View
             style={styles.cardContainer}
@@ -721,7 +799,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             onTouchEnd={handleTouchEnd}
           >
             <View style={[styles.cardOuter, { width: cardWidth, height: cardHeight }]}>
-              {!!currentUri ? (
+              <CRTStaticCard isDark={isDark} width={cardWidth} height={cardHeight} borderRadius={28} showBouncingSmiley={!currentUri} />
+              {!!currentUri && (
                 <Video
                   key={currentUri}
                   source={{ uri: currentUri }}
@@ -738,8 +817,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     }
                   }}
                 />
-              ) : (
-                <CRTStaticCard isDark={isDark} width={cardWidth} height={cardHeight} borderRadius={28} showBouncingSmiley={true} />
               )}
 
               <View style={styles.cardHeaderRow} pointerEvents="box-none">
@@ -1335,8 +1412,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+    top: 0,
     alignItems: 'center',
-    marginTop: 55,
+    justifyContent: 'flex-start',
   },
   vlogLiquidPillBtn: {
     width: 110,

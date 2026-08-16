@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { StyleSheet, View, Animated, Easing } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { BouncingSmileyView } from './BouncingSmileyView';
 
 const vhsLightTexture = require('../../assets/images/vhs_static_light.png');
@@ -20,36 +21,66 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
   borderRadius = 24,
   showBouncingSmiley = false,
 }) => {
-  const noiseAnimX = useRef(new Animated.Value(0)).current;
-  const noiseAnimY = useRef(new Animated.Value(0)).current;
+  const grainX1 = useRef(new Animated.Value(0)).current;
+  const grainY1 = useRef(new Animated.Value(0)).current;
+  const grainX2 = useRef(new Animated.Value(0)).current;
+  const grainY2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Ultra smooth, fluid particle flow with cubic bezier easing
-    const particleLoop = Animated.loop(
+    // 1. Primary grain field vector (speed increased by 25%: ~720ms per step)
+    const loop1 = Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: -2.5, duration: 120, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: 2.0, duration: 120, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
+          Animated.timing(grainX1, { toValue: -6, duration: 720, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY1, { toValue: 5, duration: 720, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: 2.0, duration: 110, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: -2.5, duration: 110, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
+          Animated.timing(grainX1, { toValue: 7, duration: 780, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY1, { toValue: -6, duration: 780, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: -1.5, duration: 130, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: -1.5, duration: 130, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
+          Animated.timing(grainX1, { toValue: -4, duration: 690, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY1, { toValue: -7, duration: 690, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(noiseAnimX, { toValue: 2.5, duration: 125, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
-          Animated.timing(noiseAnimY, { toValue: 1.5, duration: 125, easing: Easing.bezier(0.4, 0.0, 0.2, 1), useNativeDriver: true }),
+          Animated.timing(grainX1, { toValue: 6, duration: 750, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY1, { toValue: 4, duration: 750, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(grainX1, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY1, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
         ]),
       ])
     );
 
-    particleLoop.start();
+    // 2. Secondary counter-phase grain field vector (creates individual independent dot movement)
+    const loop2 = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(grainX2, { toValue: 5, duration: 780, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY2, { toValue: -6, duration: 780, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(grainX2, { toValue: -7, duration: 710, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY2, { toValue: 5, duration: 710, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(grainX2, { toValue: 6, duration: 760, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY2, { toValue: 6, duration: 760, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(grainX2, { toValue: 0, duration: 730, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(grainY2, { toValue: 0, duration: 730, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+      ])
+    );
+
+    loop1.start();
+    loop2.start();
 
     return () => {
-      particleLoop.stop();
+      loop1.stop();
+      loop2.stop();
     };
   }, []);
 
@@ -57,29 +88,59 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
     <View
       style={[
         StyleSheet.absoluteFill,
-        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#121216' : '#E4E4E8' },
+        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#3A3A42' : '#F2F2F5' },
       ]}
       pointerEvents="none"
     >
-      <Animated.Image
-        source={isDark ? vhsDarkTexture : vhsLightTexture}
-        resizeMode="cover"
-        fadeDuration={0}
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            width: '115%',
-            height: '115%',
-            left: '-7.5%',
-            top: '-7.5%',
-            opacity: isDark ? 0.45 : 0.35,
-            transform: [
-              { translateX: noiseAnimX },
-              { translateY: noiseAnimY },
-            ],
-          },
-        ]}
-      />
+      {/* Primary Grain Field Layer */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: '120%',
+          height: '120%',
+          left: '-10%',
+          top: '-10%',
+          opacity: isDark ? 0.14 : 0.12,
+          transform: [
+            { translateX: grainX1 },
+            { translateY: grainY1 },
+          ],
+        }}
+      >
+        <ExpoImage
+          source={isDark ? vhsDarkTexture : vhsLightTexture}
+          contentFit="cover"
+          transition={0}
+          priority="high"
+          cachePolicy="memory"
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+
+      {/* Secondary Counter-Phase Grain Field Layer (Individual Particle Level Motion) */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: '120%',
+          height: '120%',
+          left: '-10%',
+          top: '-10%',
+          opacity: isDark ? 0.11 : 0.10,
+          transform: [
+            { translateX: grainX2 },
+            { translateY: grainY2 },
+          ],
+        }}
+      >
+        <ExpoImage
+          source={isDark ? vhsDarkTexture : vhsLightTexture}
+          contentFit="cover"
+          transition={0}
+          priority="high"
+          cachePolicy="memory"
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
 
       {showBouncingSmiley && (
         <BouncingSmileyView cardWidth={width} cardHeight={height} />

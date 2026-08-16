@@ -43,7 +43,7 @@ interface PalCameraPreviewProps {
 export default function PalCameraPreview({
   selectedThemeColor = 'cyan',
   autoTickVlog = true,
-  palCount = 1,
+  palCount = 0,
   onCaptureSuccess,
   onClose,
   timerMode = 'off',

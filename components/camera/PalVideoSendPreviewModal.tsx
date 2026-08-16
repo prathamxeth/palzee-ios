@@ -182,7 +182,7 @@ export default function PalVideoSendPreviewModal({
   playbackRate = 1.0,
   timerMode = 'off',
   userName = 'apple_user',
-  palCount = 1,
+  palCount = 0,
   palGroups = [],
   onRetake,
   onSend,
@@ -652,8 +652,8 @@ export default function PalVideoSendPreviewModal({
                       </Text>
                     </View>
 
-                    {/* Right Smiley Icon: Coloured upright if at least 1 video pal exists, uncoloured upside-down if 0 video pals */}
-                    {palCount > 0 || palGroups.length > 0 ? (
+                    {/* Right Smiley Icon: Coloured upright if at least 1 video pal exists for current day, uncoloured upside-down if 0 video pals */}
+                    {palCount > 0 ? (
                       <View
                         style={{
                           width: 24,

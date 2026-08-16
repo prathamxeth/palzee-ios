@@ -883,7 +883,7 @@ export default function HomeScreen({
             facing={cameraFacing}
             onToggleFacing={toggleFacing}
             autoTickVlog={false}
-            palCount={vlogList.length}
+            palCount={getClipsForDayOffset(vlogList, 0).length}
             onCaptureSuccess={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
           />
         </Animated.View>
@@ -988,181 +988,187 @@ export default function HomeScreen({
               </View>
 
               {/* IF VIDEO IS SENT TO VLOG: ENLARGED 16:9 VLOG CARD */}
-              {vlogList.length > 0 && !!vlogList[homeVlogIndex]?.uri ? (
-                <View style={{ width: '100%', marginBottom: 16 }}>
-                  {/* SCALED UP 16:9 VLOG CARD */}
-                  <TouchableOpacity
-                    style={{
-                      width: '100%',
-                      height: (screenWidth - 20) * (9 / 16),
-                      borderRadius: 24,
-                      overflow: 'hidden',
-                      position: 'relative',
-                      backgroundColor: '#000000',
-                      alignSelf: 'center',
-                    }}
-                    activeOpacity={0.9}
-                    onPress={() => setShowExportSheet(true)}
-                  >
-                    {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
-                    {Boolean(vlogList[homeVlogIndex]?.thumbnailUri) && (
-                      <Image
-                        source={{ uri: vlogList[homeVlogIndex]?.thumbnailUri }}
-                        style={
-                          isHomeVlogVertical
-                            ? {
-                                position: 'absolute',
-                                top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                                left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                                width: (screenWidth - 20) * (9 / 16),
-                                height: screenWidth - 20,
-                                transform: [{ rotate: '270deg' }],
-                              }
-                            : StyleSheet.absoluteFill
-                        }
-                        resizeMode="cover"
-                      />
-                    )}
-                    <Animated.View
-                      style={[
-                        StyleSheet.absoluteFillObject,
-                        { opacity: vlogFadeAnim },
-                      ]}
-                    >
-                      <Video
-                        key={vlogList[homeVlogIndex]?.id || homeVlogIndex}
-                        source={{ uri: vlogList[homeVlogIndex]?.uri || vlogList[0]?.uri }}
-                        style={
-                          isHomeVlogVertical
-                            ? {
-                                position: 'absolute',
-                                top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                                left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                                width: (screenWidth - 20) * (9 / 16),
-                                height: screenWidth - 20,
-                                transform: [{ rotate: '270deg' }],
-                              }
-                            : StyleSheet.absoluteFill
-                        }
-                        resizeMode={ResizeMode.COVER}
-                        shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
-                        isLooping={vlogList.length === 1}
-                        isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (vlogList[homeVlogIndex]?.isMuted ?? false)}
-                        rate={vlogList[homeVlogIndex]?.rate || 1.0}
-                        shouldCorrectPitch={true}
-                        progressUpdateIntervalMillis={100}
-                        onPlaybackStatusUpdate={(status) => {
-                          if (status.isLoaded) {
-                            if (status.durationMillis && status.durationMillis > 0) {
-                              const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
-                              homeProgressAnim.setValue(p);
-                            }
-                            if (status.didJustFinish) {
-                              homeProgressAnim.setValue(0);
-                              if (vlogList.length > 1) {
-                                setHomeVlogIndex((prev) => (prev + 1) % vlogList.length);
-                              }
-                            }
-                          }
-                        }}
-                        onReadyForDisplay={(event) => {
-                          if (event?.naturalSize) {
-                            const { width, height } = event.naturalSize;
-                            setIsHomeVlogVertical(height > width);
-                          }
-                          Animated.timing(vlogFadeAnim, {
-                            toValue: 1,
-                            duration: 250,
-                            useNativeDriver: true,
-                          }).start();
-                        }}
-                      />
-                    </Animated.View>
-                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
+              {(() => {
+                const todayVlogList = getClipsForDayOffset(vlogList, 0);
+                if (todayVlogList.length === 0 || !todayVlogList[homeVlogIndex]?.uri) return null;
 
-                    {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
-                    <View
+                const activeTodayClip = todayVlogList[Math.min(homeVlogIndex, todayVlogList.length - 1)];
+
+                return (
+                  <View style={{ width: '100%', marginBottom: 16 }}>
+                    {/* SCALED UP 16:9 VLOG CARD */}
+                    <TouchableOpacity
                       style={{
-                        position: 'absolute',
-                        top: 0,
-                        bottom: 0,
-                        left: 20,
-                        right: 20,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        zIndex: 10,
+                        width: '100%',
+                        height: (screenWidth - 20) * (9 / 16),
+                        borderRadius: 24,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#000000',
+                        alignSelf: 'center',
                       }}
-                      pointerEvents="none"
+                      activeOpacity={0.9}
+                      onPress={() => setShowExportSheet(true)}
                     >
-                      <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold }}>
-                        vlog
-                      </Text>
-                      {!!vlogList[homeVlogIndex]?.caption && (
-                        <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
-                          {vlogList[homeVlogIndex]?.caption}
-                        </Text>
+                      {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
+                      {Boolean(activeTodayClip?.thumbnailUri) && (
+                        <Image
+                          source={{ uri: activeTodayClip?.thumbnailUri }}
+                          style={
+                            isHomeVlogVertical
+                              ? {
+                                  position: 'absolute',
+                                  top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                                  left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                                  width: (screenWidth - 20) * (9 / 16),
+                                  height: screenWidth - 20,
+                                  transform: [{ rotate: '270deg' }],
+                                }
+                              : StyleSheet.absoluteFill
+                          }
+                          resizeMode="cover"
+                        />
                       )}
-                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
-                        {getNearestHourText(vlogList[homeVlogIndex]?.timestamp || vlogList[homeVlogIndex]?.displayTime)}
-                      </Text>
-                    </View>
+                      <Animated.View
+                        style={[
+                          StyleSheet.absoluteFillObject,
+                          { opacity: vlogFadeAnim },
+                        ]}
+                      >
+                        <Video
+                          key={activeTodayClip?.id || homeVlogIndex}
+                          source={{ uri: activeTodayClip?.uri }}
+                          style={
+                            isHomeVlogVertical
+                              ? {
+                                  position: 'absolute',
+                                  top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
+                                  left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
+                                  width: (screenWidth - 20) * (9 / 16),
+                                  height: screenWidth - 20,
+                                  transform: [{ rotate: '270deg' }],
+                                }
+                              : StyleSheet.absoluteFill
+                          }
+                          resizeMode={ResizeMode.COVER}
+                          shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
+                          isLooping={todayVlogList.length === 1}
+                          isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
+                          rate={activeTodayClip?.rate || 1.0}
+                          shouldCorrectPitch={true}
+                          progressUpdateIntervalMillis={100}
+                          onPlaybackStatusUpdate={(status) => {
+                            if (status.isLoaded) {
+                              if (status.durationMillis && status.durationMillis > 0) {
+                                const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
+                                homeProgressAnim.setValue(p);
+                              }
+                              if (status.didJustFinish) {
+                                homeProgressAnim.setValue(0);
+                                if (todayVlogList.length > 1) {
+                                  setHomeVlogIndex((prev) => (prev + 1) % todayVlogList.length);
+                                }
+                              }
+                            }
+                          }}
+                          onReadyForDisplay={(event) => {
+                            if (event?.naturalSize) {
+                              const { width, height } = event.naturalSize;
+                              setIsHomeVlogVertical(height > width);
+                            }
+                            Animated.timing(vlogFadeAnim, {
+                              toValue: 1,
+                              duration: 250,
+                              useNativeDriver: true,
+                            }).start();
+                          }}
+                        />
+                      </Animated.View>
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
-                    {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESSIVE SEEK BAR (EXACT VIDEO PLAYBACK SEEK FILL) */}
-                    {vlogList.length > 0 && (
+                      {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
                       <View
                         style={{
                           position: 'absolute',
-                          bottom: 20,
-                          alignSelf: 'center',
+                          top: 0,
+                          bottom: 0,
+                          left: 20,
+                          right: 20,
                           flexDirection: 'row',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 6,
-                          zIndex: 15,
+                          justifyContent: 'space-between',
+                          zIndex: 10,
                         }}
                         pointerEvents="none"
                       >
-                        {vlogList.map((_, index) => {
-                          const isCurrent = index === homeVlogIndex;
-                          const isPast = index < homeVlogIndex;
-                          const barWidth = vlogList.length === 1 ? 30 : 24;
-
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                width: barWidth,
-                                height: 3.5,
-                                borderRadius: 2,
-                                backgroundColor: 'rgba(255, 255, 255, 0.40)',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              <Animated.View
-                                style={{
-                                  width: isCurrent
-                                    ? homeProgressAnim.interpolate({
-                                        inputRange: [0, 1],
-                                        outputRange: ['0%', '100%'],
-                                      })
-                                    : isPast
-                                    ? '100%'
-                                    : '0%',
-                                  height: '100%',
-                                  backgroundColor: '#FFFFFF',
-                                  borderRadius: 2,
-                                }}
-                              />
-                            </View>
-                          );
-                        })}
+                        <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold }}>
+                          vlog
+                        </Text>
+                        {!!activeTodayClip?.caption && (
+                          <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                            {activeTodayClip?.caption}
+                          </Text>
+                        )}
+                        <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                          {getNearestHourText(activeTodayClip?.timestamp || activeTodayClip?.displayTime)}
+                        </Text>
                       </View>
-                    )}
 
-                    {/* BOTTOM RIGHT: SAVE BUTTON (SAVED AS ROTATED CARD VIDEO ONLY, NO TEXT OVERLAYS) */}
-                    <TouchableOpacity
-                      style={{
+                      {/* BOTTOM CENTER: HORIZONTAL SEGMENTED PROGRESSIVE SEEK BAR */}
+                      {todayVlogList.length > 0 && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            bottom: 20,
+                            alignSelf: 'center',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            zIndex: 15,
+                          }}
+                          pointerEvents="none"
+                        >
+                          {todayVlogList.map((_, index) => {
+                            const isCurrent = index === homeVlogIndex;
+                            const isPast = index < homeVlogIndex;
+                            const barWidth = todayVlogList.length === 1 ? 30 : 24;
+
+                            return (
+                              <View
+                                key={index}
+                                style={{
+                                  width: barWidth,
+                                  height: 3.5,
+                                  borderRadius: 2,
+                                  backgroundColor: 'rgba(255, 255, 255, 0.40)',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                <Animated.View
+                                  style={{
+                                    width: isCurrent
+                                      ? homeProgressAnim.interpolate({
+                                          inputRange: [0, 1],
+                                          outputRange: ['0%', '100%'],
+                                        })
+                                      : isPast
+                                      ? '100%'
+                                      : '0%',
+                                    height: '100%',
+                                    backgroundColor: '#FFFFFF',
+                                    borderRadius: 2,
+                                  }}
+                                />
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
+
+                      {/* BOTTOM RIGHT: SAVE BUTTON */}
+                      <TouchableOpacity
+                        style={{
                         position: 'absolute',
                         bottom: 12,
                         right: 14,
@@ -1187,38 +1193,41 @@ export default function HomeScreen({
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </View>
-              ) : (
-                /* DEFAULT STAR-DOODLE VLOG CARD (WHEN NO VIDEO SENT) */
-                <TouchableOpacity
-                  style={[
-                    styles.vlogCard,
-                    {
-                      width: '100%',
-                      alignSelf: 'center',
-                      backgroundColor: isDark ? '#161616' : '#EFEFEF',
-                      overflow: 'hidden',
-                      position: 'relative',
-                    },
-                  ]}
-                  activeOpacity={0.9}
-                  onPress={() => setShowExportSheet(true)}
-                >
-                  <View style={styles.vlogTextSection}>
-                    <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                      vlog
-                    </Text>
-                    <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
-                      your space. Each day runs 4am{'\n'}to 4am.
-                    </Text>
-                  </View>
+              );
+            })()}
 
-                  <Image
-                    source={require('../../assets/images/dm_star_4.png')}
-                    style={styles.starDoodleImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              )}
+            {/* DEFAULT STAR-DOODLE VLOG CARD (WHEN NO VIDEO SENT FOR TODAY'S 4 AM CYCLE) */}
+            {getClipsForDayOffset(vlogList, 0).length === 0 && (
+              <TouchableOpacity
+                style={[
+                  styles.vlogCard,
+                  {
+                    width: '100%',
+                    alignSelf: 'center',
+                    backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                    overflow: 'hidden',
+                    position: 'relative',
+                  },
+                ]}
+                activeOpacity={0.9}
+                onPress={() => setShowExportSheet(true)}
+              >
+                <View style={styles.vlogTextSection}>
+                  <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    vlog
+                  </Text>
+                  <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
+                    your space. Each day runs 4am{'\n'}to 4am.
+                  </Text>
+                </View>
+
+                <Image
+                  source={require('../../assets/images/dm_star_4.png')}
+                  style={styles.starDoodleImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
 
               {/* 2. ADDITIONAL PAL ROOM CARDS IF ANY */}
               {userPalRooms.map((room) => (

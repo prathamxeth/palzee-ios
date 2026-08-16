@@ -278,126 +278,152 @@ export const ChatDrawer = ({
 
               {/* 2. CHAT FEED & THUMBNAILS SECTION */}
               <View style={styles.feedContainer}>
-                {/* Scrollable Thumbnails Stacked Above Fixed Bottom Box */}
+                {/* Scrollable Feed: Older days move up, Newer days (today) appear below */}
                 <ScrollView
                   ref={scrollViewRef}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 8 }}
                   onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
                 >
-                  {valid7DayClips.length > 0 ? (
-                    valid7DayClips.map((clip, idx) => {
-                      const cycleInfo = getPalzeeCycleInfo(clip.timestamp);
-                      const isClipVertical = Boolean(
-                        clip.needsRotation ||
-                        clip.mode === 'portrait' ||
-                        clip.mode === 'vertical' ||
-                        clip.mode === 'off'
-                      );
+                  {(() => {
+                    // Group clips by 4 AM daily cycle diffDays
+                    const dayMap = new Map<number, { dayOffset: number; dayLabel: string; clips: any[] }>();
 
-                      const clipThumbRotatedStyle = isClipVertical
-                        ? {
-                            position: 'absolute' as const,
-                            top: (86 - 146) / 2,
-                            left: (146 - 86) / 2,
-                            width: 86,
-                            height: 146,
-                            transform: [{ rotate: '270deg' }],
-                          }
-                        : {
-                            width: 146,
-                            height: 86,
-                          };
+                    valid7DayClips.forEach((clip) => {
+                      const cycle = getPalzeeCycleInfo(clip.timestamp);
+                      if (!dayMap.has(cycle.diffDays)) {
+                        dayMap.set(cycle.diffDays, {
+                          dayOffset: cycle.diffDays,
+                          dayLabel: cycle.dayLabel,
+                          clips: [],
+                        });
+                      }
+                      dayMap.get(cycle.diffDays)!.clips.push(clip);
+                    });
 
+                    // Sort chronologically from oldest (e.g. 6, 5, 4, 3, 2, 1) down to newest (0 = Today)
+                    const sortedDayGroups = Array.from(dayMap.values()).sort((a, b) => b.dayOffset - a.dayOffset);
+
+                    if (sortedDayGroups.length === 0) {
+                      return <View style={{ flex: 1 }} />;
+                    }
+
+                    return sortedDayGroups.map((group) => {
                       return (
-                        <View key={clip.id || `vlog_clip_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 14 }}>
-                          {/* Timestamp Header Above Thumbnail: Day Text BOLD, Time Text REGULAR */}
-                          <Text style={{ alignSelf: 'center', marginBottom: 10 }}>
-                            <Text
-                              style={{
-                                fontSize: 16.5,
-                                fontFamily: Fonts.SystemRoundedBold,
-                                fontWeight: '700',
-                                color: isDark ? '#8E8E93' : '#636366',
-                              }}
-                            >
-                              {cycleInfo.dayLabel}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 16.5,
-                                fontFamily: Fonts.SystemRoundedRegular,
-                                fontWeight: '400',
-                                color: isDark ? '#8E8E93' : '#636366',
-                              }}
-                            >
-                              {` ${formatTime(clip.timestamp)}`}
-                            </Text>
-                          </Text>
+                        <View key={`day_group_${group.dayOffset}`} style={{ width: '100%', marginBottom: 16 }}>
+                          {group.clips.map((clip, idx) => {
+                            const isClipVertical = Boolean(
+                              clip.needsRotation ||
+                              clip.mode === 'portrait' ||
+                              clip.mode === 'vertical' ||
+                              clip.mode === 'off'
+                            );
 
-                          {/* Thumbnail Bubble (146 x 86px) */}
+                            const clipThumbRotatedStyle = isClipVertical
+                              ? {
+                                  position: 'absolute' as const,
+                                  top: (86 - 146) / 2,
+                                  left: (146 - 86) / 2,
+                                  width: 86,
+                                  height: 146,
+                                  transform: [{ rotate: '270deg' }],
+                                }
+                              : {
+                                  width: 146,
+                                  height: 86,
+                                };
+
+                            return (
+                              <View key={clip.id || `vlog_clip_${group.dayOffset}_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 14 }}>
+                                {/* Timestamp Header Above Thumbnail: Day Text BOLD, Time Text REGULAR */}
+                                <Text style={{ alignSelf: 'center', marginBottom: 10 }}>
+                                  <Text
+                                    style={{
+                                      fontSize: 16.5,
+                                      fontFamily: Fonts.SystemRoundedBold,
+                                      fontWeight: '700',
+                                      color: isDark ? '#8E8E93' : '#636366',
+                                    }}
+                                  >
+                                    {group.dayLabel}
+                                  </Text>
+                                  <Text
+                                    style={{
+                                      fontSize: 16.5,
+                                      fontFamily: Fonts.SystemRoundedRegular,
+                                      fontWeight: '400',
+                                      color: isDark ? '#8E8E93' : '#636366',
+                                    }}
+                                  >
+                                    {` ${formatTime(clip.timestamp)}`}
+                                  </Text>
+                                </Text>
+
+                                {/* Thumbnail Bubble (146 x 86px) */}
+                                <TouchableOpacity
+                                  activeOpacity={0.9}
+                                  onPress={() => {
+                                    setSelectedPreviewClip(clip);
+                                    setPreviewVisible(true);
+                                  }}
+                                  style={[
+                                    styles.thumbnailCard,
+                                    { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)' },
+                                  ]}
+                                >
+                                  {Boolean(clip.thumbnailUri) ? (
+                                    <Image
+                                      source={{ uri: clip.thumbnailUri }}
+                                      style={clipThumbRotatedStyle}
+                                      contentFit="cover"
+                                    />
+                                  ) : (
+                                    <Video
+                                      source={{ uri: clip.uri }}
+                                      style={clipThumbRotatedStyle}
+                                      videoStyle={isClipVertical ? { width: '100%', height: '100%' } : { width: 146, height: 86, borderRadius: 20 }}
+                                      resizeMode={ResizeMode.COVER}
+                                      shouldPlay={true}
+                                      isLooping={true}
+                                      isMuted={true}
+                                    />
+                                  )}
+                                </TouchableOpacity>
+                              </View>
+                            );
+                          })}
+
+                          {/* THAT DAY'S VIEW PAL BOX ALIGNED IN STREAM */}
                           <TouchableOpacity
-                            activeOpacity={0.9}
+                            activeOpacity={0.85}
                             onPress={() => {
-                              setSelectedPreviewClip(clip);
-                              setPreviewVisible(true);
+                              onClose();
+                              if (onOpenVlog) onOpenVlog(group.dayOffset);
                             }}
                             style={[
-                              styles.thumbnailCard,
-                              { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)' },
+                              styles.viewPalBtn,
+                              {
+                                backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(229, 229, 234, 0.75)',
+                                borderWidth: 1.2,
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                                overflow: 'hidden',
+                                marginTop: 6,
+                              },
                             ]}
                           >
-                            {Boolean(clip.thumbnailUri) ? (
-                              <Image
-                                source={{ uri: clip.thumbnailUri }}
-                                style={clipThumbRotatedStyle}
-                                contentFit="cover"
-                              />
-                            ) : (
-                              <Video
-                                source={{ uri: clip.uri }}
-                                style={clipThumbRotatedStyle}
-                                videoStyle={isClipVertical ? { width: '100%', height: '100%' } : { width: 146, height: 86, borderRadius: 20 }}
-                                resizeMode={ResizeMode.COVER}
-                                shouldPlay={true}
-                                isLooping={true}
-                                isMuted={true}
-                              />
-                            )}
+                            <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                            <Text style={[styles.viewPalDayText, { color: textColor }]}>
+                              {group.dayLabel}
+                            </Text>
+                            <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
+                              view pal
+                            </Text>
                           </TouchableOpacity>
                         </View>
                       );
-                    })
-                  ) : (
-                    <View style={{ flex: 1 }} />
-                  )}
+                    });
+                  })()}
                 </ScrollView>
-
-                {/* FIXED BOTTOM "VIEW PAL" ACTION CARD (LOCKED DIRECTLY ABOVE INPUT BAR) */}
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    onClose();
-                    if (onOpenVlog) onOpenVlog();
-                  }}
-                  style={[
-                    styles.viewPalBtn,
-                    {
-                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(229, 229, 234, 0.75)',
-                      borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
-                      overflow: 'hidden',
-                    },
-                  ]}
-                >
-                  <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                  <Text style={[styles.viewPalDayText, { color: textColor }]}>
-                    {activeCycleDayLabel}
-                  </Text>
-                  <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
-                    view pal
-                  </Text>
-                </TouchableOpacity>
               </View>
 
               {/* 3. BOTTOM INPUT BAR */}

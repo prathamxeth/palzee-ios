@@ -209,7 +209,7 @@ export const getClip4AMDayOffset = (clipTime?: string | number | Date): number =
   const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
 
   const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
-  if (diffDays >= 0 && diffDays < 7) {
+  if (diffDays >= 0) {
     return diffDays;
   }
   return -1;
