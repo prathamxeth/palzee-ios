@@ -33,10 +33,8 @@ import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Accelerometer } from 'expo-sensors';
 
 import { InAppBrowserModal } from '../../components/ui/InAppBrowserModal';
-import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { getNearestHourText, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
@@ -513,48 +511,59 @@ export default function HomeScreen({
 
   // Accelerometer tilt detection for "rotate to capture"
   useEffect(() => {
-    Accelerometer.setUpdateInterval(120);
+    let subscription: { remove: () => void } | null = null;
 
-    let isTilted = false;
+    try {
+      // Dynamic safe require to avoid module-load crashes when native sensors are missing
+      const Sensors = require('expo-sensors');
+      const Accelerometer = Sensors?.Accelerometer;
+      if (!Accelerometer || typeof Accelerometer.addListener !== 'function') return;
 
-    const subscription = Accelerometer.addListener((data) => {
-      const x = data?.x ?? 0;
-      const y = data?.y ?? 0;
-      const z = data?.z ?? 0;
+      Accelerometer.setUpdateInterval(120);
 
-      // Disable tilt if user manually selected tab via bottom nav bar or if any modal/view is active
-      if (
-        isManualNavLock ||
-        showExportSheet ||
-        showEditExportSheet ||
-        showChatDrawer ||
-        showCamera ||
-        showCreateModal ||
-        showEditNameModal ||
-        showGroupsView ||
-        showProfileMenu ||
-        showViewingPalsGuide ||
-        !!inAppBrowserUrl
-      ) {
-        return;
-      }
+      let isTilted = false;
 
-      // Smooth omnidirectional tilt detection (sideways left/right, up/down, top/bottom)
-      // Measures 3D tilt deviation away from upright portrait vector (0, -1, 0)
-      const tiltDev = Math.sqrt(x * x + (y + 1) * (y + 1) + z * z);
-      const tiltedNow = tiltDev > 0.55;
+      subscription = Accelerometer.addListener((data: any) => {
+        const x = data?.x ?? 0;
+        const y = data?.y ?? 0;
+        const z = data?.z ?? 0;
 
-      if (tiltedNow && !isTilted) {
-        isTilted = true;
-        setActiveTab('camera');
-      } else if (tiltDev < 0.38 && isTilted) {
-        isTilted = false;
-        setActiveTab('pals');
-      }
-    });
+        // Disable tilt if user manually selected tab via bottom nav bar or if any modal/view is active
+        if (
+          isManualNavLock ||
+          showExportSheet ||
+          showEditExportSheet ||
+          showChatDrawer ||
+          showCamera ||
+          showCreateModal ||
+          showEditNameModal ||
+          showGroupsView ||
+          showProfileMenu ||
+          showViewingPalsGuide ||
+          !!inAppBrowserUrl
+        ) {
+          return;
+        }
+
+        // Smooth omnidirectional tilt detection (sideways left/right, up/down, top/bottom)
+        // Measures 3D tilt deviation away from upright portrait vector (0, -1, 0)
+        const tiltDev = Math.sqrt(x * x + (y + 1) * (y + 1) + z * z);
+        const tiltedNow = tiltDev > 0.55;
+
+        if (tiltedNow && !isTilted) {
+          isTilted = true;
+          setActiveTab('camera');
+        } else if (tiltDev < 0.38 && isTilted) {
+          isTilted = false;
+          setActiveTab('pals');
+        }
+      });
+    } catch (e) {
+      // Safe fallback if native module ExponentAccelerometer is not linked
+    }
 
     return () => {
-      subscription.remove();
+      subscription?.remove();
     };
   }, [
     isManualNavLock,
@@ -723,15 +732,12 @@ export default function HomeScreen({
       console.log('💾 Permanent Video Saved:', permanentUri);
 
       // 2. Extract thumbnail and persist to permanent Documents directory
-      const thumbResult = await VideoThumbnails.getThumbnailAsync(permanentUri, {
-        time: 100,
-        quality: 0.85,
-      });
+      const thumbResultUri = await generateVideoThumbnail(permanentUri);
 
-      if (thumbResult?.uri) {
+      if (thumbResultUri) {
         const thumbFileName = `vlog_thumb_${Date.now()}.jpg`;
         const permThumbPath = `${FileSystem.documentDirectory}${thumbFileName}`;
-        await FileSystem.copyAsync({ from: thumbResult.uri, to: permThumbPath });
+        await FileSystem.copyAsync({ from: thumbResultUri, to: permThumbPath });
         thumbnailUri = permThumbPath;
         console.log('✅ PERMANENT THUMBNAIL CREATED:', thumbnailUri);
       }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Modal,
   StyleSheet,
@@ -7,12 +7,21 @@ import {
   View,
   useColorScheme,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Fonts } from '../../constants/typography';
+
+const getSafeWebView = () => {
+  try {
+    const RNWebView = require('react-native-webview');
+    return RNWebView?.WebView || null;
+  } catch (e) {
+    return null;
+  }
+};
 
 export interface InAppBrowserModalProps {
   visible: boolean;
@@ -70,16 +79,36 @@ export const InAppBrowserModal: React.FC<InAppBrowserModalProps> = ({
 
         {/* WEBVIEW CONTENT */}
         <View style={styles.webViewContainer}>
-          <WebView
-            source={{ uri: url }}
-            startInLoadingState={true}
-            renderLoading={() => (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={accentColor} />
+          {(() => {
+            const SafeWebView = getSafeWebView();
+            if (SafeWebView) {
+              return (
+                <SafeWebView
+                  source={{ uri: url }}
+                  startInLoadingState={true}
+                  renderLoading={() => (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color={accentColor} />
+                    </View>
+                  )}
+                  style={{ flex: 1, backgroundColor: isDark ? '#0F0A1A' : '#FFFFFF' }}
+                />
+              );
+            }
+            return (
+              <View style={[styles.loadingContainer, { padding: 24 }]}>
+                <Text style={{ color: isDark ? '#FFFFFF' : '#1C1C1E', marginBottom: 16, textAlign: 'center' }}>
+                  Opening in system browser...
+                </Text>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(url)}
+                  style={{ padding: 12, backgroundColor: accentColor, borderRadius: 12 }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Open External Browser</Text>
+                </TouchableOpacity>
               </View>
-            )}
-            style={{ flex: 1, backgroundColor: isDark ? '#0F0A1A' : '#FFFFFF' }}
-          />
+            );
+          })()}
         </View>
       </SafeAreaView>
     </Modal>
