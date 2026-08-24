@@ -659,7 +659,13 @@ export default function HomeScreen({
   const vlogFadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    vlogFadeAnim.setValue(1);
+    vlogFadeAnim.setValue(0.2);
+    Animated.timing(vlogFadeAnim, {
+      toValue: 1,
+      duration: 350,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
   }, [homeVlogIndex]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;

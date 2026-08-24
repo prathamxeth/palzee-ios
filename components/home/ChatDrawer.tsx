@@ -88,6 +88,7 @@ export const ChatDrawer = ({
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedPreviewClip, setSelectedPreviewClip] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const chatVideoRef = useRef<Video>(null);
 
   // Animations
   const expandAnim = useRef(new Animated.Value(visible ? 1 : 0)).current;
@@ -160,7 +161,6 @@ export const ChatDrawer = ({
   const activePreviewClip = selectedPreviewClip || activePal;
   const currentVideoUri = getLiveSandboxUri(activePreviewClip?.uri || activeVideoUri || '');
   const currentThumbUri = getLiveSandboxUri(activePreviewClip?.thumbnailUri || '');
-  const chatVideoRef = useRef<Video>(null);
 
   const isVertical = Boolean(
     activePreviewClip?.needsRotation ||

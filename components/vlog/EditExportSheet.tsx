@@ -71,8 +71,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const [isExportVideoVertical, setIsExportVideoVertical] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // Chronological order: oldest recorded clip first, newest ones after it
   const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
@@ -85,23 +84,13 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   }, [visible]);
 
   useEffect(() => {
-    slideAnim.setValue(16);
-    scaleAnim.setValue(0.97);
-
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 240,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 240,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
+    fadeAnim.setValue(0.2);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 350,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
   }, [currentIndex]);
 
   const exportVideoRef = useRef<Video>(null);
@@ -312,12 +301,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                 <Animated.View
                   style={[
                     StyleSheet.absoluteFill,
-                    {
-                      transform: [
-                        { translateX: slideAnim },
-                        { scale: scaleAnim },
-                      ],
-                    },
+                    { opacity: fadeAnim },
                   ]}
                 >
                   <Video

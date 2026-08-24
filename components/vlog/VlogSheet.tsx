@@ -816,18 +816,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   style={isSheetVideoVertical ? rotatedStyle : styles.videoBackground}
                   resizeMode={ResizeMode.COVER}
                   shouldPlay={visible && !showEditCaptionBox && !showDeleteDialog && !showChatDrawer && !showExportModal}
-                  isLooping={list.length === 1}
+                  isLooping={true}
                   isMuted={currentIsMuted}
                   rate={currentClip?.rate || 1.0}
                   onPlaybackStatusUpdate={(status) => {
                     if (status.isLoaded && status.didJustFinish) {
-                      if (list.length > 1) {
-                        setCurrentVlogIndex((prev) => (prev + 1) % list.length);
-                      } else {
-                        vlogVideoRef.current?.setPositionAsync(0).then(() => {
-                          vlogVideoRef.current?.playAsync();
-                        }).catch(() => {});
-                      }
+                      vlogVideoRef.current?.setPositionAsync(0).then(() => {
+                        vlogVideoRef.current?.playAsync();
+                      }).catch(() => {});
                     }
                   }}
                   onReadyForDisplay={(event) => {
