@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 interface PasskeySetupSheetProps {
   visible: boolean;
@@ -22,6 +23,7 @@ export const PasskeySetupSheet: React.FC<PasskeySetupSheetProps> = ({
   onClose,
   onSetupPasskey,
 }) => {
+  const isDark = useFastColorScheme() === 'dark';
   const [name, setName] = useState('Pratham');
   const [email, setEmail] = useState('pratham@palzee.app');
   const [loading, setLoading] = useState(false);
@@ -101,7 +103,7 @@ export const PasskeySetupSheet: React.FC<PasskeySetupSheetProps> = ({
 
             <View style={styles.avatarBadge}>
               <Image
-                source={require('../../assets/images/pal_logo.png')}
+                source={isDark ? require('../../assets/images/pal_logo_dark.png') : require('../../assets/images/pal_logo_light.png')}
                 style={{ width: 22, height: 22, borderRadius: 11 }}
                 resizeMode="contain"
               />

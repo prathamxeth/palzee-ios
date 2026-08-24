@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 interface ApplePasskeySheetProps {
   visible: boolean;
@@ -20,6 +21,7 @@ export const ApplePasskeySheet: React.FC<ApplePasskeySheetProps> = ({
   onClose,
   onAuthenticate,
 }) => {
+  const isDark = useFastColorScheme() === 'dark';
   return (
     <Modal
       visible={visible}
@@ -95,7 +97,7 @@ export const ApplePasskeySheet: React.FC<ApplePasskeySheetProps> = ({
             {/* Overlapping Pal App Logo Badge */}
             <View style={styles.avatarBadge}>
               <Image
-                source={require('../../assets/images/pal_logo.png')}
+                source={isDark ? require('../../assets/images/pal_logo_dark.png') : require('../../assets/images/pal_logo_light.png')}
                 style={{ width: 22, height: 22, borderRadius: 11 }}
                 resizeMode="contain"
               />
