@@ -37,49 +37,44 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         },
       ]}
     >
-      {/* 1. FROSTED BACKDROP BLUR MATCHING ICON BUTTONS */}
+      {/* 1. FROSTED BACKDROP BLUR MATCHING VLOG PILL */}
       <BlurView
         key={isDark ? 'dark' : 'light'}
-        intensity={60}
+        intensity={35}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 2. GRADIENT FILL & SPECULAR BORDER STROKE MATCHING OTHER ICONS EXACTLY */}
+      {/* 2. EXACT VLOG PILL GRADIENT FILL & SPECULAR BORDER STROKE */}
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         <Defs>
-          <LinearGradient id="iconMatchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <LinearGradient id="iconMatchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
-              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.25 : 0.12}
+              stopColor={isDark ? '#28282E' : '#FFFFFF'}
+              stopOpacity={isDark ? 0.75 : 0.88}
             />
             <Stop
-              offset="35%"
-              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.18 : 0.20}
-            />
-            <Stop
-              offset="75%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.24 : 0.28}
+              offset="50%"
+              stopColor={isDark ? '#18181B' : '#F7F6F3'}
+              stopOpacity={isDark ? 0.60 : 0.75}
             />
             <Stop
               offset="100%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.24 : 0.28}
+              stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
+              stopOpacity={isDark ? 0.85 : 0.65}
             />
           </LinearGradient>
           <LinearGradient id="iconMatchBdr" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.28 : 0.75}
+              stopOpacity={isDark ? 0.35 : 0.95}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.04 : 0.06}
+              stopOpacity={0.08}
             />
           </LinearGradient>
         </Defs>
@@ -92,7 +87,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           ry={borderRadius - 0.5}
           fill="url(#iconMatchGrad)"
           stroke="url(#iconMatchBdr)"
-          strokeWidth={1.0}
+          strokeWidth={1.2}
         />
       </Svg>
 

@@ -88,7 +88,7 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
     <View
       style={[
         StyleSheet.absoluteFill,
-        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#3A3A42' : '#F2F2F5' },
+        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#141418' : '#F7F6F3' },
       ]}
       pointerEvents="none"
     >

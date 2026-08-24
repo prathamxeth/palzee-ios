@@ -154,7 +154,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     const gridCells = [];
 
     for (let i = 0; i < firstDayOfWeek; i++) {
-      gridCells.push(<View key={`empty-${i}`} style={{ width: `${100 / 7}%`, height: 54 }} />);
+      gridCells.push(<View key={`empty-${i}`} style={{ width: `${100 / 7}%`, height: 56 }} />);
     }
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
@@ -174,7 +174,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           }}
           style={{
             width: `${100 / 7}%`,
-            height: 54,
+            height: 56,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -193,14 +193,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           >
             <Text
               style={{
-                fontSize: 17,
-                fontFamily: Fonts.SystemRoundedBold,
+                fontSize: 15,
+                fontFamily: isToday ? Fonts.SystemRoundedBold : Fonts.SystemRoundedMedium,
                 fontWeight: isToday ? '700' : '500',
                 color: isToday
-                  ? '#000000'
-                  : isDark
-                  ? '#FFFFFF'
-                  : '#000000',
+                  ? (isDark ? '#FFFFFF' : '#000000')
+                  : (isDark ? '#FFFFFF' : '#000000'),
               }}
             >
               {day}
@@ -949,7 +947,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           <View
             style={{
               position: 'absolute',
-              bottom: Math.max(insets.bottom + 3, 15),
+              bottom: Math.max(insets.bottom - 12, 0),
               left: 20,
               right: 20,
               flexDirection: 'row',
@@ -1146,6 +1144,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 flex: 1,
                 backgroundColor: 'rgba(0, 0, 0, 0.55)',
                 justifyContent: 'flex-end',
+                paddingHorizontal: 8,
+                paddingBottom: Math.max(insets.bottom - 26.5, 0),
               }}
               activeOpacity={1}
               onPress={() => setShowCalendarModal(false)}
@@ -1155,18 +1155,22 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 onPress={(e) => e.stopPropagation()}
                 style={{
                   width: '100%',
-                  backgroundColor: isDark ? 'rgba(34, 34, 38, 0.96)' : 'rgba(247, 246, 243, 0.96)',
-                  borderTopLeftRadius: 28,
-                  borderTopRightRadius: 28,
+                  backgroundColor: isDark ? '#1C1C20' : '#F7F6F3',
+                  borderRadius: 36,
                   borderWidth: 1.2,
                   borderColor: isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.10)',
-                  paddingTop: 12,
-                  paddingBottom: Math.max(insets.bottom, 20) + 12,
-                  paddingHorizontal: 20,
+                  paddingTop: 14,
+                  paddingBottom: 18,
+                  paddingHorizontal: 16,
                   overflow: 'hidden',
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 16,
+                  elevation: 10,
                 }}
               >
-                <BlurView key={isDark ? 'dark' : 'light'} intensity={45} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                 {/* Drag Handle */}
                 <View

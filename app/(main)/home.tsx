@@ -1584,14 +1584,14 @@ export default function HomeScreen({
                   style={[
                     styles.profileDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.32)' : 'rgba(253, 246, 255, 0.38)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
                 {/* 1. FROSTED GLASS BACKDROP BLUR (ALLOWS UNDERLYING TEXT ON LEFT TO BLEED THROUGH) */}
                 <BlurView
-                  intensity={60}
+                  intensity={80}
                   tint={isDark ? 'dark' : 'light'}
                   style={StyleSheet.absoluteFill}
                 />
@@ -1606,10 +1606,10 @@ export default function HomeScreen({
                       x2="0%"
                       y2="100%"
                     >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.30 : 0.22} />
-                      <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.16 : 0.12} />
-                      <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.05 : 0.03} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={0.0} />
+                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                      <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                      <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                      <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
                     </LinearGradient>
                   </Defs>
                   <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -1786,20 +1786,20 @@ export default function HomeScreen({
                   style={[
                     styles.profileSubDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.32)' : 'rgba(253, 246, 255, 0.38)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
-                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.30 : 0.22} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.16 : 0.12} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.05 : 0.03} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.0} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
@@ -1902,20 +1902,20 @@ export default function HomeScreen({
                     styles.profileSubDropdownCard,
                     {
                       top: 146,
-                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.32)' : 'rgba(253, 246, 255, 0.38)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
-                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="notifSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.30 : 0.22} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.16 : 0.12} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.05 : 0.03} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.0} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#notifSubDiagonalGlow)" />
@@ -2021,20 +2021,20 @@ export default function HomeScreen({
                     styles.profileSubDropdownCard,
                     {
                       top: 190,
-                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.32)' : 'rgba(253, 246, 255, 0.38)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
-                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="acctSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.30 : 0.22} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.16 : 0.12} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.05 : 0.03} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.0} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#acctSubDiagonalGlow)" />
@@ -2133,20 +2133,20 @@ export default function HomeScreen({
                   style={[
                     styles.profileColorDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(20, 14, 34, 0.32)' : 'rgba(253, 246, 255, 0.38)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
                   ]}
                 >
-                  <BlurView intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="colorSubDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.30 : 0.22} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.16 : 0.12} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.05 : 0.03} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.0} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#colorSubDiagonalGlow)" />
@@ -2932,7 +2932,7 @@ const styles = StyleSheet.create({
   },
   dropdownModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.18)',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
   },
   profileDropdownCard: {
     position: 'absolute',
