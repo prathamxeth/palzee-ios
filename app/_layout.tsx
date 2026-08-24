@@ -3,6 +3,7 @@ import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { Audio } from 'expo-av';
 
 const shouldSuppressExpoAv = (...args: any[]) => {
   try {
@@ -72,6 +73,11 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+    }).catch(() => {});
+
     if (loaded || error) {
       SplashScreen.hideAsync();
     }

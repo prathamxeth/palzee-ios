@@ -160,6 +160,7 @@ export const ChatDrawer = ({
   const activePreviewClip = selectedPreviewClip || activePal;
   const currentVideoUri = getLiveSandboxUri(activePreviewClip?.uri || activeVideoUri || '');
   const currentThumbUri = getLiveSandboxUri(activePreviewClip?.thumbnailUri || '');
+  const chatVideoRef = useRef<Video>(null);
 
   const isVertical = Boolean(
     activePreviewClip?.needsRotation ||
@@ -536,6 +537,8 @@ export const ChatDrawer = ({
                       }}
                     >
                       <Video
+                        key={currentVideoUri}
+                        ref={chatVideoRef}
                         source={{ uri: currentVideoUri }}
                         style={modalRotatedStyle}
                         videoStyle={{ width: '100%', height: '100%', borderRadius: 28 }}
@@ -543,6 +546,13 @@ export const ChatDrawer = ({
                         shouldPlay={true}
                         isLooping={true}
                         isMuted={false}
+                        onPlaybackStatusUpdate={(status) => {
+                          if (status.isLoaded && status.didJustFinish) {
+                            chatVideoRef.current?.setPositionAsync(0).then(() => {
+                              chatVideoRef.current?.playAsync();
+                            }).catch(() => {});
+                          }
+                        }}
                       />
 
                       {/* Top-Left Avatar Badge */}

@@ -367,6 +367,7 @@ export default function HomeScreen({
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState<string | null>(null);
   const [inAppBrowserTitle, setInAppBrowserTitle] = useState<string>('');
   const [showEditNameModal, setShowEditNameModal] = useState(false);
+  const homeVideoRef = useRef<Video>(null);
   const [editFirstName, setEditFirstName] = useState(() => {
     const name = user?.displayName || 'apple_user';
     return name.includes('_') ? name.split('_')[0] : name.split(' ')[0] || 'apple';
@@ -1043,6 +1044,7 @@ export default function HomeScreen({
                       >
                         <Video
                           key={activeTodayClip?.id || homeVlogIndex}
+                          ref={homeVideoRef}
                           source={{ uri: getLiveSandboxUri(activeTodayClip?.uri) }}
                           style={
                             isHomeVlogVertical
@@ -1073,6 +1075,10 @@ export default function HomeScreen({
                                 homeProgressAnim.setValue(0);
                                 if (todayVlogList.length > 1) {
                                   setHomeVlogIndex((prev) => (prev + 1) % todayVlogList.length);
+                                } else {
+                                  homeVideoRef.current?.setPositionAsync(0).then(() => {
+                                    homeVideoRef.current?.playAsync();
+                                  }).catch(() => {});
                                 }
                               }
                             }

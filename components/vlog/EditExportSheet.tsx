@@ -104,10 +104,16 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     ]).start();
   }, [currentIndex]);
 
+  const exportVideoRef = useRef<Video>(null);
+
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status && status.isLoaded && status.didJustFinish) {
       if (list.length > 1) {
         setCurrentIndex((prev) => (prev + 1) % list.length);
+      } else {
+        exportVideoRef.current?.setPositionAsync(0).then(() => {
+          exportVideoRef.current?.playAsync();
+        }).catch(() => {});
       }
     }
   };
@@ -316,6 +322,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                 >
                   <Video
                     key={currentClip.uri}
+                    ref={exportVideoRef}
                     source={{ uri: getLiveSandboxUri(currentClip.uri) }}
                     style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                     resizeMode={ResizeMode.COVER}
