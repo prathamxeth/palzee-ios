@@ -609,48 +609,64 @@ export default function HomeScreen({
     }>
   >([]);
 
-  useEffect(() => {
-    AsyncStorage.getItem('@palzee_vlog_list').then(async (cached) => {
-      if (cached) {
+  const loadCachedVlogs = async () => {
+    try {
+      const cached = await AsyncStorage.getItem('@palzee_vlog_list');
+      if (!cached) return;
+      const parsed = JSON.parse(cached);
+      if (!Array.isArray(parsed) || parsed.length === 0) return;
+
+      const nowInput = new Date();
+      const valid7DayList = parsed.filter((item: any) => {
+        const d = item.timestamp ? new Date(item.timestamp) : new Date();
+        const validDate = isNaN(d.getTime()) ? new Date() : d;
+        const clipShifted = new Date(validDate.getTime() - 4 * 3600 * 1000);
+        const nowShifted = new Date(nowInput.getTime() - 4 * 3600 * 1000);
+        const clipDayStart = new Date(clipShifted.getFullYear(), clipShifted.getMonth(), clipShifted.getDate()).getTime();
+        const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
+        const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
+        return diffDays >= 0 && diffDays < 7;
+      });
+
+      // 1. Instantly map live URIs and render on frame 1 without delay
+      const liveClips = valid7DayList.map((item: any) => ({
+        ...item,
+        uri: getLiveSandboxUri(item.uri),
+        thumbnailUri: item.thumbnailUri ? getLiveSandboxUri(item.thumbnailUri) : '',
+      }));
+      setVlogList(liveClips);
+
+      // 2. Background verification for deleted files
+      const verifiedClips: any[] = [];
+      for (const item of liveClips) {
         try {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const nowInput = new Date();
-            const valid7DayList = parsed.filter((item: any) => {
-              const d = item.timestamp ? new Date(item.timestamp) : new Date();
-              const validDate = isNaN(d.getTime()) ? new Date() : d;
-              const clipShifted = new Date(validDate.getTime() - 4 * 3600 * 1000);
-              const nowShifted = new Date(nowInput.getTime() - 4 * 3600 * 1000);
-              const clipDayStart = new Date(clipShifted.getFullYear(), clipShifted.getMonth(), clipShifted.getDate()).getTime();
-              const nowDayStart = new Date(nowShifted.getFullYear(), nowShifted.getMonth(), nowShifted.getDate()).getTime();
-              const diffDays = Math.floor((nowDayStart - clipDayStart) / (24 * 3600 * 1000));
-              return diffDays >= 0 && diffDays < 7;
-            });
-
-            // Sanitize URIs and verify file existence on disk
-            const existingClips: any[] = [];
-            for (const item of valid7DayList) {
-              const liveUri = getLiveSandboxUri(item.uri);
-              try {
-                const info = await FileSystem.getInfoAsync(liveUri);
-                if (info && info.exists) {
-                  existingClips.push({
-                    ...item,
-                    uri: liveUri,
-                    thumbnailUri: item.thumbnailUri ? getLiveSandboxUri(item.thumbnailUri) : '',
-                  });
-                }
-              } catch (e) {}
-            }
-
-            setVlogList(existingClips);
-            if (existingClips.length !== parsed.length) {
-              AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(existingClips));
-            }
+          const info = await FileSystem.getInfoAsync(item.uri);
+          if (info && info.exists) {
+            verifiedClips.push(item);
           }
-        } catch (e) {}
+        } catch (e) {
+          verifiedClips.push(item);
+        }
+      }
+      if (verifiedClips.length !== parsed.length) {
+        AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(verifiedClips));
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    loadCachedVlogs();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        loadCachedVlogs();
+        homeVideoRef.current?.playAsync().catch(() => {});
       }
     });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
   const [selectedDayOffset, setSelectedDayOffset] = useState(0);
   const [homeVlogIndex, setHomeVlogIndex] = useState(0);
@@ -1006,6 +1022,26 @@ export default function HomeScreen({
                 if (todayVlogList.length === 0 || !todayVlogList[homeVlogIndex]?.uri) return null;
 
                 const activeTodayClip = todayVlogList[Math.min(homeVlogIndex, todayVlogList.length - 1)];
+                const isClipVertical = activeTodayClip?.mode === 'landscape' ? false : true;
+
+                const currentVideoLiveUri = getLiveSandboxUri(activeTodayClip?.uri);
+                const currentThumbLiveUri = getLiveSandboxUri(activeTodayClip?.thumbnailUri);
+
+                const cardWidth = screenWidth - 20;
+                const cardHeight = cardWidth * (9.5 / 16) + 20;
+                const videoWidth = cardHeight;
+                const videoHeight = cardWidth;
+                const videoTop = (cardHeight - videoHeight) / 2;
+                const videoLeft = (cardWidth - videoWidth) / 2;
+
+                const rotatedStyle = {
+                  position: 'absolute' as const,
+                  top: videoTop,
+                  left: videoLeft,
+                  width: videoWidth,
+                  height: videoHeight,
+                  transform: [{ rotate: '270deg' }],
+                };
 
                 return (
                   <View style={{ width: '100%', marginBottom: 16 }}>
@@ -1013,8 +1049,8 @@ export default function HomeScreen({
                     <TouchableOpacity
                       style={{
                         width: '100%',
-                        height: (screenWidth - 20) * (9 / 16),
-                        borderRadius: 24,
+                        height: cardHeight,
+                        borderRadius: 28,
                         overflow: 'hidden',
                         position: 'relative',
                         backgroundColor: '#000000',
@@ -1024,21 +1060,10 @@ export default function HomeScreen({
                       onPress={() => setShowExportSheet(true)}
                     >
                       {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
-                      {Boolean(activeTodayClip?.thumbnailUri) && (
+                      {Boolean(currentThumbLiveUri) && (
                         <Image
-                          source={{ uri: getLiveSandboxUri(activeTodayClip?.thumbnailUri) }}
-                          style={
-                            isHomeVlogVertical
-                              ? {
-                                  position: 'absolute',
-                                  top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                                  left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                                  width: (screenWidth - 20) * (9 / 16),
-                                  height: screenWidth - 20,
-                                  transform: [{ rotate: '270deg' }],
-                                }
-                              : StyleSheet.absoluteFill
-                          }
+                          source={{ uri: currentThumbLiveUri }}
+                          style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
                           resizeMode="cover"
                         />
                       )}
@@ -1049,28 +1074,21 @@ export default function HomeScreen({
                         ]}
                       >
                         <Video
-                          key={activeTodayClip?.id || homeVlogIndex}
+                          key={currentVideoLiveUri || activeTodayClip?.id}
                           ref={homeVideoRef}
-                          source={{ uri: getLiveSandboxUri(activeTodayClip?.uri) }}
-                          style={
-                            isHomeVlogVertical
-                              ? {
-                                  position: 'absolute',
-                                  top: ((screenWidth - 20) * (9 / 16) - (screenWidth - 20)) / 2,
-                                  left: ((screenWidth - 20) - (screenWidth - 20) * (9 / 16)) / 2,
-                                  width: (screenWidth - 20) * (9 / 16),
-                                  height: screenWidth - 20,
-                                  transform: [{ rotate: '270deg' }],
-                                }
-                              : StyleSheet.absoluteFill
-                          }
+                          source={{ uri: currentVideoLiveUri }}
+                          style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
                           resizeMode={ResizeMode.COVER}
-                          shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
+                          shouldPlay={true}
                           isLooping={todayVlogList.length === 1}
                           isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
                           rate={activeTodayClip?.rate || 1.0}
                           shouldCorrectPitch={true}
+                          useNativeControls={false}
                           progressUpdateIntervalMillis={100}
+                          onLoad={() => {
+                            homeVideoRef.current?.playAsync().catch(() => {});
+                          }}
                           onPlaybackStatusUpdate={(status) => {
                             if (status.isLoaded) {
                               if (status.durationMillis && status.durationMillis > 0) {
@@ -1089,16 +1107,8 @@ export default function HomeScreen({
                               }
                             }
                           }}
-                          onReadyForDisplay={(event) => {
-                            if (event?.naturalSize) {
-                              const { width, height } = event.naturalSize;
-                              setIsHomeVlogVertical(height > width);
-                            }
-                            Animated.timing(vlogFadeAnim, {
-                              toValue: 1,
-                              duration: 250,
-                              useNativeDriver: true,
-                            }).start();
+                          onReadyForDisplay={() => {
+                            homeVideoRef.current?.playAsync().catch(() => {});
                           }}
                         />
                       </Animated.View>
@@ -2133,6 +2143,21 @@ export default function HomeScreen({
                     >
                       <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E', marginLeft: 4 }]}>
                         privacy policy
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Log Out in Red in Account Sub-Menu */}
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        setProfileSubMenu('main');
+                        onSignOut?.();
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: '#FF3B30', marginLeft: 4 }]}>
+                        log out
                       </Text>
                     </TouchableOpacity>
                   </View>

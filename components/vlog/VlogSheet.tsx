@@ -819,6 +819,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   isLooping={true}
                   isMuted={currentIsMuted}
                   rate={currentClip?.rate || 1.0}
+                  useNativeControls={false}
+                  onLoad={() => {
+                    vlogVideoRef.current?.playAsync().catch(() => {});
+                  }}
                   onPlaybackStatusUpdate={(status) => {
                     if (status.isLoaded && status.didJustFinish) {
                       vlogVideoRef.current?.setPositionAsync(0).then(() => {
@@ -831,6 +835,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       const { width: w, height: h } = event.naturalSize;
                       setIsSheetVideoVertical(h > w);
                     }
+                    vlogVideoRef.current?.playAsync().catch(() => {});
                   }}
                 />
               )}

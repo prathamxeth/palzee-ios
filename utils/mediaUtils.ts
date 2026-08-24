@@ -1,15 +1,5 @@
 import { Platform } from 'react-native';
-
-let FileSystem: any = null;
-try {
-  FileSystem = require('expo-file-system/legacy');
-} catch (e) {
-  try {
-    FileSystem = require('expo-file-system');
-  } catch (err) {
-    FileSystem = null;
-  }
-}
+import * as FileSystem from 'expo-file-system/legacy';
 
 let VideoThumbnails: any = null;
 try {
@@ -27,9 +17,18 @@ const thumbnailCache = new Map<string, string>();
  */
 export const getLiveSandboxUri = (storedUri?: string): string => {
   if (!storedUri) return '';
-  if (!storedUri.includes('/Documents/')) return storedUri;
-  const fileName = storedUri.split('/Documents/').pop();
+  if (storedUri.startsWith('http://') || storedUri.startsWith('https://') || storedUri.startsWith('ph://')) {
+    return storedUri;
+  }
+  const fileName = storedUri.split('/').pop();
   if (!fileName || !FileSystem || !FileSystem.documentDirectory) return storedUri;
+
+  if (storedUri.includes('/Documents/')) {
+    return `${FileSystem.documentDirectory}${fileName}`;
+  }
+  if (storedUri.includes('/Caches/') && FileSystem.cacheDirectory) {
+    return `${FileSystem.cacheDirectory}${fileName}`;
+  }
   return `${FileSystem.documentDirectory}${fileName}`;
 };
 
