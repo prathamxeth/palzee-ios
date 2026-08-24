@@ -74,6 +74,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
       playsInSilentModeIOS: true,
       staysActiveInBackground: false,
     }).catch(() => {});

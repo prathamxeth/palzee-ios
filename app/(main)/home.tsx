@@ -693,7 +693,26 @@ export default function HomeScreen({
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [homeVlogIndex]);
+
+    const todayList = getClipsForDayOffset(vlogList, 0);
+    const clip = todayList[Math.min(homeVlogIndex, todayList.length - 1)];
+    if (clip?.uri && homeVideoRef.current) {
+      const liveUri = getLiveSandboxUri(clip.uri);
+      homeVideoRef.current.loadAsync(
+        { uri: liveUri },
+        {
+          shouldPlay: true,
+          isLooping: todayList.length === 1,
+          positionMillis: 0,
+          rate: clip.rate || 1.0,
+          isMuted: !(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (clip.isMuted ?? false),
+        },
+        false
+      ).then(() => {
+        homeVideoRef.current?.playAsync().catch(() => {});
+      }).catch(() => {});
+    }
+  }, [homeVlogIndex, vlogList, activeTab]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 

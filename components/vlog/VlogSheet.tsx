@@ -423,7 +423,23 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
   useEffect(() => {
     setEditingCaptionText(currentCaption);
-  }, [currentCaption]);
+
+    if (currentUri && vlogVideoRef.current) {
+      vlogVideoRef.current.loadAsync(
+        { uri: currentUri },
+        {
+          shouldPlay: visible && !showEditCaptionBox && !showDeleteDialog && !showChatDrawer && !showExportModal,
+          isLooping: true,
+          positionMillis: 0,
+          rate: currentClip?.rate || 1.0,
+          isMuted: currentIsMuted,
+        },
+        false
+      ).then(() => {
+        vlogVideoRef.current?.playAsync().catch(() => {});
+      }).catch(() => {});
+    }
+  }, [currentCaption, currentVlogIndex, currentUri, visible]);
 
   const handleConfirmDelete = () => {
     setShowDeleteDialog(false);

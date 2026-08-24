@@ -93,7 +93,24 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [currentIndex]);
+
+    if (currentClip?.uri && exportVideoRef.current) {
+      const liveUri = getLiveSandboxUri(currentClip.uri);
+      exportVideoRef.current.loadAsync(
+        { uri: liveUri },
+        {
+          shouldPlay: true,
+          isLooping: list.length === 1,
+          positionMillis: 0,
+          rate: currentClip.rate || 1.0,
+          isMuted: currentClip.isMuted ?? false,
+        },
+        false
+      ).then(() => {
+        exportVideoRef.current?.playAsync().catch(() => {});
+      }).catch(() => {});
+    }
+  }, [currentIndex, currentClip?.uri]);
 
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status && status.isLoaded) {
