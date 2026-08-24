@@ -40,7 +40,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
       {/* 1. FROSTED BACKDROP BLUR MATCHING ICON BUTTONS */}
       <BlurView
         key={isDark ? 'dark' : 'light'}
-        intensity={35}
+        intensity={60}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
@@ -52,34 +52,34 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             <Stop
               offset="0%"
               stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.60 : 0.20}
+              stopOpacity={isDark ? 0.25 : 0.12}
             />
             <Stop
               offset="35%"
               stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.50 : 0.70}
+              stopOpacity={isDark ? 0.18 : 0.20}
             />
             <Stop
               offset="75%"
               stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.65 : 1.0}
+              stopOpacity={isDark ? 0.24 : 0.28}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.65 : 1.0}
+              stopOpacity={isDark ? 0.24 : 0.28}
             />
           </LinearGradient>
           <LinearGradient id="iconMatchBdr" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.28 : 0.95}
+              stopOpacity={isDark ? 0.28 : 0.75}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.04 : 0.08}
+              stopOpacity={isDark ? 0.04 : 0.06}
             />
           </LinearGradient>
         </Defs>
