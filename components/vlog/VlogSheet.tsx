@@ -33,7 +33,7 @@ import { ChatDrawer } from '../home/ChatDrawer';
 import { EditExportSheet } from './EditExportSheet';
 import { ViewingPalsInstructionModal } from './ViewingPalsInstructionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getNearestHourText, formatExactTime, getClipsForDayOffset } from '../../utils/mediaUtils';
+import { getNearestHourText, formatExactTime, getClipsForDayOffset, parseToDate, getLiveSandboxUri } from '../../utils/mediaUtils';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 export interface VlogSheetProps {
@@ -108,6 +108,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [isSheetVideoVertical, setIsSheetVideoVertical] = useState(true);
+  const vlogVideoRef = useRef<Video>(null);
   const [currentVlogIndex, setCurrentVlogIndex] = useState(0);
   const [dayOffset, setDayOffset] = useState(selectedDayOffset);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -126,10 +127,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   };
 
   const hasPalOnDate = (y: number, m: number, d: number) => {
+    if (!Array.isArray(vlogList) || vlogList.length === 0) return false;
     return vlogList.some((vlog: any) => {
-      if (!vlog.timestamp) return false;
-      const rawDate = typeof vlog.timestamp === 'number' ? new Date(vlog.timestamp) : new Date(vlog.timestamp);
-      if (isNaN(rawDate.getTime())) return false;
+      if (!vlog) return false;
+      const rawDate = parseToDate(
+        vlog.timestamp ||
+        vlog.createdAt ||
+        vlog.date ||
+        (typeof vlog.id === 'string' && /^\d{13}$/.test(vlog.id) ? Number(vlog.id) : null)
+      );
+      if (!rawDate || isNaN(rawDate.getTime())) return false;
       // Shift 4 hours back to align with Palzee 4AM cycle boundary (04:00 AM - 03:59:59 AM)
       const cycleDate = new Date(rawDate.getTime() - 4 * 3600 * 1000);
       return (
@@ -174,17 +181,18 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           }}
           style={{
             width: `${100 / 7}%`,
-            height: 56,
+            height: 58,
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
+            paddingTop: 3,
           }}
         >
           <View
             style={[
               {
-                width: 36,
-                height: 36,
-                borderRadius: 18,
+                width: 32,
+                height: 32,
+                borderRadius: 16,
                 alignItems: 'center',
                 justifyContent: 'center',
               },
@@ -205,7 +213,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </Text>
           </View>
 
-          {hasPalClip && !isToday && (
+          {hasPalClip ? (
             <View
               style={{
                 width: 14,
@@ -214,7 +222,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: edgeColor,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginTop: 1,
+                marginTop: 3,
                 overflow: 'hidden',
               }}
             >
@@ -229,6 +237,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 resizeMode="contain"
               />
             </View>
+          ) : (
+            <View style={{ height: 14, marginTop: 3 }} />
           )}
         </TouchableOpacity>
       );
@@ -390,7 +400,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const dayClips = getClipsForDayOffset(vlogList, dayOffset);
   const list = dayClips;
   const currentClip = list.length > 0 ? list[Math.min(currentVlogIndex, list.length - 1)] : null;
-  const currentUri = currentClip ? currentClip.uri : null;
+  const currentUri = currentClip ? getLiveSandboxUri(currentClip.uri) : null;
   const currentCaption = currentClip ? (currentClip.caption || '') : '';
   const currentTimestamp = getNearestHourText(currentClip ? ((currentClip as any).displayTime || currentClip.timestamp) : timestamp);
   const currentIsMuted = currentClip ? (currentClip.isMuted ?? false) : isMuted;
@@ -801,13 +811,25 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               {!!currentUri && (
                 <Video
                   key={currentUri}
+                  ref={vlogVideoRef}
                   source={{ uri: currentUri }}
                   style={isSheetVideoVertical ? rotatedStyle : styles.videoBackground}
                   resizeMode={ResizeMode.COVER}
                   shouldPlay={visible && !showEditCaptionBox && !showDeleteDialog && !showChatDrawer && !showExportModal}
-                  isLooping={true}
+                  isLooping={list.length === 1}
                   isMuted={currentIsMuted}
                   rate={currentClip?.rate || 1.0}
+                  onPlaybackStatusUpdate={(status) => {
+                    if (status.isLoaded && status.didJustFinish) {
+                      if (list.length > 1) {
+                        setCurrentVlogIndex((prev) => (prev + 1) % list.length);
+                      } else {
+                        vlogVideoRef.current?.setPositionAsync(0).then(() => {
+                          vlogVideoRef.current?.playAsync();
+                        }).catch(() => {});
+                      }
+                    }
+                  }}
                   onReadyForDisplay={(event) => {
                     if (event?.naturalSize) {
                       const { width: w, height: h } = event.naturalSize;
@@ -1013,7 +1035,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   overflow: 'hidden',
                   borderWidth: 1.5,
                   borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.95)',
-                  backgroundColor: isDark ? 'rgba(30, 30, 34, 0.82)' : 'rgba(255, 255, 255, 0.88)',
+                  backgroundColor: isDark ? 'rgba(30, 30, 34, 0.88)' : 'rgba(255, 255, 255, 0.92)',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.3,
@@ -1021,16 +1043,16 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   elevation: 10,
                 }}
               >
-                <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                <Svg width={155} height={currentUri ? 125.0 : 49.0} style={StyleSheet.absoluteFill}>
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                   <Defs>
                     <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
-                      <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
+                      <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.85 : 0.92} />
+                      <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.90 : 0.82} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="155" height={currentUri ? 125.0 : 49.0} rx="20" fill="url(#optionsPillGrad)" />
+                  <Rect x="0" y="0" width="100%" height="100%" rx="20" fill="url(#optionsPillGrad)" />
                 </Svg>
 
                 {/* 1. Edit Caption */}
@@ -1297,9 +1319,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   paddingBottom: 20,
                   alignItems: 'center',
                   marginTop: 32.5,
-                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.85)' : 'rgba(255, 255, 255, 0.90)',
-                  borderWidth: 1.5,
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.95)',
+                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.88)' : 'rgba(255, 255, 255, 0.90)',
+                  borderWidth: 1.2,
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 10 },
                   shadowOpacity: 0.35,
@@ -1309,7 +1331,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
               >
-                <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={50} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
                 <Text
                   style={{
@@ -1334,13 +1356,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       justifyContent: 'center',
                       alignItems: 'center',
                       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)',
-                      borderWidth: 1,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.08)',
+                      borderWidth: 1.2,
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)',
                     }}
                     activeOpacity={0.7}
                     onPress={() => setShowDeleteDialog(false)}
                   >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                       cancel
                     </Text>
@@ -1354,14 +1376,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       overflow: 'hidden',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: isDark ? 'rgba(255, 59, 48, 0.15)' : 'rgba(255, 59, 48, 0.10)',
-                      borderWidth: 1,
-                      borderColor: isDark ? 'rgba(255, 59, 48, 0.40)' : 'rgba(255, 59, 48, 0.35)',
+                      backgroundColor: isDark ? 'rgba(255, 59, 48, 0.22)' : 'rgba(255, 59, 48, 0.16)',
+                      borderWidth: 1.2,
+                      borderColor: isDark ? 'rgba(255, 59, 48, 0.50)' : 'rgba(255, 59, 48, 0.40)',
                     }}
                     activeOpacity={0.7}
                     onPress={handleConfirmDelete}
                   >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={25} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
                       delete pal
                     </Text>

@@ -658,7 +658,7 @@ export default function HomeScreen({
   const vlogFadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    vlogFadeAnim.setValue(0);
+    vlogFadeAnim.setValue(1);
   }, [homeVlogIndex]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -1019,7 +1019,7 @@ export default function HomeScreen({
                       {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
                       {Boolean(activeTodayClip?.thumbnailUri) && (
                         <Image
-                          source={{ uri: activeTodayClip?.thumbnailUri }}
+                          source={{ uri: getLiveSandboxUri(activeTodayClip?.thumbnailUri) }}
                           style={
                             isHomeVlogVertical
                               ? {
@@ -1043,7 +1043,7 @@ export default function HomeScreen({
                       >
                         <Video
                           key={activeTodayClip?.id || homeVlogIndex}
-                          source={{ uri: activeTodayClip?.uri }}
+                          source={{ uri: getLiveSandboxUri(activeTodayClip?.uri) }}
                           style={
                             isHomeVlogVertical
                               ? {

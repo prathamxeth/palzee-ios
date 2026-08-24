@@ -464,10 +464,11 @@ export default function PalVideoSendPreviewModal({
                         shouldCorrectPitch={true}
                         useNativeControls={false}
                         resizeMode={ResizeMode.COVER}
-                        progressUpdateIntervalMillis={50}
                         onPlaybackStatusUpdate={(status) => {
                           if (status.isLoaded && status.didJustFinish) {
-                            videoPlayerRef.current?.replayAsync().catch(() => {});
+                            videoPlayerRef.current?.setPositionAsync(0).then(() => {
+                              videoPlayerRef.current?.playAsync();
+                            }).catch(() => {});
                           }
                         }}
                         onReadyForDisplay={(event) => {

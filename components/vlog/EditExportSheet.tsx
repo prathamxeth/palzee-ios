@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
+import { getLiveSandboxUri } from '../../utils/mediaUtils';
 
 const { VideoExporter } = NativeModules;
 
@@ -315,7 +316,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                 >
                   <Video
                     key={currentClip.uri}
-                    source={{ uri: currentClip.uri }}
+                    source={{ uri: getLiveSandboxUri(currentClip.uri) }}
                     style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
                     resizeMode={ResizeMode.COVER}
                     shouldPlay={true}

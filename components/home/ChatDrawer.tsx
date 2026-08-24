@@ -24,6 +24,7 @@ import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { getLiveSandboxUri } from '../../utils/mediaUtils';
 
 /**
  * Calculates the Palzee 4 AM - 4 AM daily cycle for a timestamp.
@@ -157,8 +158,8 @@ export const ChatDrawer = ({
     : null;
 
   const activePreviewClip = selectedPreviewClip || activePal;
-  const currentVideoUri = activePreviewClip?.uri || activeVideoUri || '';
-  const currentThumbUri = activePreviewClip?.thumbnailUri || '';
+  const currentVideoUri = getLiveSandboxUri(activePreviewClip?.uri || activeVideoUri || '');
+  const currentThumbUri = getLiveSandboxUri(activePreviewClip?.thumbnailUri || '');
 
   const isVertical = Boolean(
     activePreviewClip?.needsRotation ||
