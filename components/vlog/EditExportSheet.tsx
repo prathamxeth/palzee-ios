@@ -68,7 +68,6 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isExportVideoVertical, setIsExportVideoVertical] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -83,8 +82,11 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }
   }, [visible]);
 
+  const exportVideoRef = useRef<Video>(null);
+  const isAdvancingRef = useRef(false);
+
   useEffect(() => {
-    fadeAnim.setValue(0.2);
+    fadeAnim.setValue(0.7);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 350,
@@ -93,16 +95,27 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }).start();
   }, [currentIndex]);
 
-  const exportVideoRef = useRef<Video>(null);
-
   const handlePlaybackStatusUpdate = (status: any) => {
-    if (status && status.isLoaded && status.didJustFinish) {
-      if (list.length > 1) {
-        setCurrentIndex((prev) => (prev + 1) % list.length);
-      } else {
-        exportVideoRef.current?.setPositionAsync(0).then(() => {
-          exportVideoRef.current?.playAsync();
-        }).catch(() => {});
+    if (status && status.isLoaded) {
+      if (
+        status.didJustFinish &&
+        !isAdvancingRef.current &&
+        status.positionMillis > 500 &&
+        status.durationMillis &&
+        status.positionMillis >= status.durationMillis - 250
+      ) {
+        isAdvancingRef.current = true;
+        setTimeout(() => {
+          isAdvancingRef.current = false;
+        }, 700);
+
+        if (list.length > 1) {
+          setCurrentIndex((prev) => (prev + 1) % list.length);
+        } else {
+          exportVideoRef.current?.setPositionAsync(0).then(() => {
+            exportVideoRef.current?.playAsync();
+          }).catch(() => {});
+        }
       }
     }
   };
@@ -238,6 +251,8 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }
   };
 
+  const isExportVideoVertical = currentClip?.mode === 'landscape' ? false : true;
+
   const cardWidth = screenWidth - 20;
   const cardHeight = cardWidth * (9.5 / 16) + 20;
 
@@ -282,48 +297,32 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   borderRadius: 0,
                   overflow: 'hidden',
                   position: 'relative',
-                  backgroundColor: isDark ? '#000000' : '#FFFFFF',
+                  backgroundColor: '#000000',
                   shadowColor: isDark ? '#000000' : '#8E8E93',
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.15,
                   shadowRadius: 10,
                 }}
               >
-
-                {Boolean((currentClip as any)?.thumbnailUri) && (
-                  <Image
-                    source={{ uri: (currentClip as any)?.thumbnailUri }}
-                    style={(isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill) as any}
-                    contentFit="cover"
-                  />
-                )}
-
-                <Animated.View
-                  style={[
-                    StyleSheet.absoluteFill,
-                    { opacity: fadeAnim },
-                  ]}
-                >
-                  <Video
-                    key={currentClip.uri}
-                    ref={exportVideoRef}
-                    source={{ uri: getLiveSandboxUri(currentClip.uri) }}
-                    style={isExportVideoVertical ? rotatedStyle : StyleSheet.absoluteFill}
-                    resizeMode={ResizeMode.COVER}
-                    shouldPlay={true}
-                    isLooping={list.length === 1}
-                    isMuted={currentClip.isMuted ?? false}
-                    rate={currentClip.rate || 1.0}
-                    shouldCorrectPitch={true}
-                    onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
-                    onReadyForDisplay={(event) => {
-                      if (event?.naturalSize) {
-                        const { width, height } = event.naturalSize;
-                        setIsExportVideoVertical(height > width);
-                      }
-                    }}
-                  />
-                </Animated.View>
+                <Video
+                  ref={exportVideoRef}
+                  source={{ uri: getLiveSandboxUri(currentClip.uri) }}
+                  style={isExportVideoVertical ? (rotatedStyle as any) : StyleSheet.absoluteFill}
+                  resizeMode={ResizeMode.COVER}
+                  shouldPlay={true}
+                  isLooping={list.length === 1}
+                  isMuted={currentClip.isMuted ?? false}
+                  rate={currentClip.rate || 1.0}
+                  shouldCorrectPitch={true}
+                  useNativeControls={false}
+                  onLoad={() => {
+                    exportVideoRef.current?.playAsync().catch(() => {});
+                  }}
+                  onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+                  onReadyForDisplay={() => {
+                    exportVideoRef.current?.playAsync().catch(() => {});
+                  }}
+                />
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
                 {/* OVERLAY TEXT: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}

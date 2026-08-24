@@ -114,6 +114,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const [showInstructions, setShowInstructions] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  const vlogFadeAnim = useRef(new Animated.Value(1)).current;
+
   const formatExportTime = (ts?: string, rawDisplay?: string) => {
     if (rawDisplay) return rawDisplay;
     if (!ts) return '7:26 PM';
@@ -810,7 +812,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <CRTStaticCard isDark={isDark} width={cardWidth} height={cardHeight} borderRadius={28} showBouncingSmiley={!currentUri} />
               {!!currentUri && (
                 <Video
-                  key={currentUri}
                   ref={vlogVideoRef}
                   source={{ uri: currentUri }}
                   style={isSheetVideoVertical ? rotatedStyle : styles.videoBackground}
@@ -830,11 +831,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       }).catch(() => {});
                     }
                   }}
-                  onReadyForDisplay={(event) => {
-                    if (event?.naturalSize) {
-                      const { width: w, height: h } = event.naturalSize;
-                      setIsSheetVideoVertical(h > w);
-                    }
+                  onReadyForDisplay={() => {
                     vlogVideoRef.current?.playAsync().catch(() => {});
                   }}
                 />

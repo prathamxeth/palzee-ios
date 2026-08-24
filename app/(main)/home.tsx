@@ -45,7 +45,7 @@ import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { ActivityDrawer } from '../../components/home/ActivityDrawer';
 import { VlogSheet, EditExportSheet, CRTStaticCard } from '../../components/vlog';
 import { ViewingPalsInstructionModal } from '../../components/vlog/ViewingPalsInstructionModal';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode, Audio } from 'expo-av';
 import { LiquidGlassIconButton } from '../../components/ui/LiquidGlassIconButton';
 import CameraScreen from './camera';
 import PalCameraPreview from '../../components/camera/PalCameraPreview';
@@ -508,6 +508,16 @@ export default function HomeScreen({
       easing: Easing.bezier(0.25, 1, 0.5, 1),
       useNativeDriver: true,
     }).start();
+
+    if (activeTab === 'pals') {
+      Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).then(() => {
+        homeVideoRef.current?.playAsync().catch(() => {});
+      }).catch(() => {});
+    }
   }, [activeTab]);
 
   // Accelerometer tilt detection for "rotate to capture"
@@ -673,9 +683,10 @@ export default function HomeScreen({
   const homeProgressAnim = useRef(new Animated.Value(0)).current;
   const [isHomeVlogVertical, setIsHomeVlogVertical] = useState(true);
   const vlogFadeAnim = useRef(new Animated.Value(1)).current;
+  const isHomeVlogAdvancingRef = useRef(false);
 
   useEffect(() => {
-    vlogFadeAnim.setValue(0.2);
+    vlogFadeAnim.setValue(0.7);
     Animated.timing(vlogFadeAnim, {
       toValue: 1,
       duration: 350,
@@ -1059,59 +1070,53 @@ export default function HomeScreen({
                       activeOpacity={0.9}
                       onPress={() => setShowExportSheet(true)}
                     >
-                      {/* THUMBNAIL BACKDROP TO PREVENT BLACK FLASHES BETWEEN SLIDESHOW CLIPS */}
-                      {Boolean(currentThumbLiveUri) && (
-                        <Image
-                          source={{ uri: currentThumbLiveUri }}
-                          style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
-                          resizeMode="cover"
-                        />
-                      )}
-                      <Animated.View
-                        style={[
-                          StyleSheet.absoluteFillObject,
-                          { opacity: vlogFadeAnim },
-                        ]}
-                      >
-                        <Video
-                          key={currentVideoLiveUri || activeTodayClip?.id}
-                          ref={homeVideoRef}
-                          source={{ uri: currentVideoLiveUri }}
-                          style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
-                          resizeMode={ResizeMode.COVER}
-                          shouldPlay={true}
-                          isLooping={todayVlogList.length === 1}
-                          isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
-                          rate={activeTodayClip?.rate || 1.0}
-                          shouldCorrectPitch={true}
-                          useNativeControls={false}
-                          progressUpdateIntervalMillis={100}
-                          onLoad={() => {
-                            homeVideoRef.current?.playAsync().catch(() => {});
-                          }}
-                          onPlaybackStatusUpdate={(status) => {
-                            if (status.isLoaded) {
-                              if (status.durationMillis && status.durationMillis > 0) {
-                                const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
-                                homeProgressAnim.setValue(p);
-                              }
-                              if (status.didJustFinish) {
-                                homeProgressAnim.setValue(0);
-                                if (todayVlogList.length > 1) {
-                                  setHomeVlogIndex((prev) => (prev + 1) % todayVlogList.length);
-                                } else {
-                                  homeVideoRef.current?.setPositionAsync(0).then(() => {
-                                    homeVideoRef.current?.playAsync();
-                                  }).catch(() => {});
-                                }
+                      <Video
+                        ref={homeVideoRef}
+                        source={{ uri: currentVideoLiveUri }}
+                        style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={true}
+                        isLooping={todayVlogList.length === 1}
+                        isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
+                        rate={activeTodayClip?.rate || 1.0}
+                        shouldCorrectPitch={true}
+                        useNativeControls={false}
+                        progressUpdateIntervalMillis={100}
+                        onLoad={() => {
+                          homeVideoRef.current?.playAsync().catch(() => {});
+                        }}
+                        onPlaybackStatusUpdate={(status) => {
+                          if (status.isLoaded) {
+                            if (status.durationMillis && status.durationMillis > 0) {
+                              const p = Math.min(Math.max(status.positionMillis / status.durationMillis, 0), 1);
+                              homeProgressAnim.setValue(p);
+                            }
+                            if (
+                              status.didJustFinish &&
+                              !isHomeVlogAdvancingRef.current &&
+                              status.positionMillis > 500 &&
+                              status.durationMillis &&
+                              status.positionMillis >= status.durationMillis - 250
+                            ) {
+                              isHomeVlogAdvancingRef.current = true;
+                              setTimeout(() => {
+                                isHomeVlogAdvancingRef.current = false;
+                              }, 700);
+                              homeProgressAnim.setValue(0);
+                              if (todayVlogList.length > 1) {
+                                setHomeVlogIndex((prev) => (prev + 1) % todayVlogList.length);
+                              } else {
+                                homeVideoRef.current?.setPositionAsync(0).then(() => {
+                                  homeVideoRef.current?.playAsync();
+                                }).catch(() => {});
                               }
                             }
-                          }}
-                          onReadyForDisplay={() => {
-                            homeVideoRef.current?.playAsync().catch(() => {});
-                          }}
-                        />
-                      </Animated.View>
+                          }
+                        }}
+                        onReadyForDisplay={() => {
+                          homeVideoRef.current?.playAsync().catch(() => {});
+                        }}
+                      />
                       <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
 
                       {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
