@@ -1041,7 +1041,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: 'rgba(0, 0, 0, 0.45)',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-                paddingBottom: 302.5,
+                paddingBottom: 300.0,
                 paddingRight: 10.0,
               }}
               activeOpacity={1}
@@ -1352,7 +1352,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   paddingTop: 24,
                   paddingBottom: 20,
                   alignItems: 'center',
-                  marginTop: -100,
+                  marginTop: 25.0,
                   backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                   shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
                   shadowOffset: { width: 0, height: 10 },
@@ -1595,7 +1595,7 @@ const styles = StyleSheet.create({
   },
   cardBottomRightDots: {
     position: 'absolute',
-    bottom: 14.0,
+    bottom: 10.0,
     right: 16.0,
     padding: 6,
     zIndex: 20,
