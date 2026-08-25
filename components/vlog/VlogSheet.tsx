@@ -1307,10 +1307,179 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   {renderCalendarGridDays()}
                 </View>
               </TouchableOpacity>
+              {/* IN-CARD EDIT CAPTION OVERLAY WITH CENTER BLINKING CURSOR & TOP CONTROLS */}
+              {showEditCaptionBox && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center' }]}>
+                  {/* TOP LEFT CROSS BUTTON */}
+                  <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
+                    <LiquidGlassIconButton
+                      idPrefix="btnCaptionClose"
+                      isDark={isDark}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowEditCaptionBox(false);
+                      }}
+                    >
+                      <Ionicons name="close" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
+                    </LiquidGlassIconButton>
+                  </View>
+
+                  {/* TOP RIGHT TICK BUTTON */}
+                  <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
+                    <LiquidGlassIconButton
+                      idPrefix="btnCaptionSave"
+                      isDark={isDark}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowEditCaptionBox(false);
+                        handleSaveCaption();
+                      }}
+                    >
+                      <Ionicons name="checkmark" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
+                    </LiquidGlassIconButton>
+                  </View>
+
+                  {/* CENTER BLINKING CURSOR CAPTION INPUT */}
+                  <TextInput
+                    style={{
+                      width: '85%',
+                      textAlign: 'center',
+                      color: '#FFFFFF',
+                      fontSize: 22,
+                      fontFamily: Fonts.SystemRoundedBold,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                    }}
+                    value={editingCaptionText}
+                    onChangeText={setEditingCaptionText}
+                    autoFocus={true}
+                    maxLength={30}
+                    placeholder="add caption..."
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                      setShowEditCaptionBox(false);
+                      handleSaveCaption();
+                    }}
+                  />
+                </View>
+              )}
             </TouchableOpacity>
           </Modal>
 
-          {/* DELETE CONFIRMATION DIALOG MODAL (MATCHING PROFILE DROPDOWN GLOW & GLASS, MOVED 7.5dp ABOVE) */}
+          {/* TRIPLE DOT OPTIONS MENU MODAL */}
+          <Modal
+            visible={showOptionsMenu}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowOptionsMenu(false)}
+          >
+            <TouchableOpacity
+              style={styles.dropdownModalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowOptionsMenu(false)}
+            >
+              <TouchableWithoutFeedback>
+                <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+                  <View
+                    style={[
+                      styles.vlogOptionsDropdownCard,
+                      {
+                        backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                        shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
+                      },
+                    ]}
+                  >
+                    <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                      <Defs>
+                        <LinearGradient id="vlogOptDiagGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={edgeColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                          <Stop offset="40%" stopColor={edgeColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                          <Stop offset="75%" stopColor={edgeColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                          <Stop offset="100%" stopColor={edgeColor} stopOpacity={0.03} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect width="100%" height="100%" fill="url(#vlogOptDiagGlow)" />
+                    </Svg>
+
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                      <Defs>
+                        <LinearGradient id="vlogOptBdrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                          <Stop offset="45%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect x="1" y="1" width="99%" height="99%" rx={24} stroke="url(#vlogOptBdrGrad)" strokeWidth={1.2} fill="none" />
+                    </Svg>
+
+                    {/* 1. Mute */}
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={toggleMute}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                        {currentIsMuted ? 'unmute' : 'mute'}
+                      </Text>
+                      <Ionicons
+                        name={currentIsMuted ? 'volume-mute-outline' : 'volume-high-outline'}
+                        size={22}
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                      />
+                    </TouchableOpacity>
+
+                    <View style={[styles.dropdownMenuDivider, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.06)' }]} />
+
+                    {/* 2. Edit Caption */}
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowOptionsMenu(false);
+                        setEditingCaptionText(currentCaption);
+                        setShowEditCaptionBox(true);
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                        edit caption
+                      </Text>
+                      <Ionicons
+                        name="pencil-outline"
+                        size={20}
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                      />
+                    </TouchableOpacity>
+
+                    <View style={[styles.dropdownMenuDivider, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.06)' }]} />
+
+                    {/* 3. Delete */}
+                    <TouchableOpacity
+                      style={styles.dropdownMenuItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setShowOptionsMenu(false);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Text style={[styles.dropdownMenuText, { color: '#FF3B30' }]}>
+                        delete
+                      </Text>
+                      <Ionicons
+                        name="trash-outline"
+                        size={20}
+                        color="#FF3B30"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </Modal>
+
+          {/* DELETE CONFIRMATION DIALOG MODAL (PERFECTLY MATCHING PROFILE DROPDOWN GLOW & GLASS, MOVED 7.5dp ABOVE) */}
           <Modal
             visible={showDeleteDialog}
             transparent={true}
@@ -1331,7 +1500,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <TouchableOpacity
                 style={{
                   width: Math.min(cardWidth * 0.88, 300),
-                  borderRadius: 28,
+                  borderRadius: 24,
                   overflow: 'hidden',
                   paddingHorizontal: 20,
                   paddingTop: 24,
@@ -1372,7 +1541,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="1" y="1" width="99%" height="99%" rx={28} stroke="url(#delBdrGrad)" strokeWidth={1.2} fill="none" />
+                  <Rect x="1" y="1" width="99%" height="99%" rx={24} stroke="url(#delBdrGrad)" strokeWidth={1.2} fill="none" />
                 </Svg>
 
                 <Text
@@ -1423,7 +1592,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     </Text>
                   </TouchableOpacity>
 
-                  {/* Delete Pal Button */}
+                  {/* Delete Pal Button (Liquid Glass Background + Black Text) */}
                   <TouchableOpacity
                     style={{
                       flex: 1,
@@ -1439,18 +1608,19 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                     <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                       <Defs>
-                        <LinearGradient id="delPalPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={isDark ? 'rgba(255, 59, 48, 0.30)' : 'rgba(255, 59, 48, 0.20)'} stopOpacity={0.9} />
-                          <Stop offset="100%" stopColor={isDark ? 'rgba(255, 59, 48, 0.15)' : 'rgba(255, 59, 48, 0.10)'} stopOpacity={0.8} />
+                        <LinearGradient id="delActionPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.90} />
+                          <Stop offset="50%" stopColor={isDark ? '#18181B' : '#F7F6F3'} stopOpacity={isDark ? 0.60 : 0.78} />
+                          <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.75 : 0.65} />
                         </LinearGradient>
-                        <LinearGradient id="delPalPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FF3B30" stopOpacity={0.7} />
-                          <Stop offset="100%" stopColor="#FF3B30" stopOpacity={0.2} />
+                        <LinearGradient id="delActionPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0.75" y="0.75" width="99%" height="44.5" rx={22.25} fill="url(#delPalPillGrad)" stroke="url(#delPalPillBdr)" strokeWidth={1.2} />
+                      <Rect x="0.75" y="0.75" width="99%" height="44.5" rx={22.25} fill="url(#delActionPillGrad)" stroke="url(#delActionPillBdr)" strokeWidth={1.2} />
                     </Svg>
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30' }}>
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#000000' }}>
                       delete pal
                     </Text>
                   </TouchableOpacity>

@@ -24,7 +24,7 @@ import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
-import { getLiveSandboxUri } from '../../utils/mediaUtils';
+import { getLiveSandboxUri, formatExactTime } from '../../utils/mediaUtils';
 
 /**
  * Calculates the Palzee 4 AM - 4 AM daily cycle for a timestamp.
@@ -80,6 +80,7 @@ export const ChatDrawer = ({
   const isDark = systemScheme === 'dark';
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const edgeColor = (Colors?.BorderGlow as any)?.[selectedThemeColor] || '#FE9068';
+  const accentColor = edgeColor;
   const textColor = isDark ? '#FFFFFF' : '#000000';
   const screenBg = isDark ? '#000000' : '#F5F5F7';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
@@ -321,22 +322,19 @@ export const ChatDrawer = ({
                               clip.mode === 'off'
                             );
 
-                            const clipThumbRotatedStyle = isClipVertical
+                            const clipRotatedStyle = isClipVertical
                               ? {
                                   position: 'absolute' as const,
-                                  top: (86 - 146) / 2,
-                                  left: (146 - 86) / 2,
-                                  width: 86,
-                                  height: 146,
+                                  top: modalVideoTop,
+                                  left: modalVideoLeft,
+                                  width: modalVideoWidth,
+                                  height: modalVideoHeight,
                                   transform: [{ rotate: '270deg' }],
                                 }
-                              : {
-                                  width: 146,
-                                  height: 86,
-                                };
+                              : StyleSheet.absoluteFillObject;
 
                             return (
-                              <View key={clip.id || `vlog_clip_${group.dayOffset}_${idx}`} style={{ width: '100%', alignItems: 'flex-end', marginBottom: 14 }}>
+                              <View key={clip.id || `vlog_clip_${group.dayOffset}_${idx}`} style={{ width: '100%', alignItems: 'center', marginBottom: 16 }}>
                                 {/* Timestamp Header Above Thumbnail: Day Text BOLD, Time Text REGULAR */}
                                 <Text style={{ alignSelf: 'center', marginBottom: 10 }}>
                                   <Text
@@ -361,35 +359,86 @@ export const ChatDrawer = ({
                                   </Text>
                                 </Text>
 
-                                {/* Thumbnail Bubble (146 x 86px) */}
+                                {/* Scaled Vlog Card (Exact Size of VlogSheet) */}
                                 <TouchableOpacity
                                   activeOpacity={0.9}
                                   onPress={() => {
                                     setSelectedPreviewClip(clip);
                                     setPreviewVisible(true);
                                   }}
-                                  style={[
-                                    styles.thumbnailCard,
-                                    { borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)' },
-                                  ]}
+                                  style={{
+                                    width: cardWidth,
+                                    height: cardHeight,
+                                    borderRadius: 28,
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    backgroundColor: '#000000',
+                                    alignSelf: 'center',
+                                    borderWidth: 1,
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.10)',
+                                  }}
                                 >
                                   {Boolean(clip.thumbnailUri) ? (
                                     <Image
                                       source={{ uri: clip.thumbnailUri }}
-                                      style={clipThumbRotatedStyle}
+                                      style={clipRotatedStyle}
                                       contentFit="cover"
                                     />
                                   ) : (
                                     <Video
                                       source={{ uri: clip.uri }}
-                                      style={clipThumbRotatedStyle}
-                                      videoStyle={isClipVertical ? { width: '100%', height: '100%' } : { width: 146, height: 86, borderRadius: 20 }}
+                                      style={clipRotatedStyle}
                                       resizeMode={ResizeMode.COVER}
                                       shouldPlay={true}
                                       isLooping={true}
                                       isMuted={true}
                                     />
                                   )}
+                                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
+
+                                  {/* TOP LEFT PROFILE BADGE */}
+                                  <View style={{ position: 'absolute', top: 16, left: 16, zIndex: 20 }} pointerEvents="none">
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7.5 }}>
+                                      <View style={{ width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: accentColor, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Image
+                                          source={require('../../assets/images/capture_smile.png')}
+                                          style={{ width: 18, height: 18 }}
+                                          contentFit="contain"
+                                        />
+                                      </View>
+                                      <Text style={{ color: '#FFFFFF', fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold }}>
+                                        {user?.displayName || 'you'}
+                                      </Text>
+                                    </View>
+                                  </View>
+
+                                  {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
+                                  <View
+                                    style={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      bottom: 0,
+                                      left: 20,
+                                      right: 20,
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      zIndex: 10,
+                                    }}
+                                    pointerEvents="none"
+                                  >
+                                    <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold }}>
+                                      vlog
+                                    </Text>
+                                    {!!clip?.caption && (
+                                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center', flex: 1, marginHorizontal: 8 }}>
+                                        {clip?.caption}
+                                      </Text>
+                                    )}
+                                    <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                                      {formatExactTime((clip as any)?.displayTime || clip?.timestamp)}
+                                    </Text>
+                                  </View>
                                 </TouchableOpacity>
                               </View>
                             );
