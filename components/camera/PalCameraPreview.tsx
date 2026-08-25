@@ -78,7 +78,14 @@ export default function PalCameraPreview({
   const isHeldDownRef = useRef(false);
   const isRecordingRef = useRef(false);
   const countdownIntervalRef = useRef<any>(null);
+  const countdownStartTimeRef = useRef<number>(0);
   const baseZoomRef = useRef(0.05);
+  const recordingStartTimeRef = useRef<number>(0);
+  const timerModeRef = useRef<TimerMode>(timerMode);
+
+  useEffect(() => {
+    timerModeRef.current = timerMode;
+  }, [timerMode]);
 
   useEffect(() => {
     isRecordingRef.current = isRecording;
@@ -92,26 +99,19 @@ export default function PalCameraPreview({
     setCountdown(null);
   };
 
-  const recordingTimerRef = useRef<any>(null);
-  const recordingStartTimeRef = useRef<number>(0);
-
   const stopRecording = async () => {
-    if (recordingTimerRef.current) {
-      clearTimeout(recordingTimerRef.current);
-      recordingTimerRef.current = null;
-    }
-    const elapsed = Date.now() - recordingStartTimeRef.current;
-    if (elapsed < 850) {
-      setTimeout(async () => {
-        if (cameraRef.current && isRecordingRef.current) {
-          try {
-            await cameraRef.current.stopRecording();
-          } catch (e) {}
-        }
-      }, 850 - elapsed);
-      return;
-    }
     if (cameraRef.current && isRecordingRef.current) {
+      const elapsed = Date.now() - recordingStartTimeRef.current;
+      if (elapsed < 600) {
+        setTimeout(async () => {
+          if (cameraRef.current && isRecordingRef.current) {
+            try {
+              await cameraRef.current.stopRecording();
+            } catch (e) {}
+          }
+        }, 600 - elapsed);
+        return;
+      }
       try {
         await cameraRef.current.stopRecording();
       } catch (e) {}
@@ -121,15 +121,20 @@ export default function PalCameraPreview({
   const shutterPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onStartShouldSetPanResponderCapture: () => true,
+      onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponderCapture: () => false,
       onPanResponderGrant: () => {
+        const now = Date.now();
+        // If recording is already in progress, ignore taps so recording runs uninterrupted for its full duration
         if (isRecordingRef.current) {
-          stopRecording();
           return;
         }
         if (countdownIntervalRef.current !== null || countdown !== null) {
+          // Ignore duplicate rapid grants (within 400ms of countdown start)
+          if (now - countdownStartTimeRef.current < 400) {
+            return;
+          }
           cancelCountdown();
           return;
         }
@@ -145,15 +150,10 @@ export default function PalCameraPreview({
       },
       onPanResponderRelease: () => {
         isHeldDownRef.current = false;
-        if (timerMode === 'off' && isRecordingRef.current) {
-          stopRecording();
-        }
+        // Do not stop recording on release: let it run for the exact full duration
       },
       onPanResponderTerminate: () => {
         isHeldDownRef.current = false;
-        if (timerMode === 'off' && isRecordingRef.current) {
-          stopRecording();
-        }
       },
     })
   ).current;
@@ -336,11 +336,12 @@ export default function PalCameraPreview({
   };
 
   const startRecordSequence = () => {
-    if (isRecording || countdown !== null) return;
+    if (isRecordingRef.current || countdown !== null) return;
+    const mode = timerModeRef.current;
 
-    if (timerMode === '3s') {
+    if (mode === '3s') {
       runCountdown(3);
-    } else if (timerMode === '5s') {
+    } else if (mode === '5s') {
       runCountdown(5);
     } else {
       executeRecording();
@@ -349,6 +350,7 @@ export default function PalCameraPreview({
 
   const runCountdown = (sec: number) => {
     cancelCountdown();
+    countdownStartTimeRef.current = Date.now();
     setCountdown(sec);
     let count = sec;
     countdownIntervalRef.current = setInterval(() => {
@@ -363,11 +365,12 @@ export default function PalCameraPreview({
   };
 
   const getRecordingDurationSec = () => {
-    if (timerMode === 'off') return 2.0;
-    if (timerMode === '3s') return 3.0; // 3s video after 3..2..1 countdown
-    if (timerMode === '5s') return 5.0; // 5s video after 5..4..3..2..1 countdown
-    if (timerMode === 'timelapse') return 10.0; // 10s video in timelapse mode
-    if (timerMode === 'jump_cut') return 15.0; // 15s video in jumpcut mode
+    const mode = timerModeRef.current;
+    if (mode === 'off') return 2.0;
+    if (mode === '3s') return 3.0; // 3s video after 3..2..1 countdown
+    if (mode === '5s') return 5.0; // 5s video after 5..4..3..2..1 countdown
+    if (mode === 'timelapse') return 10.0; // 10s video in timelapse mode
+    if (mode === 'jump_cut') return 15.0; // 15s video in jumpcut mode
     return 2.0;
   };
 
@@ -387,15 +390,19 @@ export default function PalCameraPreview({
       useNativeDriver: false,
     }).start();
 
-    if (recordingTimerRef.current) {
-      clearTimeout(recordingTimerRef.current);
-    }
-    recordingTimerRef.current = setTimeout(() => {
-      stopRecording();
+    const stopTimer = setTimeout(() => {
+      if (cameraRef.current && isRecordingRef.current) {
+        try {
+          cameraRef.current.stopRecording();
+        } catch (e) {}
+      }
     }, recSec * 1000);
 
     try {
-      const data = await cameraRef.current.recordAsync();
+      const data = await cameraRef.current.recordAsync({
+        maxDuration: recSec + 3,
+      });
+      clearTimeout(stopTimer);
       setIsRecording(false);
       isRecordingRef.current = false;
       setIsPreparingVideo(true);
@@ -412,12 +419,10 @@ export default function PalCameraPreview({
         }
       }
     } catch (e) {
+      clearTimeout(stopTimer);
       console.log('Record error:', e);
     } finally {
-      if (recordingTimerRef.current) {
-        clearTimeout(recordingTimerRef.current);
-        recordingTimerRef.current = null;
-      }
+      clearTimeout(stopTimer);
       setIsRecording(false);
       isRecordingRef.current = false;
       setIsPreparingVideo(false);
