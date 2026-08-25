@@ -1168,11 +1168,11 @@ ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeD
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x c -c /dev/null
 
-ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x assembler-with-cpp -c /dev/null
-
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -V
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x assembler-with-cpp -c /dev/null
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
 
@@ -1182,8 +1182,8 @@ ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
 
-Build description signature: 29659aced02c996b82710d2ef31e8fc7
-Build description path: /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/XCBuildData/29659aced02c996b82710d2ef31e8fc7.xcbuilddata
+Build description signature: 71105e2e81b2dd402b5b0c817bd1458c
+Build description path: /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/XCBuildData/71105e2e81b2dd402b5b0c817bd1458c.xcbuilddata
 ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk /Users/pratham/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.5-23F81a-32daed1954a7d5dd0789fcaf2a9bb78b.sdkstatcache
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
     /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -o /Users/pratham/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos26.5-23F81a-32daed1954a7d5dd0789fcaf2a9bb78b.sdkstatcache
@@ -3361,17 +3361,13 @@ PhaseScriptExecution [CP-User]\ [RN]Check\ FBReactNativeSpec /Users/pratham/Libr
     /bin/sh -c /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Pods.build/Debug-iphoneos/React-RCTFBReactNativeSpec.build/Script-46EB2E0002DC20.sh
 Checking whether Codegen has run...
 
-ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoFileSystem/ExpoFileSystem_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoFileSystem/ResourceBundle-ExpoFileSystem_privacy-ExpoFileSystem-Info.plist (in target 'ExpoFileSystem-ExpoFileSystem_privacy' from project 'Pods')
+ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXConstants/ExpoConstants_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXConstants/ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist (in target 'EXConstants-ExpoConstants_privacy' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
-    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoFileSystem/ResourceBundle-ExpoFileSystem_privacy-ExpoFileSystem-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoFileSystem/ExpoFileSystem_privacy.bundle/Info.plist
+    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXConstants/ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXConstants/ExpoConstants_privacy.bundle/Info.plist
 
 ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoSystemUI/ExpoSystemUI_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoSystemUI/ResourceBundle-ExpoSystemUI_privacy-ExpoSystemUI-Info.plist (in target 'ExpoSystemUI-ExpoSystemUI_privacy' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
     builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoSystemUI/ResourceBundle-ExpoSystemUI_privacy-ExpoSystemUI-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoSystemUI/ExpoSystemUI_privacy.bundle/Info.plist
-
-ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXNotifications/ExpoNotifications_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXNotifications/ResourceBundle-ExpoNotifications_privacy-EXNotifications-Info.plist (in target 'EXNotifications-ExpoNotifications_privacy' from project 'Pods')
-    cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
-    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXNotifications/ResourceBundle-ExpoNotifications_privacy-EXNotifications-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXNotifications/ExpoNotifications_privacy.bundle/Info.plist
 
 ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/RNSVG/RNSVGFilters.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/RNSVG/ResourceBundle-RNSVGFilters-RNSVG-Info.plist (in target 'RNSVG-RNSVGFilters' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
@@ -3385,9 +3381,13 @@ ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-b
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
     builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoMediaLibrary/ResourceBundle-ExpoMediaLibrary_privacy-ExpoMediaLibrary-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoMediaLibrary/ExpoMediaLibrary_privacy.bundle/Info.plist
 
-ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXConstants/ExpoConstants_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXConstants/ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist (in target 'EXConstants-ExpoConstants_privacy' from project 'Pods')
+ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoFileSystem/ExpoFileSystem_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoFileSystem/ResourceBundle-ExpoFileSystem_privacy-ExpoFileSystem-Info.plist (in target 'ExpoFileSystem-ExpoFileSystem_privacy' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
-    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXConstants/ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXConstants/ExpoConstants_privacy.bundle/Info.plist
+    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/ExpoFileSystem/ResourceBundle-ExpoFileSystem_privacy-ExpoFileSystem-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/ExpoFileSystem/ExpoFileSystem_privacy.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXNotifications/ExpoNotifications_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXNotifications/ResourceBundle-ExpoNotifications_privacy-EXNotifications-Info.plist (in target 'EXNotifications-ExpoNotifications_privacy' from project 'Pods')
+    cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
+    builtin-infoPlistUtility /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXNotifications/ResourceBundle-ExpoNotifications_privacy-EXNotifications-Info.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXNotifications/ExpoNotifications_privacy.bundle/Info.plist
 
 ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/EXApplication/ExpoApplication_privacy.bundle/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/EXApplication/ResourceBundle-ExpoApplication_privacy-EXApplication-Info.plist (in target 'EXApplication-ExpoApplication_privacy' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
@@ -3957,8 +3957,8 @@ PhaseScriptExecution [CP-User]\ Generate\ app.config\ for\ prebuilt\ Constants.m
     /bin/sh -c /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Pods.build/Debug-iphoneos/EXConstants.build/Script-46EB2E0002DBF0.sh
 Node found at: /opt/homebrew/Cellar/node@20/20.20.2/bin/node
 
-note: Run script build phase '[Expo] Configure project' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Palzee' from project 'Palzee')
 note: Run script build phase 'Bundle React Native code and images' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Palzee' from project 'Palzee')
+note: Run script build phase '[Expo] Configure project' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Palzee' from project 'Palzee')
 PhaseScriptExecution [Expo]\ Configure\ project /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Script-A2CCD0434C7BD54A64BCC44C.sh (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
     export ACTION\=build
@@ -4599,15 +4599,14 @@ PrecompileSwiftBridgingHeader normal arm64 (in target 'Palzee' from project 'Pal
 
 SwiftDriverJobDiscovery normal arm64 Compiling bridging header (in target 'Palzee' from project 'Palzee')
 
-SwiftEmitModule normal arm64 Emitting\ module\ for\ Palzee (in target 'Palzee' from project 'Palzee')
-
-EmitSwiftModule normal arm64 (in target 'Palzee' from project 'Palzee')
-    cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
-    
-
 SwiftCompile normal arm64 Compiling\ ExpoModulesProvider.swift /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/Pods-Palzee/ExpoModulesProvider.swift (in target 'Palzee' from project 'Palzee')
 
 SwiftCompile normal arm64 /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods/Target\ Support\ Files/Pods-Palzee/ExpoModulesProvider.swift (in target 'Palzee' from project 'Palzee')
+    cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Palzee (in target 'Palzee' from project 'Palzee')
+EmitSwiftModule normal arm64 (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
     
 
@@ -5284,18 +5283,14 @@ PhaseScriptExecution [CP]\ Copy\ Pods\ Resources /Users/pratham/Library/Develope
 Transfer starting: 37 files
 EXConstants.bundle/app.config
 
-sent 4205 bytes  received 42 bytes  2022380 bytes/sec
+sent 4205 bytes  received 42 bytes  3860909 bytes/sec
 total size is 25058  speedup is 5.90
-
-CopySwiftLibs /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app (in target 'Palzee' from project 'Palzee')
-    cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
-    builtin-swiftStdLibTool --copy --verbose --sign 0D2C9E8B97E50B370944D4A6DA2A99E2877BE1A9 --scan-executable /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Palzee.debug.dylib --scan-folder /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Frameworks --scan-folder /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/PlugIns --scan-folder /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/SystemExtensions --scan-folder /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Extensions --platform iphoneos --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
 
 ExtractAppIntentsMetadata (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
     /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name Palzee --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 15.1 --bundle-identifier com.pratham.palzee --output /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app --target-triple arm64-apple-ios15.1 --binary-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Palzee --dependency-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee_dependency_info.dat --stringsdata-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee.SwiftFileList --metadata-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Palzee.DependencyMetadataFileList --static-metadata-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Palzee.DependencyStaticMetadataFileList --swift-const-vals-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-08-25 16:38:14.750 appintentsmetadataprocessor[66764:946643] Starting appintentsmetadataprocessor export
-2026-08-25 16:38:14.759 appintentsmetadataprocessor[66764:946643] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+2026-08-25 16:43:06.606 appintentsmetadataprocessor[67924:953008] Starting appintentsmetadataprocessor export
+2026-08-25 16:43:06.610 appintentsmetadataprocessor[67924:953008] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 CodeSign /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Palzee.debug.dylib (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
