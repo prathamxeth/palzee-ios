@@ -1063,6 +1063,16 @@ export default function HomeScreen({
                   transform: [{ rotate: '270deg' }],
                 };
 
+                const isHomeScreenActive =
+                  activeTab === 'pals' &&
+                  !showExportSheet &&
+                  !showEditExportSheet &&
+                  !showChatDrawer &&
+                  !showCamera &&
+                  !showCreateModal &&
+                  !showEditNameModal &&
+                  !showGroupsView;
+
                 return (
                   <View style={{ width: '100%', marginBottom: 16 }}>
                     {/* SCALED UP 16:9 VLOG CARD */}
@@ -1084,15 +1094,17 @@ export default function HomeScreen({
                         source={{ uri: currentVideoLiveUri }}
                         style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
                         resizeMode={ResizeMode.COVER}
-                        shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
+                        shouldPlay={isHomeScreenActive}
                         isLooping={todayVlogList.length === 1}
-                        isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
+                        isMuted={!isHomeScreenActive || (activeTodayClip?.isMuted ?? false)}
                         rate={activeTodayClip?.rate || 1.0}
                         shouldCorrectPitch={true}
                         useNativeControls={false}
-                        progressUpdateIntervalMillis={100}
+                        progressUpdateIntervalMillis={16}
                         onLoad={() => {
-                          homeVideoRef.current?.playAsync().catch(() => {});
+                          if (isHomeScreenActive) {
+                            homeVideoRef.current?.playAsync().catch(() => {});
+                          }
                         }}
                         onPlaybackStatusUpdate={(status) => {
                           if (status.isLoaded) {
@@ -1103,14 +1115,12 @@ export default function HomeScreen({
                             if (
                               status.didJustFinish &&
                               !isHomeVlogAdvancingRef.current &&
-                              status.positionMillis > 500 &&
-                              status.durationMillis &&
-                              status.positionMillis >= status.durationMillis - 250
+                              status.positionMillis > 300
                             ) {
                               isHomeVlogAdvancingRef.current = true;
                               setTimeout(() => {
                                 isHomeVlogAdvancingRef.current = false;
-                              }, 700);
+                              }, 200);
                               homeProgressAnim.setValue(0);
                               if (todayVlogList.length > 1) {
                                 setHomeVlogIndex((prev) => (prev + 1) % todayVlogList.length);
@@ -1123,7 +1133,9 @@ export default function HomeScreen({
                           }
                         }}
                         onReadyForDisplay={() => {
-                          homeVideoRef.current?.playAsync().catch(() => {});
+                          if (isHomeScreenActive) {
+                            homeVideoRef.current?.playAsync().catch(() => {});
+                          }
                         }}
                       />
                       <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
@@ -1174,7 +1186,7 @@ export default function HomeScreen({
                           {todayVlogList.map((_, index) => {
                             const isCurrent = index === homeVlogIndex;
                             const isPast = index < homeVlogIndex;
-                            const barWidth = todayVlogList.length === 1 ? 30 : 24;
+                            const barWidth = todayVlogList.length === 1 ? 32 : 24;
 
                             return (
                               <View
@@ -1189,17 +1201,23 @@ export default function HomeScreen({
                               >
                                 <Animated.View
                                   style={{
-                                    width: isCurrent
-                                      ? homeProgressAnim.interpolate({
-                                          inputRange: [0, 1],
-                                          outputRange: ['0%', '100%'],
-                                        })
-                                      : isPast
-                                      ? '100%'
-                                      : '0%',
+                                    width: '100%',
                                     height: '100%',
                                     backgroundColor: '#FFFFFF',
                                     borderRadius: 2,
+                                    transform: [
+                                      {
+                                        translateX: isCurrent
+                                          ? homeProgressAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [-barWidth, 0],
+                                              extrapolate: 'clamp',
+                                            })
+                                          : isPast
+                                          ? 0
+                                          : -barWidth,
+                                      },
+                                    ],
                                   }}
                                 />
                               </View>

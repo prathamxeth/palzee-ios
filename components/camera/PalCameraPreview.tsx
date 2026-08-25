@@ -339,10 +339,8 @@ export default function PalCameraPreview({
     if (isRecordingRef.current || countdown !== null) return;
     const mode = timerModeRef.current;
 
-    if (mode === '3s') {
+    if (mode === '3s' || mode === '5s') {
       runCountdown(3);
-    } else if (mode === '5s') {
-      runCountdown(5);
     } else {
       executeRecording();
     }
@@ -367,11 +365,21 @@ export default function PalCameraPreview({
   const getRecordingDurationSec = () => {
     const mode = timerModeRef.current;
     if (mode === 'off') return 2.0;
-    if (mode === '3s') return 3.0; // 3s video after 3..2..1 countdown
-    if (mode === '5s') return 5.0; // 5s video after 5..4..3..2..1 countdown
-    if (mode === 'timelapse') return 10.0; // 10s video in timelapse mode
-    if (mode === 'jump_cut') return 15.0; // 15s video in jumpcut mode
+    if (mode === '3s') return 3.0;
+    if (mode === '5s') return 5.0;
+    if (mode === 'timelapse') return 10.0;
+    if (mode === 'jump_cut') return 15.0;
     return 2.0;
+  };
+
+  const getProgressDurationSec = () => {
+    const mode = timerModeRef.current;
+    if (mode === 'off') return 3.0;
+    if (mode === '3s') return 4.0;
+    if (mode === '5s') return 7.0;
+    if (mode === 'timelapse') return 12.0;
+    if (mode === 'jump_cut') return 17.0;
+    return 3.0;
   };
 
   const executeRecording = async () => {
@@ -382,10 +390,11 @@ export default function PalCameraPreview({
     progressAnim.setValue(0);
 
     const recSec = getRecordingDurationSec();
+    const progressSec = getProgressDurationSec();
 
     Animated.timing(progressAnim, {
       toValue: 1,
-      duration: recSec * 1000,
+      duration: progressSec * 1000,
       easing: Easing.linear,
       useNativeDriver: false,
     }).start();
@@ -399,14 +408,19 @@ export default function PalCameraPreview({
     }, recSec * 1000);
 
     try {
+      setIsPreparingVideo(true);
       const data = await cameraRef.current.recordAsync({
-        maxDuration: recSec + 3,
+        maxDuration: recSec + 4,
       });
       clearTimeout(stopTimer);
-      setIsRecording(false);
-      isRecordingRef.current = false;
-      setIsPreparingVideo(true);
       if (data && data.uri) {
+        // Wait for the full progressSec mimic animation so UI smoothly completes before transitioning
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        const remaining = Math.max(progressSec * 1000 - elapsed, 0);
+        if (remaining > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remaining));
+        }
+
         try {
           const info = await FileSystem.getInfoAsync(data.uri);
           if (info && info.exists) {
@@ -798,12 +812,13 @@ const styles = StyleSheet.create({
   },
   countdownText: {
     fontSize: 90,
-    fontFamily: Fonts.SystemRounded,
+    fontFamily: Fonts.DelaGothicOne,
     fontWeight: '400',
     color: '#FFFFFF',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 10,
+    transform: [{ rotate: '90deg' }],
   },
   modePillContainer: {
     position: 'absolute',
