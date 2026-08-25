@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, FlashMode, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import Svg, { Circle } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
@@ -65,6 +65,7 @@ export default function PalCameraPreview({
   const insets = useSafeAreaInsets();
 
   const [permission, requestPermission] = useCameraPermissions();
+  const [micPermission, requestMicPermission] = useMicrophonePermissions();
   const [storeGranted, setStoreGranted] = useState(cameraWarmupStore.isCameraGranted());
   const hasPermission = Boolean(permission?.granted || storeGranted);
 
@@ -309,7 +310,10 @@ export default function PalCameraPreview({
     if (!hasPermission && requestPermission) {
       requestPermission();
     }
-  }, [hasPermission]);
+    if (!micPermission?.granted && requestMicPermission) {
+      requestMicPermission().catch(() => {});
+    }
+  }, [hasPermission, micPermission]);
 
   const handleFlashPress = () => {
     if (flash === 'off') {
@@ -371,10 +375,10 @@ export default function PalCameraPreview({
     }).start();
 
     try {
+      const isMute = !micPermission?.granted;
       const data = await cameraRef.current.recordAsync({
         maxDuration: recSec,
-        quality: '1080p',
-        mute: false,
+        mute: isMute,
       });
       setIsRecording(false);
       setIsPreparingVideo(true);
@@ -392,6 +396,17 @@ export default function PalCameraPreview({
       }
     } catch (e) {
       console.log('Record error:', e);
+      try {
+        const retryData = await cameraRef.current.recordAsync({
+          maxDuration: recSec,
+          mute: true,
+        });
+        if (retryData && retryData.uri) {
+          setPreviewVideoUri(retryData.uri);
+        }
+      } catch (retryErr) {
+        console.log('Retry record error:', retryErr);
+      }
     } finally {
       setIsRecording(false);
       setIsPreparingVideo(false);
