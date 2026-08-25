@@ -1310,7 +1310,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </TouchableOpacity>
           </Modal>
 
-          {/* DELETE CONFIRMATION DIALOG MODAL (EXACT REPLICA OF IMAGE 1 & IMAGE 2 AT CARD CENTER) */}
+          {/* DELETE CONFIRMATION DIALOG MODAL (MATCHING PROFILE DROPDOWN GLOW & GLASS, MOVED 7.5dp ABOVE) */}
           <Modal
             visible={showDeleteDialog}
             transparent={true}
@@ -1337,11 +1337,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   paddingTop: 24,
                   paddingBottom: 20,
                   alignItems: 'center',
-                  marginTop: 32.5,
-                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.88)' : 'rgba(255, 255, 255, 0.90)',
-                  borderWidth: 1.2,
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)',
-                  shadowColor: '#000',
+                  marginTop: 25.0,
+                  backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                  shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
                   shadowOffset: { width: 0, height: 10 },
                   shadowOpacity: 0.35,
                   shadowRadius: 20,
@@ -1350,12 +1348,38 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
               >
-                <BlurView key={isDark ? 'dark' : 'light'} intensity={50} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+
+                {/* Inner Diagonal Glow */}
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="delDiagGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={edgeColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                      <Stop offset="40%" stopColor={edgeColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                      <Stop offset="75%" stopColor={edgeColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                      <Stop offset="100%" stopColor={edgeColor} stopOpacity={0.03} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect width="100%" height="100%" fill="url(#delDiagGlow)" />
+                </Svg>
+
+                {/* Specular Border Gradient */}
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="delBdrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                      <Stop offset="45%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="1" y="1" width="99%" height="99%" rx={28} stroke="url(#delBdrGrad)" strokeWidth={1.2} fill="none" />
+                </Svg>
 
                 <Text
                   style={{
                     fontSize: 16,
-                    fontFamily: Fonts.SystemRoundedRegular,
+                    fontFamily: Fonts.SystemRoundedBold,
+                    fontWeight: 'bold',
                     color: isDark ? '#FFFFFF' : '#000000',
                     textAlign: 'center',
                     lineHeight: 22,
@@ -1366,6 +1390,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 </Text>
 
                 <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                  {/* Cancel Button */}
                   <TouchableOpacity
                     style={{
                       flex: 1,
@@ -1374,19 +1399,31 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       overflow: 'hidden',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)',
-                      borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)',
                     }}
                     activeOpacity={0.7}
                     onPress={() => setShowDeleteDialog(false)}
                   >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="cancelDelPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.90} />
+                          <Stop offset="50%" stopColor={isDark ? '#18181B' : '#F7F6F3'} stopOpacity={isDark ? 0.60 : 0.78} />
+                          <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.75 : 0.65} />
+                        </LinearGradient>
+                        <LinearGradient id="cancelDelPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect x="0.75" y="0.75" width="99%" height="44.5" rx={22.25} fill="url(#cancelDelPillGrad)" stroke="url(#cancelDelPillBdr)" strokeWidth={1.2} />
+                    </Svg>
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: isDark ? '#FFFFFF' : '#000000' }}>
                       cancel
                     </Text>
                   </TouchableOpacity>
 
+                  {/* Delete Pal Button */}
                   <TouchableOpacity
                     style={{
                       flex: 1,
@@ -1395,15 +1432,25 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       overflow: 'hidden',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: isDark ? 'rgba(255, 59, 48, 0.22)' : 'rgba(255, 59, 48, 0.16)',
-                      borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 59, 48, 0.50)' : 'rgba(255, 59, 48, 0.40)',
                     }}
                     activeOpacity={0.7}
                     onPress={handleConfirmDelete}
                   >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="delPalPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor={isDark ? 'rgba(255, 59, 48, 0.30)' : 'rgba(255, 59, 48, 0.20)'} stopOpacity={0.9} />
+                          <Stop offset="100%" stopColor={isDark ? 'rgba(255, 59, 48, 0.15)' : 'rgba(255, 59, 48, 0.10)'} stopOpacity={0.8} />
+                        </LinearGradient>
+                        <LinearGradient id="delPalPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FF3B30" stopOpacity={0.7} />
+                          <Stop offset="100%" stopColor="#FF3B30" stopOpacity={0.2} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect x="0.75" y="0.75" width="99%" height="44.5" rx={22.25} fill="url(#delPalPillGrad)" stroke="url(#delPalPillBdr)" strokeWidth={1.2} />
+                    </Svg>
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30' }}>
                       delete pal
                     </Text>
                   </TouchableOpacity>

@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import { Appearance, ColorSchemeName, useColorScheme } from 'react-native';
 
 /**
  * Returns the current device color scheme with 0ms INSTANT real-time updates
- * using direct native Appearance listeners.
+ * combining React Native useColorScheme() hook with direct Appearance listeners.
  */
 export function useFastColorScheme(): 'dark' | 'light' {
-  const [scheme, setScheme] = useState<'dark' | 'light'>(
-    () => (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light')
-  );
+  const nativeHookScheme = useColorScheme();
+  const [scheme, setScheme] = useState<'dark' | 'light'>(() => {
+    const current = nativeHookScheme || Appearance.getColorScheme();
+    return current === 'dark' ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    if (nativeHookScheme) {
+      setScheme(nativeHookScheme === 'dark' ? 'dark' : 'light');
+    }
+  }, [nativeHookScheme]);
 
   useEffect(() => {
     const update = (next: ColorSchemeName) => {
@@ -16,15 +24,15 @@ export function useFastColorScheme(): 'dark' | 'light' {
       setScheme((prev) => (prev !== active ? active : prev));
     };
 
-    // 1. Instant Native Event Listener
+    // 1. Instant Native Appearance Event Listener
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
       update(colorScheme);
     });
 
-    // 2. High-speed 200ms fallback ticker for open modals/sheets
+    // 2. Fast 50ms poller for modals / sheets on iOS
     const interval = setInterval(() => {
       update(Appearance.getColorScheme());
-    }, 200);
+    }, 50);
 
     return () => {
       subscription.remove();
@@ -32,5 +40,5 @@ export function useFastColorScheme(): 'dark' | 'light' {
     };
   }, []);
 
-  return scheme;
+  return (nativeHookScheme ?? scheme) === 'dark' ? 'dark' : 'light';
 }

@@ -329,13 +329,14 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
 
   const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
-  const flowBg = isDark ? '#000000' : '#F7F6F3';
-  const textColor = isDark ? '#FFFFFF' : '#1A1A1A';
+  const flowBg = isDark ? '#000000' : '#FFFFF2';
+  const textColor = isDark ? '#FFFFFF' : '#000000';
+  const subtextColor = isDark ? '#8E8E93' : '#6E6E73';
+  const termsLinkColor = isDark ? '#CCCCCC' : '#333333';
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <DynamicGlowContainer selectedThemeColor={themeColor} showBorder={true}>
-        <View style={[styles.container, { backgroundColor: flowBg }]}>
+      <View style={[styles.container, { backgroundColor: flowBg }]}>
           <View
             style={[
               styles.content,
@@ -426,7 +427,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                             </Text>
                           </Text>
                         ) : (
-                          <Text style={[styles.inputText, styles.placeholderText]}>
+                          <Text style={[styles.inputText, styles.placeholderText, { color: subtextColor }]}>
                             <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
@@ -459,7 +460,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   {/* STEP 2: LAST NAME INPUT */}
                   {step === 'LAST_NAME' && (
                     <View style={styles.inputSection}>
-                      <Text style={styles.monoText}>{firstName}</Text>
+                      <Text style={[styles.monoText, { color: textColor }]}>{firstName}</Text>
                       <View style={[styles.inputRow, { marginTop: 14 }]}>
                         <TextInput
                           ref={lastInputRef}
@@ -473,14 +474,14 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         />
 
                         {lastName ? (
-                          <Text style={styles.inputText}>
+                          <Text style={[styles.inputText, { color: textColor }]}>
                             {lastName}
                             <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
                           </Text>
                         ) : (
-                          <Text style={[styles.inputText, styles.placeholderText]}>
+                          <Text style={[styles.inputText, styles.placeholderText, { color: subtextColor }]}>
                             <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
@@ -496,7 +497,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                           activeOpacity={0.7}
                           onPress={handleLastNameSubmit}
                         >
-                          <Text style={styles.continueText}>continue &#8594;</Text>
+                          <Text style={[styles.continueText, { color: textColor }]}>continue &#8594;</Text>
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
@@ -504,7 +505,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                           activeOpacity={0.7}
                           onPress={onClose}
                         >
-                          <Text style={styles.cancelText}>cancel</Text>
+                          <Text style={[styles.cancelText, { color: textColor }]}>cancel</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -513,21 +514,21 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   {/* STEP 3: CONFIRMATION STEP */}
                   {step === 'CONFIRM' && (
                     <View style={styles.confirmSection}>
-                      <Text style={styles.monoText}>{`${firstName} ${lastName} :)`}</Text>
+                      <Text style={[styles.monoText, { color: textColor }]}>{`${firstName} ${lastName} :)`}</Text>
 
                       <TouchableOpacity
                         style={styles.continueButton}
                         activeOpacity={0.7}
                         onPress={handleCreateAccount}
                       >
-                        <Text style={styles.continueText}>continue &#8594;</Text>
+                        <Text style={[styles.continueText, { color: textColor }]}>continue &#8594;</Text>
                       </TouchableOpacity>
 
                       {/* Terms of Service Notice below continue button */}
                       <View style={styles.inlineTermsSection}>
-                        <Text style={styles.footerText}>
+                        <Text style={[styles.footerText, { color: subtextColor }]}>
                           by continuing you agree to the{' '}
-                          <Text style={styles.termsLink}>
+                          <Text style={[styles.termsLink, { color: termsLinkColor }]}>
                             terms of service.
                           </Text>
                         </Text>
@@ -538,14 +539,14 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   {/* STEP 4: CREATING ACCOUNT */}
                   {step === 'CREATING' && (
                     <View style={styles.creatingSection}>
-                      <Text style={styles.monoText}>{firstName}</Text>
-                      <Text style={[styles.monoText, { marginTop: 6 }]}>
+                      <Text style={[styles.monoText, { color: textColor }]}>{firstName}</Text>
+                      <Text style={[styles.monoText, { marginTop: 6, color: textColor }]}>
                         {lastName}
                       </Text>
                       <Text
                         style={[
                           styles.monoText,
-                          { marginTop: 24, fontWeight: '600' },
+                          { marginTop: 24, fontWeight: '600', color: textColor },
                         ]}
                       >
                         creating account{dots}
@@ -574,7 +575,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         creating account...
                       </Text>
 
-                      <Text style={[styles.monoText, { marginTop: 16 }]}>
+                      <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                         sign up failed. please try again.
                       </Text>
 
@@ -583,7 +584,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         activeOpacity={0.7}
                         onPress={handleCreateAccount}
                       >
-                        <Text style={styles.continueText}>try again &#8594;</Text>
+                        <Text style={[styles.continueText, { color: textColor }]}>try again &#8594;</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -591,7 +592,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         activeOpacity={0.7}
                         onPress={onClose}
                       >
-                        <Text style={styles.cancelText}>cancel</Text>
+                        <Text style={[styles.cancelText, { color: textColor }]}>cancel</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -600,7 +601,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                 /* STEP 6: PERMISSIONS FLOW (Exact Match with Reference Video) */
                 <View style={styles.permissionsContainer}>
                   {/* Header: → permissions */}
-                  <Text style={styles.monoText}>
+                  <Text style={[styles.monoText, { color: textColor }]}>
                     {permTitleTyped}
                     {permTitleTyped.length < fullPermTitle.length && (
                       <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
@@ -611,7 +612,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
 
                   {/* Subtitle: English version of "먼저 몇 가지 권한이 필요해요..." */}
                   {permTitleTyped.length === fullPermTitle.length && (
-                    <Text style={[styles.monoText, { marginTop: 16 }]}>
+                    <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                       {permSubtitleTyped}
                       {permSubtitleTyped.length < fullPermSubtitle.length && (
                         <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
@@ -625,21 +626,21 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                     <View style={{ marginTop: 28 }}>
                       {/* CAMERA ITEM */}
                       {cameraDone ? (
-                        <Text style={styles.monoText}>
+                        <Text style={[styles.monoText, { color: textColor }]}>
                           <Text style={{ color: '#00E676' }}>✓ </Text>
-                          <Text style={{ color: '#FFFFFF' }}>camera</Text>
+                          <Text style={{ color: textColor }}>camera</Text>
                         </Text>
                       ) : (
                         permSubStep === 'CAMERA' && (
-                          <Text style={styles.monoText}>
+                          <Text style={[styles.monoText, { color: textColor }]}>
                             {permDescTyped.length <= 'camera '.length ? (
-                              <Text style={{ color: '#FFFFFF' }}>{permDescTyped}</Text>
+                              <Text style={{ color: textColor }}>{permDescTyped}</Text>
                             ) : (
                               <>
-                                <Text style={{ color: '#FFFFFF' }}>
+                                <Text style={{ color: textColor }}>
                                   {permDescTyped.substring(0, 'camera '.length)}
                                 </Text>
-                                <Text style={{ color: '#8E8E93' }}>
+                                <Text style={{ color: subtextColor }}>
                                   {permDescTyped.substring('camera '.length)}
                                 </Text>
                               </>
@@ -655,21 +656,21 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
 
                       {/* MICROPHONE ITEM */}
                       {micDone ? (
-                        <Text style={[styles.monoText, { marginTop: 16 }]}>
+                        <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                           <Text style={{ color: '#00E676' }}>✓ </Text>
-                          <Text style={{ color: '#FFFFFF' }}>microphone</Text>
+                          <Text style={{ color: textColor }}>microphone</Text>
                         </Text>
                       ) : (
                         permSubStep === 'MICROPHONE' && (
-                          <Text style={[styles.monoText, { marginTop: 16 }]}>
+                          <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                             {permDescTyped.length <= 'microphone '.length ? (
-                              <Text style={{ color: '#FFFFFF' }}>{permDescTyped}</Text>
+                              <Text style={{ color: textColor }}>{permDescTyped}</Text>
                             ) : (
                               <>
-                                <Text style={{ color: '#FFFFFF' }}>
+                                <Text style={{ color: textColor }}>
                                   {permDescTyped.substring(0, 'microphone '.length)}
                                 </Text>
-                                <Text style={{ color: '#8E8E93' }}>
+                                <Text style={{ color: subtextColor }}>
                                   {permDescTyped.substring('microphone '.length)}
                                 </Text>
                               </>
@@ -685,21 +686,21 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
 
                       {/* NOTIFICATIONS ITEM */}
                       {notifDone ? (
-                        <Text style={[styles.monoText, { marginTop: 16 }]}>
+                        <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                           <Text style={{ color: '#00E676' }}>✓ </Text>
-                          <Text style={{ color: '#FFFFFF' }}>notifications</Text>
+                          <Text style={{ color: textColor }}>notifications</Text>
                         </Text>
                       ) : (
                         permSubStep === 'NOTIFICATIONS' && (
-                          <Text style={[styles.monoText, { marginTop: 16 }]}>
+                          <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                             {permDescTyped.length <= 'notifications '.length ? (
-                              <Text style={{ color: '#FFFFFF' }}>{permDescTyped}</Text>
+                              <Text style={{ color: textColor }}>{permDescTyped}</Text>
                             ) : (
                               <>
-                                <Text style={{ color: '#FFFFFF' }}>
+                                <Text style={{ color: textColor }}>
                                   {permDescTyped.substring(0, 'notifications '.length)}
                                 </Text>
-                                <Text style={{ color: '#8E8E93' }}>
+                                <Text style={{ color: subtextColor }}>
                                   {permDescTyped.substring('notifications '.length)}
                                 </Text>
                               </>
@@ -720,7 +721,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                           activeOpacity={0.7}
                           onPress={handleNextPermission}
                         >
-                          <Text style={styles.continueText}>
+                          <Text style={[styles.continueText, { color: textColor }]}>
                             {permSubStep === 'DONE' ? 'done →' : 'continue →'}
                           </Text>
                         </TouchableOpacity>
@@ -732,7 +733,6 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
             </View>
           </View>
         </View>
-      </DynamicGlowContainer>
     </Modal>
   );
 };

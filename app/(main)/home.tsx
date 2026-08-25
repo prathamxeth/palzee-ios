@@ -37,7 +37,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { InAppBrowserModal } from '../../components/ui/InAppBrowserModal';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { getNearestHourText, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
+import { getNearestHourText, formatExactTime, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal } from '../../components/home/CreatePalModal';
@@ -1127,6 +1127,21 @@ export default function HomeScreen({
                         }}
                       />
                       <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }]} pointerEvents="none" />
+                      {/* TOP LEFT USER INFO BADGE (MATCHING VLOGSHEET) */}
+                      <View style={{ position: 'absolute', top: 16, left: 16, zIndex: 20 }} pointerEvents="none">
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7.5 }}>
+                          <View style={{ width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: accentColor, justifyContent: 'center', alignItems: 'center' }}>
+                            <Image
+                              source={require('../../assets/images/capture_smile.png')}
+                              style={{ width: 18, height: 18 }}
+                              resizeMode="contain"
+                            />
+                          </View>
+                          <Text style={{ color: '#FFFFFF', fontSize: 16, fontFamily: Fonts.SystemRoundedSemibold }}>
+                            {user?.displayName || 'you'}
+                          </Text>
+                        </View>
+                      </View>
 
                       {/* CENTER OVERLAY: VLOG (LEFT) | CAPTION (CENTER) | TIMESTAMP (RIGHT) */}
                       <View
@@ -1147,12 +1162,12 @@ export default function HomeScreen({
                           vlog
                         </Text>
                         {!!activeTodayClip?.caption && (
-                          <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center', flex: 1, marginHorizontal: 8 }}>
                             {activeTodayClip?.caption}
                           </Text>
                         )}
                         <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
-                          {getNearestHourText(activeTodayClip?.timestamp || activeTodayClip?.displayTime)}
+                          {formatExactTime(activeTodayClip?.displayTime || activeTodayClip?.timestamp || activeTodayClip?.created_at)}
                         </Text>
                       </View>
 
