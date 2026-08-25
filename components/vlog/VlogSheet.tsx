@@ -421,10 +421,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     }
   }, [visible, dayOffset, initialOpenExport]);
 
+  const prevVlogUriRef = useRef<string | null>(null);
+
   useEffect(() => {
     setEditingCaptionText(currentCaption);
 
-    if (currentUri && vlogVideoRef.current) {
+    if (currentUri && prevVlogUriRef.current && currentUri !== prevVlogUriRef.current && vlogVideoRef.current) {
+      prevVlogUriRef.current = currentUri;
       vlogVideoRef.current.loadAsync(
         { uri: currentUri },
         {
@@ -438,6 +441,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       ).then(() => {
         vlogVideoRef.current?.playAsync().catch(() => {});
       }).catch(() => {});
+    } else if (currentUri && !prevVlogUriRef.current) {
+      prevVlogUriRef.current = currentUri;
     }
   }, [currentCaption, currentVlogIndex, currentUri, visible]);
 

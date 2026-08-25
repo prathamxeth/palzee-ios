@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   Image,
+  PanResponder,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,6 +24,8 @@ import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
 import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
 import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const DANCING_COLORS = ['#00F0FF', '#FF007F', '#7F00FF', '#00FF66', '#FFCC00', '#FF3366', '#00E5FF', '#A800FF'];
 
@@ -38,6 +41,7 @@ interface PalCameraPreviewProps {
   onToggleTimerMode?: () => void;
   facing?: CameraType;
   onToggleFacing?: () => void;
+  isActive?: boolean;
 }
 
 export default function PalCameraPreview({
@@ -50,6 +54,7 @@ export default function PalCameraPreview({
   onToggleTimerMode,
   facing = 'back',
   onToggleFacing,
+  isActive = true,
 }: PalCameraPreviewProps) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const screenWidth = windowWidth > 0 ? windowWidth : 390;
@@ -64,10 +69,53 @@ export default function PalCameraPreview({
   const hasPermission = Boolean(permission?.granted || storeGranted);
 
   const [flash, setFlash] = useState<FlashMode>('off');
-  const [zoomLevel, setZoomLevel] = useState<number>(1.0); // Default 1x selected
+  const [cameraZoom, setCameraZoom] = useState<number>(0.05); // Default 1x
   const [isRecording, setIsRecording] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  const isHeldDownRef = useRef(false);
+  const baseZoomRef = useRef(0.05);
+
+  const stopRecording = async () => {
+    if (cameraRef.current && isRecording) {
+      try {
+        await cameraRef.current.stopRecording();
+      } catch (e) {}
+    }
+  };
+
+  const shutterPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderGrant: () => {
+        isHeldDownRef.current = true;
+        baseZoomRef.current = cameraZoom;
+        startRecordSequence();
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        if (!isHeldDownRef.current) return;
+        const dragUp = -gestureState.dy;
+        const dynamicZoom = Math.min(Math.max(baseZoomRef.current + (dragUp / 200) * 0.6, 0.0), 0.8);
+        setCameraZoom(dynamicZoom);
+      },
+      onPanResponderRelease: () => {
+        isHeldDownRef.current = false;
+        if (timerMode === 'off' && isRecording) {
+          stopRecording();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isHeldDownRef.current = false;
+        if (timerMode === 'off' && isRecording) {
+          stopRecording();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     const unsub = cameraWarmupStore.subscribe(() => {
@@ -90,39 +138,21 @@ export default function PalCameraPreview({
   const rotationAnim = useRef(new Animated.Value(0)).current;
   const idleRotateAnim = useRef(new Animated.Value(0)).current;
 
-  // Low-light iPhone selfie camera glitch & ISO sensor noise animations
-  const lowLightNoiseX = useRef(new Animated.Value(0)).current;
-  const lowLightNoiseY = useRef(new Animated.Value(0)).current;
-  const lowLightFlicker = useRef(new Animated.Value(0.18)).current;
-
   useEffect(() => {
-    const noiseSequence = Animated.loop(
-      Animated.sequence([
-        Animated.timing(lowLightNoiseX, { toValue: -6, duration: 200, useNativeDriver: true }),
-        Animated.timing(lowLightNoiseX, { toValue: 5, duration: 235, useNativeDriver: true }),
-        Animated.timing(lowLightNoiseY, { toValue: -5, duration: 165, useNativeDriver: true }),
-        Animated.timing(lowLightNoiseX, { toValue: -4, duration: 235, useNativeDriver: true }),
-        Animated.timing(lowLightNoiseY, { toValue: 3, duration: 165, useNativeDriver: true }),
-      ])
-    );
-
-    const flickerSequence = Animated.loop(
-      Animated.sequence([
-        Animated.timing(lowLightFlicker, { toValue: 0.28, duration: 120, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: 0.14, duration: 180, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: 0.24, duration: 150, useNativeDriver: true }),
-        Animated.timing(lowLightFlicker, { toValue: 0.16, duration: 220, useNativeDriver: true }),
-      ])
-    );
-
-    noiseSequence.start();
-    flickerSequence.start();
-
-    return () => {
-      noiseSequence.stop();
-      flickerSequence.stop();
-    };
-  }, []);
+    if (isActive) {
+      Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+    } else {
+      Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+    }
+  }, [isActive]);
 
   const [colorIndex, setColorIndex] = useState(0);
   const [isPreparingVideo, setIsPreparingVideo] = useState(false);
@@ -305,7 +335,7 @@ export default function PalCameraPreview({
   };
 
   const executeRecording = async () => {
-    if (!cameraRef.current || !isCameraReady || isRecording) return;
+    if (!cameraRef.current || isRecording) return;
     setIsRecording(true);
     progressAnim.setValue(0);
 
@@ -327,8 +357,16 @@ export default function PalCameraPreview({
       setIsRecording(false);
       setIsPreparingVideo(true);
       if (data && data.uri) {
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        setPreviewVideoUri(data.uri);
+        try {
+          const info = await FileSystem.getInfoAsync(data.uri);
+          if (info && info.exists) {
+            setPreviewVideoUri(data.uri);
+          } else {
+            setPreviewVideoUri(data.uri);
+          }
+        } catch (e) {
+          setPreviewVideoUri(data.uri);
+        }
       }
     } catch (e) {
       console.log('Record error:', e);
@@ -396,15 +434,16 @@ export default function PalCameraPreview({
 
           {/* Rounded Inner Clip View for Camera Feed */}
           <View style={styles.innerCameraViewClip}>
-            {hasPermission && !previewVideoUri ? (
+            {hasPermission && isActive && !previewVideoUri ? (
               <CameraView
                 ref={cameraRef}
                 style={StyleSheet.absoluteFill}
                 facing={facing}
                 mode="video"
+                mute={false}
                 flash={flash}
                 enableTorch={flash === 'on'}
-                zoom={zoomLevel === 0.5 ? 0.02 : 0.05}
+                zoom={cameraZoom}
                 onCameraReady={() => setIsCameraReady(true)}
               />
             ) : hasPermission ? null : (
@@ -502,15 +541,18 @@ export default function PalCameraPreview({
             }}
           >
             {[
-              { label: '.5', val: 0.5 },
-              { label: '1', val: 1.0 },
+              { label: '.5', val: 0.0 },
+              { label: '1', val: 0.05 },
             ].map((item) => {
-              const isSelected = zoomLevel === item.val;
+              const isSelected = (item.val === 0.0 && cameraZoom < 0.025) || (item.val === 0.05 && cameraZoom >= 0.025);
               return (
                 <TouchableOpacity
                   key={item.label}
                   activeOpacity={0.8}
-                  onPress={() => setZoomLevel(item.val)}
+                  onPress={() => {
+                    setCameraZoom(item.val);
+                    baseZoomRef.current = item.val;
+                  }}
                   style={{ padding: 4 }}
                 >
                   <Text
@@ -546,11 +588,10 @@ export default function PalCameraPreview({
             />
           </TouchableOpacity>
 
-          {/* SMILEY CAPTURE SHUTTER BUTTON */}
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={startRecordSequence}
-            style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft }]}
+          {/* SMILEY CAPTURE SHUTTER BUTTON WITH HOLD-AND-SWIPE ZOOM GESTURE */}
+          <View
+            {...shutterPanResponder.panHandlers}
+            style={[styles.shutterWrapperAbsolute, { left: centerShutterLeft, zIndex: 1000 }]}
           >
             <Svg width={83} height={83} style={StyleSheet.absoluteFill}>
               <Circle cx="41.5" cy="41.5" r="39.5" stroke="#1000E5" strokeWidth="3.5" fill="none" />
@@ -582,7 +623,7 @@ export default function PalCameraPreview({
                 resizeMode="contain"
               />
             </Animated.View>
-          </TouchableOpacity>
+          </View>
 
           {/* RIGHT SIDE VERTICAL UNCLIPPED RECORDING PROGRESS BAR */}
           {isRecording && (

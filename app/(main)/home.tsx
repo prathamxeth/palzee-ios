@@ -453,39 +453,15 @@ export default function HomeScreen({
 
   const tabTransitionAnim = useRef(new Animated.Value(activeTab === 'camera' ? 0 : 1)).current;
 
-  // DEVICE TILT / ORIENTATION SENSOR: SLIGHT TILT OPENS CAMERA, UPRIGHT SWITCHES TO PALS
+  // DEVICE ORIENTATION SENSOR: ONLY SWITCHES ON EXPLICIT HARDWARE LANDSCAPE/PORTRAIT ROTATION
   useEffect(() => {
-    const isTilted = insets.left > 0 || insets.right > 0 || windowWidth > windowHeight;
-    if (isTilted) {
-      setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
-    } else {
-      setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
-    }
-
     const handleOrientation = (orientation: string) => {
       const o = (orientation || '').toUpperCase();
       if (o.includes('LANDSCAPE')) {
-        setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
-      } else if (o.includes('PORTRAIT')) {
-        setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
+        setActiveTab('camera');
       }
     };
 
-    const handleDimensions = (data: any) => {
-      const win = data?.window || data;
-      const scr = data?.screen;
-      const w = win?.width || scr?.width || 0;
-      const h = win?.height || scr?.height || 0;
-      if (w > 0 && h > 0) {
-        if (w > h) {
-          setActiveTab((prev) => (prev !== 'camera' ? 'camera' : prev));
-        } else {
-          setActiveTab((prev) => (prev !== 'pals' ? 'pals' : prev));
-        }
-      }
-    };
-
-    const sub1 = Dimensions.addEventListener('change', handleDimensions);
     const sub2 = DeviceEventEmitter.addListener('namedOrientationDidChange', (data) => {
       if (data && data.orientation) handleOrientation(data.orientation);
     });
@@ -495,11 +471,10 @@ export default function HomeScreen({
     });
 
     return () => {
-      sub1?.remove();
       sub2?.remove();
       sub3?.remove();
     };
-  }, [insets.left, insets.right, windowWidth, windowHeight]);
+  }, []);
 
   useEffect(() => {
     Animated.timing(tabTransitionAnim, {
@@ -685,34 +660,48 @@ export default function HomeScreen({
   const vlogFadeAnim = useRef(new Animated.Value(1)).current;
   const isHomeVlogAdvancingRef = useRef(false);
 
-  useEffect(() => {
-    vlogFadeAnim.setValue(0.7);
-    Animated.timing(vlogFadeAnim, {
-      toValue: 1,
-      duration: 350,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start();
+  const prevClipUriRef = useRef<string | null>(null);
 
+  useEffect(() => {
     const todayList = getClipsForDayOffset(vlogList, 0);
     const clip = todayList[Math.min(homeVlogIndex, todayList.length - 1)];
-    if (clip?.uri && homeVideoRef.current) {
-      const liveUri = getLiveSandboxUri(clip.uri);
+    const liveUri = clip?.uri ? getLiveSandboxUri(clip.uri) : null;
+
+    if (liveUri && prevClipUriRef.current && liveUri !== prevClipUriRef.current && homeVideoRef.current) {
+      vlogFadeAnim.setValue(0.7);
+      Animated.timing(vlogFadeAnim, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+
+      prevClipUriRef.current = liveUri;
       homeVideoRef.current.loadAsync(
         { uri: liveUri },
         {
           shouldPlay: true,
           isLooping: todayList.length === 1,
           positionMillis: 0,
-          rate: clip.rate || 1.0,
-          isMuted: !(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (clip.isMuted ?? false),
+          rate: clip?.rate || 1.0,
+          isMuted: !(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (clip?.isMuted ?? false),
         },
         false
       ).then(() => {
         homeVideoRef.current?.playAsync().catch(() => {});
       }).catch(() => {});
+    } else if (liveUri && !prevClipUriRef.current) {
+      prevClipUriRef.current = liveUri;
     }
   }, [homeVlogIndex, vlogList, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'camera') {
+      homeVideoRef.current?.pauseAsync().catch(() => {});
+    } else if (activeTab === 'pals') {
+      homeVideoRef.current?.playAsync().catch(() => {});
+    }
+  }, [activeTab]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -936,6 +925,7 @@ export default function HomeScreen({
           pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
         >
           <PalCameraPreview
+            isActive={activeTab === 'camera'}
             selectedThemeColor={selectedThemeColor}
             timerMode={cameraTimerMode}
             onToggleTimerMode={toggleTimerMode}
@@ -1094,7 +1084,7 @@ export default function HomeScreen({
                         source={{ uri: currentVideoLiveUri }}
                         style={isClipVertical ? rotatedStyle : StyleSheet.absoluteFill}
                         resizeMode={ResizeMode.COVER}
-                        shouldPlay={true}
+                        shouldPlay={activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView}
                         isLooping={todayVlogList.length === 1}
                         isMuted={!(activeTab === 'pals' && !showExportSheet && !showEditExportSheet && !showChatDrawer && !showCamera && !showCreateModal && !showEditNameModal && !showGroupsView) || (activeTodayClip?.isMuted ?? false)}
                         rate={activeTodayClip?.rate || 1.0}

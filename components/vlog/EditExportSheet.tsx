@@ -85,30 +85,36 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const exportVideoRef = useRef<Video>(null);
   const isAdvancingRef = useRef(false);
 
-  useEffect(() => {
-    fadeAnim.setValue(0.7);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 350,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start();
+  const prevExportClipUriRef = useRef<string | null>(null);
 
-    if (currentClip?.uri && exportVideoRef.current) {
-      const liveUri = getLiveSandboxUri(currentClip.uri);
+  useEffect(() => {
+    const liveUri = currentClip?.uri ? getLiveSandboxUri(currentClip.uri) : null;
+
+    if (liveUri && prevExportClipUriRef.current && liveUri !== prevExportClipUriRef.current && exportVideoRef.current) {
+      fadeAnim.setValue(0.7);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+
+      prevExportClipUriRef.current = liveUri;
       exportVideoRef.current.loadAsync(
         { uri: liveUri },
         {
           shouldPlay: true,
           isLooping: list.length === 1,
           positionMillis: 0,
-          rate: currentClip.rate || 1.0,
-          isMuted: currentClip.isMuted ?? false,
+          rate: currentClip?.rate || 1.0,
+          isMuted: currentClip?.isMuted ?? false,
         },
         false
       ).then(() => {
         exportVideoRef.current?.playAsync().catch(() => {});
       }).catch(() => {});
+    } else if (liveUri && !prevExportClipUriRef.current) {
+      prevExportClipUriRef.current = liveUri;
     }
   }, [currentIndex, currentClip?.uri]);
 
