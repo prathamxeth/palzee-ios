@@ -936,13 +936,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
                     <LiquidGlassIconButton
                       idPrefix="btnCaptionClose"
-                      isDark={true}
+                      isDark={isDark}
                       onPress={() => {
                         Keyboard.dismiss();
                         setShowEditCaptionBox(false);
                       }}
                     >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
+                      <Ionicons name="close" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
                     </LiquidGlassIconButton>
                   </View>
 
@@ -950,14 +950,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
                     <LiquidGlassIconButton
                       idPrefix="btnCaptionSave"
-                      isDark={true}
+                      isDark={isDark}
                       onPress={() => {
                         Keyboard.dismiss();
                         setShowEditCaptionBox(false);
                         handleSaveCaption();
                       }}
                     >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                      <Ionicons name="checkmark" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
                     </LiquidGlassIconButton>
                   </View>
 
@@ -1028,9 +1028,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             onUpdateCaption={onUpdateCaption}
           />
 
-          {/* TRIPLE DOT 3-OPTIONS MENU POPUP SHEET (FLOATING ABOVE CARD BOTTOM BOUNDARY) */}
+          {/* TRIPLE DOT 3-OPTIONS MENU POPUP SHEET (MATCHING PROFILE DROPDOWN GLOW & GLASS) */}
           <Modal
-            visible={showOptionsMenu}
+            visible={showOptionsMenu && !showDeleteDialog}
             transparent={true}
             animationType="fade"
             onRequestClose={() => setShowOptionsMenu(false)}
@@ -1052,26 +1052,39 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   width: 155,
                   borderRadius: 20,
                   overflow: 'hidden',
-                  borderWidth: 1.5,
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.95)',
-                  backgroundColor: isDark ? 'rgba(30, 30, 34, 0.88)' : 'rgba(255, 255, 255, 0.92)',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
+                  backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                  shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 16,
                   elevation: 10,
                 }}
               >
-                <BlurView key={isDark ? 'dark' : 'light'} intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                <BlurView key={isDark ? 'dark' : 'light'} intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
 
-                <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                {/* Inner Diagonal Glow */}
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                   <Defs>
-                    <LinearGradient id="optionsPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.85 : 0.92} />
-                      <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.90 : 0.82} />
+                    <LinearGradient id="optDiagGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={edgeColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                      <Stop offset="40%" stopColor={edgeColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                      <Stop offset="75%" stopColor={edgeColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                      <Stop offset="100%" stopColor={edgeColor} stopOpacity={0.03} />
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="100%" height="100%" rx="20" fill="url(#optionsPillGrad)" />
+                  <Rect width="100%" height="100%" fill="url(#optDiagGlow)" />
+                </Svg>
+
+                {/* Specular Border Gradient */}
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="optBdrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
+                      <Stop offset="45%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0.75" y="0.75" width="99%" height="99%" rx={20} stroke="url(#optBdrGrad)" strokeWidth={1.2} fill="none" />
                 </Svg>
 
                 {/* 1. Edit Caption */}
@@ -1134,7 +1147,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       activeOpacity={0.7}
                       onPress={() => {
                         setShowOptionsMenu(false);
-                        setShowDeleteDialog(true);
+                        setTimeout(() => {
+                          setShowDeleteDialog(true);
+                        }, 50);
                       }}
                     >
                       <Ionicons name="trash-outline" size={20} color="#FF3B30" />
@@ -1307,175 +1322,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   {renderCalendarGridDays()}
                 </View>
               </TouchableOpacity>
-              {/* IN-CARD EDIT CAPTION OVERLAY WITH CENTER BLINKING CURSOR & TOP CONTROLS */}
-              {showEditCaptionBox && (
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center' }]}>
-                  {/* TOP LEFT CROSS BUTTON */}
-                  <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
-                    <LiquidGlassIconButton
-                      idPrefix="btnCaptionClose"
-                      isDark={isDark}
-                      onPress={() => {
-                        Keyboard.dismiss();
-                        setShowEditCaptionBox(false);
-                      }}
-                    >
-                      <Ionicons name="close" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
-                    </LiquidGlassIconButton>
-                  </View>
-
-                  {/* TOP RIGHT TICK BUTTON */}
-                  <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
-                    <LiquidGlassIconButton
-                      idPrefix="btnCaptionSave"
-                      isDark={isDark}
-                      onPress={() => {
-                        Keyboard.dismiss();
-                        setShowEditCaptionBox(false);
-                        handleSaveCaption();
-                      }}
-                    >
-                      <Ionicons name="checkmark" size={22.5} color={isDark ? '#FFFFFF' : '#000000'} />
-                    </LiquidGlassIconButton>
-                  </View>
-
-                  {/* CENTER BLINKING CURSOR CAPTION INPUT */}
-                  <TextInput
-                    style={{
-                      width: '85%',
-                      textAlign: 'center',
-                      color: '#FFFFFF',
-                      fontSize: 22,
-                      fontFamily: Fonts.SystemRoundedBold,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                    }}
-                    value={editingCaptionText}
-                    onChangeText={setEditingCaptionText}
-                    autoFocus={true}
-                    maxLength={30}
-                    placeholder="add caption..."
-                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                    returnKeyType="done"
-                    onSubmitEditing={() => {
-                      setShowEditCaptionBox(false);
-                      handleSaveCaption();
-                    }}
-                  />
-                </View>
-              )}
-            </TouchableOpacity>
-          </Modal>
-
-          {/* TRIPLE DOT OPTIONS MENU MODAL */}
-          <Modal
-            visible={showOptionsMenu}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowOptionsMenu(false)}
-          >
-            <TouchableOpacity
-              style={styles.dropdownModalOverlay}
-              activeOpacity={1}
-              onPress={() => setShowOptionsMenu(false)}
-            >
-              <TouchableWithoutFeedback>
-                <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
-                  <View
-                    style={[
-                      styles.vlogOptionsDropdownCard,
-                      {
-                        backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
-                        shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
-                      },
-                    ]}
-                  >
-                    <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-
-                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                      <Defs>
-                        <LinearGradient id="vlogOptDiagGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={edgeColor} stopOpacity={isDark ? 0.50 : 0.40} />
-                          <Stop offset="40%" stopColor={edgeColor} stopOpacity={isDark ? 0.28 : 0.22} />
-                          <Stop offset="75%" stopColor={edgeColor} stopOpacity={isDark ? 0.10 : 0.08} />
-                          <Stop offset="100%" stopColor={edgeColor} stopOpacity={0.03} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect width="100%" height="100%" fill="url(#vlogOptDiagGlow)" />
-                    </Svg>
-
-                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-                      <Defs>
-                        <LinearGradient id="vlogOptBdrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
-                          <Stop offset="45%" stopColor={isDark ? edgeColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect x="1" y="1" width="99%" height="99%" rx={24} stroke="url(#vlogOptBdrGrad)" strokeWidth={1.2} fill="none" />
-                    </Svg>
-
-                    {/* 1. Mute */}
-                    <TouchableOpacity
-                      style={styles.dropdownMenuItem}
-                      activeOpacity={0.7}
-                      onPress={toggleMute}
-                    >
-                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                        {currentIsMuted ? 'unmute' : 'mute'}
-                      </Text>
-                      <Ionicons
-                        name={currentIsMuted ? 'volume-mute-outline' : 'volume-high-outline'}
-                        size={22}
-                        color={isDark ? '#FFFFFF' : '#000000'}
-                      />
-                    </TouchableOpacity>
-
-                    <View style={[styles.dropdownMenuDivider, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.06)' }]} />
-
-                    {/* 2. Edit Caption */}
-                    <TouchableOpacity
-                      style={styles.dropdownMenuItem}
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        setShowOptionsMenu(false);
-                        setEditingCaptionText(currentCaption);
-                        setShowEditCaptionBox(true);
-                      }}
-                    >
-                      <Text style={[styles.dropdownMenuText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                        edit caption
-                      </Text>
-                      <Ionicons
-                        name="pencil-outline"
-                        size={20}
-                        color={isDark ? '#FFFFFF' : '#000000'}
-                      />
-                    </TouchableOpacity>
-
-                    <View style={[styles.dropdownMenuDivider, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.06)' }]} />
-
-                    {/* 3. Delete */}
-                    <TouchableOpacity
-                      style={styles.dropdownMenuItem}
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        setShowOptionsMenu(false);
-                        setShowDeleteDialog(true);
-                      }}
-                    >
-                      <Text style={[styles.dropdownMenuText, { color: '#FF3B30' }]}>
-                        delete
-                      </Text>
-                      <Ionicons
-                        name="trash-outline"
-                        size={20}
-                        color="#FF3B30"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
             </TouchableOpacity>
           </Modal>
 
@@ -1506,7 +1352,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   paddingTop: 24,
                   paddingBottom: 20,
                   alignItems: 'center',
-                  marginTop: 25.0,
+                  marginTop: -100,
                   backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                   shadowColor: isDark ? edgeColor : 'rgba(138, 43, 226, 0.30)',
                   shadowOffset: { width: 0, height: 10 },
@@ -1592,7 +1438,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     </Text>
                   </TouchableOpacity>
 
-                  {/* Delete Pal Button (Liquid Glass Background + Black Text) */}
+                  {/* Delete Pal Button (Liquid Glass Background + Red Text in Both Modes) */}
                   <TouchableOpacity
                     style={{
                       flex: 1,
@@ -1620,7 +1466,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       </Defs>
                       <Rect x="0.75" y="0.75" width="99%" height="44.5" rx={22.25} fill="url(#delActionPillGrad)" stroke="url(#delActionPillBdr)" strokeWidth={1.2} />
                     </Svg>
-                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#000000' }}>
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30' }}>
                       delete pal
                     </Text>
                   </TouchableOpacity>
