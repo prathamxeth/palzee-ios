@@ -164,13 +164,6 @@ export default function PalCameraPreview({
   useEffect(() => {
     if (isActive) {
       Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-      }).catch(() => {});
-    } else {
-      Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: false,
       }).catch(() => {});
@@ -353,10 +346,10 @@ export default function PalCameraPreview({
 
   const getRecordingDurationSec = () => {
     if (timerMode === 'off') return 2.0;
-    if (timerMode === '3s') return 2.0;
-    if (timerMode === '5s') return 2.0;
-    if (timerMode === 'timelapse') return 15.0;
-    if (timerMode === 'jump_cut') return 8.0;
+    if (timerMode === '3s') return 3.0; // 3s video after 3..2..1 countdown
+    if (timerMode === '5s') return 5.0; // 5s video after 5..4..3..2..1 countdown
+    if (timerMode === 'timelapse') return 10.0; // 10s video in timelapse mode
+    if (timerMode === 'jump_cut') return 15.0; // 15s video in jumpcut mode
     return 2.0;
   };
 
