@@ -24,9 +24,15 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   const isDark = systemScheme === 'dark';
   const containerBg = isDark ? '#000000' : Colors.PalBackground;
 
+  // 1. Screen edge boundary line remains the theme border color
   const accentColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] ||
     '#11D5F3';
+
+  // 2. The insidewards glow effect uses the PALZEE text color
+  const innerGlowColor =
+    Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] ||
+    accentColor;
 
   return (
     <View style={[styles.wrapper, { backgroundColor: containerBg }]}>
@@ -38,11 +44,11 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           showBorder && {
             borderColor: accentColor,
             borderWidth: 3.5,
-            shadowColor: showGlow ? accentColor : 'transparent',
+            shadowColor: showGlow ? innerGlowColor : 'transparent',
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: showGlow ? (isDark ? 0.54 : 0.71) : 0,
-            shadowRadius: showGlow ? 10.0 : 0,
-            elevation: showGlow ? 10 : 0,
+            shadowOpacity: showGlow ? (isDark ? 0.72 : 0.71) : 0,
+            shadowRadius: showGlow ? 12.0 : 0,
+            elevation: showGlow ? 12 : 0,
           },
           style,
         ]}
@@ -69,9 +75,9 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
                 height="100%"
                 rx={48}
                 ry={48}
-                stroke={accentColor}
-                strokeWidth={14}
-                strokeOpacity={isDark ? 0.19 : 0.49}
+                stroke={innerGlowColor}
+                strokeWidth={16}
+                strokeOpacity={isDark ? 0.55 : 0.49}
                 fill="none"
                 filter="url(#cornerGlowBlur)"
               />

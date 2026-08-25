@@ -58,12 +58,15 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
 
   const handleSubmit = async () => {
     if (!inputVal.trim() || isSubmitting) return;
+    const cleanCode = inputVal.trim().replace(/^#\s*/, '').toLowerCase();
+    if (!cleanCode) return;
     setIsSubmitting(true);
     try {
-      await onJoin(inputVal.trim());
+      await onJoin(cleanCode);
       onClose();
     } catch (e) {
       setIsSubmitting(false);
+      onClose();
     }
   };
 
@@ -89,14 +92,14 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                   style={[
                     styles.topCard,
                     {
-                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                      backgroundColor: isDark ? 'rgba(32, 32, 36, 0.90)' : 'rgba(255, 255, 255, 0.92)',
                       borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)',
                       overflow: 'hidden',
                     },
                   ]}
                 >
-                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   <Text style={[styles.titleText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                     join with code
                   </Text>
@@ -110,14 +113,14 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                   style={[
                     styles.inputCapsule,
                     {
-                      backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                      backgroundColor: isDark ? 'rgba(32, 32, 36, 0.90)' : 'rgba(255, 255, 255, 0.92)',
                       borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                      borderColor: isDark ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)',
                       overflow: 'hidden',
                     },
                   ]}
                 >
-                  <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                  <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
                   {/* Left Hash Symbol # */}
                   <Text style={[styles.hashSymbol, { color: isDark ? '#FFFFFF' : '#000000' }]}>#</Text>
 

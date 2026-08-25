@@ -381,6 +381,24 @@ export default function HomeScreen({
   const [userPalRooms, setUserPalRooms] = useState<PalRoom[]>([]);
   const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
 
+  // Load userPalRooms from AsyncStorage on startup so groups never disappear
+  useEffect(() => {
+    const loadUserPalRooms = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('@palzee_user_pal_rooms');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setUserPalRooms(parsed);
+          }
+        }
+      } catch (e) {
+        console.log('Error loading userPalRooms:', e);
+      }
+    };
+    loadUserPalRooms();
+  }, []);
+
   const handleChoosePhoto = async () => {
     try {
       setShowProfileMenu(false);
@@ -412,26 +430,61 @@ export default function HomeScreen({
   }, [autoOpenCreateModal]);
 
   const handleCreateRoom = async (name: string, maxCount: number) => {
+    const code = Math.random().toString(36).substring(2, 9).toLowerCase();
     const newRoom: PalRoom = {
       id: Date.now().toString(),
       name,
       maxCount,
-      code: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      code,
     };
-    setUserPalRooms((prev) => [...prev, newRoom]);
-    setShowCreateModal(false);
+    setUserPalRooms((prev) => {
+      const updated = [...prev, newRoom];
+      AsyncStorage.setItem('@palzee_user_pal_rooms', JSON.stringify(updated)).catch(() => {});
+      return updated;
+    });
+    return { code, name };
   };
 
   const handleJoinRoom = async (code: string) => {
+    const cleanCode = code.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
     const joinedRoom: PalRoom = {
       id: Date.now().toString(),
-      name: `Pal ${code}`,
+      name: `Pal ${cleanCode}`,
       maxCount: 10,
-      code,
+      code: cleanCode,
     };
-    setUserPalRooms((prev) => [...prev, joinedRoom]);
+    setUserPalRooms((prev) => {
+      const exists = prev.some((r) => r.code === cleanCode);
+      const updated = exists ? prev : [...prev, joinedRoom];
+      AsyncStorage.setItem('@palzee_user_pal_rooms', JSON.stringify(updated)).catch(() => {});
+      return updated;
+    });
     setShowCreateModal(false);
   };
+
+  // Deep linking handler: Automatically join pal group when opening an invite link
+  useEffect(() => {
+    const handleDeepLinkUrl = (url: string | null) => {
+      if (!url) return;
+      try {
+        const match = url.match(/join\/([a-zA-Z0-9]+)/i) || url.match(/[?&]code=([a-zA-Z0-9]+)/i);
+        if (match && match[1]) {
+          const inviteCode = match[1];
+          handleJoinRoom(inviteCode);
+        }
+      } catch (err) {
+        console.warn('Error handling deep link:', err);
+      }
+    };
+
+    Linking.getInitialURL().then(handleDeepLinkUrl);
+    const sub = Linking.addEventListener('url', (event) => {
+      handleDeepLinkUrl(event.url);
+    });
+    return () => {
+      sub.remove();
+    };
+  }, []);
 
   const screenBg = isDark ? '#000000' : Colors.PalBackground;
   const iconColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
@@ -1289,27 +1342,66 @@ export default function HomeScreen({
               </TouchableOpacity>
             )}
 
-              {/* 2. ADDITIONAL PAL ROOM CARDS IF ANY */}
+              {/* 2. ADDITIONAL PAL ROOM CARDS (EXACT MATCH TO REFERENCE SCREENSHOTS) */}
               {userPalRooms.map((room) => (
                 <TouchableOpacity
                   key={room.id}
-                  style={[styles.vlogCard, { backgroundColor: isDark ? '#161616' : '#EFEFEF' }]}
-                  activeOpacity={0.9}
+                  style={[
+                    styles.palGroupCard,
+                    {
+                      width: '100%',
+                      alignSelf: 'center',
+                      backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                    },
+                  ]}
+                  activeOpacity={0.85}
                   onPress={() => setShowExportSheet(true)}
                 >
-                  <View style={styles.vlogTextSection}>
-                    <Text style={[styles.vlogTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                      {room.name.toLowerCase()}
-                    </Text>
-                    <Text style={[styles.vlogSubtext, { color: '#8E8E93' }]}>
-                      max {room.maxCount} pals.
-                    </Text>
+                  {/* Left: Group Name */}
+                  <Text style={[styles.palGroupTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    {room.name}
+                  </Text>
+
+                  {/* Right: Actions Cluster (Circular Outline Smiley | Camera) */}
+                  <View style={styles.palGroupActionsRow}>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setShowExportSheet(true)}
+                      style={[
+                        styles.smileyCircleOutline,
+                        { borderColor: isDark ? '#5C5C5E' : '#FFFFFF' },
+                      ]}
+                    >
+                      <Image
+                        source={require('../../assets/images/capture_smile.png')}
+                        style={[
+                          styles.palGroupSmileyIcon,
+                          {
+                            tintColor: isDark ? '#5C5C5E' : '#FFFFFF',
+                          },
+                        ]}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+
+                    <View
+                      style={[
+                        styles.palGroupDivider,
+                        { backgroundColor: isDark ? '#2C2C2E' : '#D1D1D6' },
+                      ]}
+                    />
+
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setShowCamera(true)}
+                    >
+                      <Image
+                        source={require('../../assets/images/camera_list_icon.png')}
+                        style={[styles.palGroupActionIcon, { tintColor: isDark ? '#5C5C5E' : '#8E8E93' }]}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
                   </View>
-                  <Image
-                    source={require('../../assets/images/dm_star_4.png')}
-                    style={styles.starDoodleImage}
-                    resizeMode="contain"
-                  />
                 </TouchableOpacity>
               ))}
             </View>
@@ -2653,24 +2745,46 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  hiCard: {
-    backgroundColor: '#161616',
+  palGroupCard: {
     borderRadius: 24,
+    marginHorizontal: 0,
     paddingHorizontal: 22,
-    paddingVertical: 16,
+    paddingVertical: 14,
+    height: 84,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
   },
-  hiCardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  palGroupTitle: {
+    fontSize: 21,
+    fontWeight: '700',
     fontFamily: Fonts.SystemRoundedBold,
+    letterSpacing: -0.2,
   },
-  hiCardIconsRow: {
+  palGroupActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  smileyCircleOutline: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  palGroupSmileyIcon: {
+    width: 14,
+    height: 14,
+  },
+  palGroupActionIcon: {
+    width: 20,
+    height: 20,
+  },
+  palGroupDivider: {
+    width: 1,
+    height: 16,
+    marginHorizontal: 12,
   },
   vlogTextSection: {
     flex: 1,
