@@ -354,8 +354,9 @@ export default function PalCameraPreview({
   };
 
   const executeRecording = async () => {
-    if (!cameraRef.current || isRecording) return;
+    if (!cameraRef.current || isRecordingRef.current) return;
     setIsRecording(true);
+    isRecordingRef.current = true;
     progressAnim.setValue(0);
 
     const recSec = getRecordingDurationSec();
@@ -368,12 +369,11 @@ export default function PalCameraPreview({
     }).start();
 
     try {
-      const isMute = !micPermission?.granted;
       const data = await cameraRef.current.recordAsync({
         maxDuration: recSec,
-        mute: isMute,
       });
       setIsRecording(false);
+      isRecordingRef.current = false;
       setIsPreparingVideo(true);
       if (data && data.uri) {
         try {
@@ -389,19 +389,9 @@ export default function PalCameraPreview({
       }
     } catch (e) {
       console.log('Record error:', e);
-      try {
-        const retryData = await cameraRef.current.recordAsync({
-          maxDuration: recSec,
-          mute: true,
-        });
-        if (retryData && retryData.uri) {
-          setPreviewVideoUri(retryData.uri);
-        }
-      } catch (retryErr) {
-        console.log('Retry record error:', retryErr);
-      }
     } finally {
       setIsRecording(false);
+      isRecordingRef.current = false;
       setIsPreparingVideo(false);
       progressAnim.setValue(0);
       setFlash('off');
