@@ -92,7 +92,13 @@ export default function PalCameraPreview({
     setCountdown(null);
   };
 
+  const recordingTimerRef = useRef<any>(null);
+
   const stopRecording = async () => {
+    if (recordingTimerRef.current) {
+      clearTimeout(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
     if (cameraRef.current && isRecordingRef.current) {
       try {
         await cameraRef.current.stopRecording();
@@ -368,10 +374,15 @@ export default function PalCameraPreview({
       useNativeDriver: false,
     }).start();
 
+    if (recordingTimerRef.current) {
+      clearTimeout(recordingTimerRef.current);
+    }
+    recordingTimerRef.current = setTimeout(() => {
+      stopRecording();
+    }, recSec * 1000);
+
     try {
-      const data = await cameraRef.current.recordAsync({
-        maxDuration: recSec,
-      });
+      const data = await cameraRef.current.recordAsync();
       setIsRecording(false);
       isRecordingRef.current = false;
       setIsPreparingVideo(true);
@@ -390,6 +401,10 @@ export default function PalCameraPreview({
     } catch (e) {
       console.log('Record error:', e);
     } finally {
+      if (recordingTimerRef.current) {
+        clearTimeout(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
       setIsRecording(false);
       isRecordingRef.current = false;
       setIsPreparingVideo(false);
