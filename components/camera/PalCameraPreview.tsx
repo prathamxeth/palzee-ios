@@ -93,11 +93,23 @@ export default function PalCameraPreview({
   };
 
   const recordingTimerRef = useRef<any>(null);
+  const recordingStartTimeRef = useRef<number>(0);
 
   const stopRecording = async () => {
     if (recordingTimerRef.current) {
       clearTimeout(recordingTimerRef.current);
       recordingTimerRef.current = null;
+    }
+    const elapsed = Date.now() - recordingStartTimeRef.current;
+    if (elapsed < 850) {
+      setTimeout(async () => {
+        if (cameraRef.current && isRecordingRef.current) {
+          try {
+            await cameraRef.current.stopRecording();
+          } catch (e) {}
+        }
+      }, 850 - elapsed);
+      return;
     }
     if (cameraRef.current && isRecordingRef.current) {
       try {
@@ -363,6 +375,7 @@ export default function PalCameraPreview({
     if (!cameraRef.current || isRecordingRef.current) return;
     setIsRecording(true);
     isRecordingRef.current = true;
+    recordingStartTimeRef.current = Date.now();
     progressAnim.setValue(0);
 
     const recSec = getRecordingDurationSec();
@@ -475,7 +488,7 @@ export default function PalCameraPreview({
                 style={StyleSheet.absoluteFill}
                 facing={facing}
                 mode="video"
-                mute={false}
+                mute={!micPermission?.granted}
                 flash={flash}
                 enableTorch={flash === 'on'}
                 zoom={cameraZoom}
