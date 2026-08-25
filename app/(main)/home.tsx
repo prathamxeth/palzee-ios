@@ -882,7 +882,7 @@ export default function HomeScreen({
     return (
       <CameraScreen
         selectedThemeColor={selectedThemeColor}
-        onCapture={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
+        onCapture={(uri, caption, isMuted, rate, mode) => handleVideoSent(uri, caption, isMuted, rate, mode)}
         onClose={() => setShowCamera(false)}
       />
     );
@@ -933,7 +933,7 @@ export default function HomeScreen({
             onToggleFacing={toggleFacing}
             autoTickVlog={false}
             palCount={getClipsForDayOffset(vlogList, 0).length}
-            onCaptureSuccess={(uri, caption, isMuted) => handleVideoSent(uri, caption, isMuted)}
+            onCaptureSuccess={(uri, caption, isMuted, rate, mode) => handleVideoSent(uri, caption, isMuted, rate, mode)}
           />
         </Animated.View>
 

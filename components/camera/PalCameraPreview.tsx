@@ -75,10 +75,24 @@ export default function PalCameraPreview({
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const isHeldDownRef = useRef(false);
+  const isRecordingRef = useRef(false);
+  const countdownIntervalRef = useRef<any>(null);
   const baseZoomRef = useRef(0.05);
 
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  const cancelCountdown = () => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setCountdown(null);
+  };
+
   const stopRecording = async () => {
-    if (cameraRef.current && isRecording) {
+    if (cameraRef.current && isRecordingRef.current) {
       try {
         await cameraRef.current.stopRecording();
       } catch (e) {}
@@ -92,6 +106,14 @@ export default function PalCameraPreview({
       onMoveShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderGrant: () => {
+        if (isRecordingRef.current) {
+          stopRecording();
+          return;
+        }
+        if (countdownIntervalRef.current !== null || countdown !== null) {
+          cancelCountdown();
+          return;
+        }
         isHeldDownRef.current = true;
         baseZoomRef.current = cameraZoom;
         startRecordSequence();
@@ -104,13 +126,13 @@ export default function PalCameraPreview({
       },
       onPanResponderRelease: () => {
         isHeldDownRef.current = false;
-        if (timerMode === 'off' && isRecording) {
+        if (timerMode === 'off' && isRecordingRef.current) {
           stopRecording();
         }
       },
       onPanResponderTerminate: () => {
         isHeldDownRef.current = false;
-        if (timerMode === 'off' && isRecording) {
+        if (timerMode === 'off' && isRecordingRef.current) {
           stopRecording();
         }
       },
@@ -311,15 +333,15 @@ export default function PalCameraPreview({
   };
 
   const runCountdown = (sec: number) => {
+    cancelCountdown();
     setCountdown(sec);
     let count = sec;
-    const interval = setInterval(() => {
+    countdownIntervalRef.current = setInterval(() => {
       count -= 1;
       if (count > 0) {
         setCountdown(count);
       } else {
-        clearInterval(interval);
-        setCountdown(null);
+        cancelCountdown();
         executeRecording();
       }
     }, 1000);
@@ -327,10 +349,10 @@ export default function PalCameraPreview({
 
   const getRecordingDurationSec = () => {
     if (timerMode === 'off') return 2.0;
-    if (timerMode === '3s') return 3;
-    if (timerMode === '5s') return 5;
-    if (timerMode === 'timelapse') return 10;
-    if (timerMode === 'jump_cut') return 10;
+    if (timerMode === '3s') return 2.0;
+    if (timerMode === '5s') return 2.0;
+    if (timerMode === 'timelapse') return 15.0;
+    if (timerMode === 'jump_cut') return 8.0;
     return 2.0;
   };
 
