@@ -40,7 +40,7 @@ import { Colors } from '../../constants/colors';
 import { getNearestHourText, formatExactTime, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
-import { CreatePalModal } from '../../components/home/CreatePalModal';
+import { CreatePalModal, PalGroupDetailsSheet } from '../../components/palsgroup';
 import { ChatDrawer } from '../../components/home/ChatDrawer';
 import { ActivityDrawer } from '../../components/home/ActivityDrawer';
 import { VlogSheet, EditExportSheet, CRTStaticCard } from '../../components/vlog';
@@ -329,6 +329,8 @@ interface PalRoom {
   name: string;
   maxCount: number;
   code: string;
+  size?: number;
+  members?: string[];
 }
 
 interface HomeScreenProps {
@@ -359,6 +361,7 @@ export default function HomeScreen({
   const [showActivityDrawer, setShowActivityDrawer] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showEditExportSheet, setShowEditExportSheet] = useState(false);
+  const [activePalGroupDetails, setActivePalGroupDetails] = useState<any | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [profileSubMenu, setProfileSubMenu] = useState<'main' | 'editProfile' | 'color' | 'logNotifications' | 'account'>('main');
@@ -986,6 +989,19 @@ export default function HomeScreen({
             onToggleFacing={toggleFacing}
             autoTickVlog={false}
             palCount={getClipsForDayOffset(vlogList, 0).length}
+            palGroups={userPalRooms.map((r) => {
+              const currentFirstName = user?.displayName ? user.displayName.split(' ')[0] : (user?.email?.split('@')[0] || 'apple_user');
+              const memberFirstNames = (r.members && r.members.length > 0)
+                ? r.members.map((m) => m.split(' ')[0])
+                : [currentFirstName];
+              return {
+                id: r.code,
+                name: r.name,
+                members: memberFirstNames,
+                size: memberFirstNames.length,
+                maxCount: r.maxCount || 5,
+              };
+            })}
             onCaptureSuccess={(uri, caption, isMuted, rate, mode) => handleVideoSent(uri, caption, isMuted, rate, mode)}
           />
         </Animated.View>
@@ -1118,13 +1134,19 @@ export default function HomeScreen({
 
                 const isHomeScreenActive =
                   activeTab === 'pals' &&
+                  !activePalGroupDetails &&
                   !showExportSheet &&
                   !showEditExportSheet &&
                   !showChatDrawer &&
+                  !showActivityDrawer &&
                   !showCamera &&
                   !showCreateModal &&
+                  !showAddMenu &&
+                  !showProfileMenu &&
                   !showEditNameModal &&
-                  !showGroupsView;
+                  !showGroupsView &&
+                  !showViewingPalsGuide &&
+                  !inAppBrowserUrl;
 
                 return (
                   <View style={{ width: '100%', marginBottom: 16 }}>
@@ -1355,7 +1377,7 @@ export default function HomeScreen({
                     },
                   ]}
                   activeOpacity={0.85}
-                  onPress={() => setShowExportSheet(true)}
+                  onPress={() => setActivePalGroupDetails(room)}
                 >
                   {/* Left: Group Name */}
                   <Text style={[styles.palGroupTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
@@ -1366,7 +1388,7 @@ export default function HomeScreen({
                   <View style={styles.palGroupActionsRow}>
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => setShowExportSheet(true)}
+                      onPress={() => setActivePalGroupDetails(room)}
                       style={[
                         styles.smileyCircleOutline,
                         {
@@ -2660,6 +2682,18 @@ export default function HomeScreen({
           selectedThemeColor={selectedThemeColor}
           onDeleteVideo={handleDeleteVideo}
           onUpdateCaption={handleUpdateCaption}
+        />
+
+        <PalGroupDetailsSheet
+          visible={!!activePalGroupDetails}
+          onClose={() => setActivePalGroupDetails(null)}
+          group={activePalGroupDetails}
+          user={user}
+          selectedThemeColor={selectedThemeColor}
+          onOpenCamera={() => {
+            setActivePalGroupDetails(null);
+            setShowCamera(true);
+          }}
         />
 
         {/* VIEWING PALS GUIDE OVERLAY MODAL */}

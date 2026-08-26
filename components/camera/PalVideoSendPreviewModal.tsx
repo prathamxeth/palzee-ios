@@ -86,6 +86,9 @@ export interface PalGroupItem {
   id: string;
   name: string;
   subtitle?: string;
+  members?: string[];
+  maxCount?: number;
+  size?: number;
 }
 
 interface PalVideoSendPreviewModalProps {
@@ -576,37 +579,35 @@ export default function PalVideoSendPreviewModal({
                         </View>
 
                         {/* Middle Title & Subtitle */}
-                        <View style={styles.targetTextWrapper}>
-                          <Text style={[styles.targetTitle, { color: titleColor }]}>{group.name}</Text>
-                          <Text style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}>
-                            {group.subtitle || 'group'}
+                        <View style={[styles.targetTextWrapper, { flex: 1, marginRight: 8 }]}>
+                          <Text style={[styles.targetTitle, { color: titleColor }]} numberOfLines={1} ellipsizeMode="tail">
+                            {group.name}
+                          </Text>
+                          <Text
+                            style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {group.members && group.members.length > 0
+                              ? group.members.join(', ')
+                              : (group.subtitle || userName || 'apple_user')}
                           </Text>
                         </View>
 
-                        {/* Right Rotated capture_smile.png Icon Badge */}
-                        <View
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 12,
-                            backgroundColor: baseAccentColor,
-                            borderWidth: 1.5,
-                            borderColor: palzeeTextColor,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <Image
-                            source={require('../../assets/images/capture_smile.png')}
-                            style={{
-                              width: 18.5,
-                              height: 18.5,
-                              transform: [{ rotate: '180deg' }],
-                              tintColor: '#000000',
-                            }}
-                            resizeMode="contain"
-                          />
+                        {/* Right: Row of member count smileys (Exact 18.5x18.5 size as vlog box, flexShrink: 0) */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                          {Array.from({ length: group.size || group.members?.length || 1 }).map((_, idx) => (
+                            <Image
+                              key={idx}
+                              source={require('../../assets/images/custom_rotate_smiley.png')}
+                              style={{
+                                width: 18.5,
+                                height: 18.5,
+                                tintColor: isDark ? '#FFFFFF' : '#000000',
+                              }}
+                              resizeMode="contain"
+                            />
+                          ))}
                         </View>
                       </TouchableOpacity>
                     );
@@ -669,7 +670,7 @@ export default function PalVideoSendPreviewModal({
                         }}
                       >
                         <Image
-                          source={require('../../assets/images/capture_smile.png')}
+                          source={require('../../assets/images/custom_rotate_smiley.png')}
                           style={{
                             width: 18.5,
                             height: 18.5,
@@ -687,7 +688,7 @@ export default function PalVideoSendPreviewModal({
                         ]}
                       >
                         <Image
-                          source={require('../../assets/images/capture_smile.png')}
+                          source={require('../../assets/images/custom_rotate_smiley.png')}
                           style={{
                             width: 18.5,
                             height: 18.5,

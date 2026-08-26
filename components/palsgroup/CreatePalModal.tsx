@@ -245,7 +245,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                   rx="21.25"
                   fill="url(#closeBtnGrad)"
                   stroke="url(#closeBtnBdr)"
-                  strokeWidth="1.5"
+                  strokeWidth={1.5}
                 />
               </Svg>
               <Text style={[styles.closeIcon, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>✕</Text>

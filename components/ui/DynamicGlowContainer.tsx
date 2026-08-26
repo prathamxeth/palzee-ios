@@ -46,9 +46,9 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
             borderWidth: 3.5,
             shadowColor: showGlow ? innerGlowColor : 'transparent',
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: showGlow ? (isDark ? 0.72 : 0.71) : 0,
-            shadowRadius: showGlow ? 12.0 : 0,
-            elevation: showGlow ? 12 : 0,
+            shadowOpacity: showGlow ? (isDark ? 0.50 : 0.49) : 0,
+            shadowRadius: showGlow ? 9.5 : 0,
+            elevation: showGlow ? 9.5 : 0,
           },
           style,
         ]}
@@ -64,7 +64,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
             <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
               <Defs>
                 <Filter id="cornerGlowBlur" x="-20%" y="-20%" width="140%" height="140%">
-                  <FeGaussianBlur stdDeviation="6" />
+                  <FeGaussianBlur stdDeviation="3.5" />
                 </Filter>
               </Defs>
 
@@ -76,8 +76,8 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
                 rx={48}
                 ry={48}
                 stroke={innerGlowColor}
-                strokeWidth={16}
-                strokeOpacity={isDark ? 0.55 : 0.49}
+                strokeWidth={13.5}
+                strokeOpacity={isDark ? 0.38 : 0.34}
                 fill="none"
                 filter="url(#cornerGlowBlur)"
               />

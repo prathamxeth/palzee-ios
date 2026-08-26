@@ -27,7 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
-import { getLiveSandboxUri } from '../../utils/mediaUtils';
+import { getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
 
 const { VideoExporter } = NativeModules;
 
@@ -48,6 +48,7 @@ export interface EditExportSheetProps {
   selectedThemeColor?: string;
   onDeleteVideo?: (id?: string) => void;
   onUpdateCaption?: (newCaption: string, id?: string) => void;
+  selectedDayOffset?: number;
 }
 
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
@@ -59,6 +60,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   selectedThemeColor = 'cyan',
   onDeleteVideo,
   onUpdateCaption,
+  selectedDayOffset = 0,
 }) => {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
@@ -72,8 +74,10 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
+  // Filter clips strictly for the active 4 AM - 4 AM timeline cycle for that day
+  const filteredDayClips = getClipsForDayOffset(vlogList, selectedDayOffset);
   // Chronological order: oldest recorded clip first, newest ones after it
-  const list = vlogList && vlogList.length > 0 ? [...vlogList].reverse() : [];
+  const list = filteredDayClips.length > 0 ? [...filteredDayClips].reverse() : [];
   const currentClip = list.length > 0 ? list[Math.min(currentIndex, list.length - 1)] : null;
 
   useEffect(() => {
@@ -118,6 +122,20 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     }
   }, [currentIndex, currentClip?.uri]);
 
+  const advanceSlide = (direction: 'next' | 'prev') => {
+    if (list.length <= 1 || isAdvancingRef.current) return;
+    isAdvancingRef.current = true;
+    setTimeout(() => {
+      isAdvancingRef.current = false;
+    }, 450);
+
+    if (direction === 'next') {
+      setCurrentIndex((prev) => (prev + 1) % list.length);
+    } else {
+      setCurrentIndex((prev) => (prev - 1 + list.length) % list.length);
+    }
+  };
+
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status && status.isLoaded) {
       if (
@@ -147,9 +165,9 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
     if (list.length <= 1) return;
     const touchX = event.nativeEvent.locationX;
     if (touchX > cardWidth / 2) {
-      setCurrentIndex((prev) => (prev + 1) % list.length);
+      advanceSlide('next');
     } else {
-      setCurrentIndex((prev) => (prev - 1 + list.length) % list.length);
+      advanceSlide('prev');
     }
   };
 
@@ -172,9 +190,8 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
   const processAndSaveVideo = async (): Promise<string> => {
     const TargetExporter = NativeModules.VideoExporter;
 
-    if (vlogList && vlogList.length > 0) {
-      // Chronological order: oldest recorded clip first, newest ones after it
-      const chronologicalList = [...vlogList].reverse();
+    if (list && list.length > 0) {
+      const chronologicalList = list;
       const inputPaths: string[] = [];
       const captions: string[] = [];
       const timestamps: string[] = [];

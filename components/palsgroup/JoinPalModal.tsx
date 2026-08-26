@@ -6,26 +6,22 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { LiquidGlass } from '../ui/LiquidGlassView';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
-interface JoinPalModalProps {
+export interface JoinPalModalProps {
   visible: boolean;
   onClose: () => void;
   onJoin: (code: string) => Promise<void>;
   themeColor?: string;
   onSwitchToCreate?: () => void;
 }
-
-import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 export const JoinPalModal: React.FC<JoinPalModalProps> = ({
   visible,
@@ -310,7 +306,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   arrowIconText: {
-    color: '#000000', // Crisp Black Arrow inside Pink Circle as in screenshot
+    color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: -2,

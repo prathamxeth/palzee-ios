@@ -22,7 +22,7 @@ import { Fonts } from '../../constants/typography';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
-import PalVideoSendPreviewModal from './PalVideoSendPreviewModal';
+import PalVideoSendPreviewModal, { PalGroupItem } from './PalVideoSendPreviewModal';
 import { cameraWarmupStore } from '../../utils/cameraWarmupStore';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -35,6 +35,7 @@ interface PalCameraPreviewProps {
   selectedThemeColor?: string;
   autoTickVlog?: boolean;
   palCount?: number;
+  palGroups?: PalGroupItem[];
   onCaptureSuccess?: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
   onClose?: () => void;
   timerMode?: TimerMode;
@@ -48,6 +49,7 @@ export default function PalCameraPreview({
   selectedThemeColor = 'cyan',
   autoTickVlog = true,
   palCount = 0,
+  palGroups,
   onCaptureSuccess,
   onClose,
   timerMode = 'off',
@@ -733,6 +735,7 @@ export default function PalCameraPreview({
         selectedThemeColor={selectedThemeColor}
         autoTickVlog={autoTickVlog}
         palCount={palCount}
+        palGroups={palGroups}
         playbackRate={timerMode === 'timelapse' ? 3.5 : timerMode === 'jump_cut' ? 1.35 : 1.0}
         timerMode={timerMode}
         onRetake={() => {

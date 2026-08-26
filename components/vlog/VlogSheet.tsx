@@ -82,6 +82,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
   const isDark = colorScheme === 'dark';
   const username = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
   const edgeColor = Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
+  const palzeeTextColor = Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] || '#11D5F3';
 
   const videoWidth = cardHeight;
   const videoHeight = cardWidth;
@@ -198,7 +199,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
               },
-              isToday && { backgroundColor: edgeColor },
+              isToday && { backgroundColor: palzeeTextColor },
             ]}
           >
             <Text
@@ -207,7 +208,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 fontFamily: isToday ? Fonts.SystemRoundedBold : Fonts.SystemRoundedMedium,
                 fontWeight: isToday ? '700' : '500',
                 color: isToday
-                  ? (isDark ? '#FFFFFF' : '#000000')
+                  ? (isDark ? '#000000' : '#FFFFFF')
                   : (isDark ? '#FFFFFF' : '#000000'),
               }}
             >
@@ -218,9 +219,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           {hasPalClip ? (
             <View
               style={{
-                width: 14,
-                height: 14,
-                borderRadius: 7,
+                width: 16.5,
+                height: 16.5,
+                borderRadius: 8.25,
                 backgroundColor: edgeColor,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -231,8 +232,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <Image
                 source={require('../../assets/images/custom_rotate_smiley.png')}
                 style={{
-                  width: 14,
-                  height: 14,
+                  width: 16.5,
+                  height: 16.5,
                   tintColor: '#000000',
                   transform: [{ scale: 1.1 }],
                 }}
@@ -240,7 +241,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               />
             </View>
           ) : (
-            <View style={{ height: 14, marginTop: 3 }} />
+            <View style={{ height: 16.5, marginTop: 3 }} />
           )}
         </TouchableOpacity>
       );
@@ -1023,6 +1024,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             visible={showExportModal}
             onClose={() => setShowExportModal(false)}
             vlogList={vlogList}
+            selectedDayOffset={dayOffset}
             selectedThemeColor={selectedThemeColor}
             onDeleteVideo={onDeleteVideo}
             onUpdateCaption={onUpdateCaption}
@@ -1175,7 +1177,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             <TouchableOpacity
               style={{
                 flex: 1,
-                backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                backgroundColor: 'transparent',
                 justifyContent: 'flex-end',
                 paddingHorizontal: 8,
                 paddingBottom: Math.max(insets.bottom - 26.5, 0),
@@ -1196,11 +1198,6 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   paddingBottom: 18,
                   paddingHorizontal: 16,
                   overflow: 'hidden',
-                  shadowColor: '#000000',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 16,
-                  elevation: 10,
                 }}
               >
                 <BlurView key={isDark ? 'dark' : 'light'} intensity={60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />

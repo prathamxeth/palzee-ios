@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Image, useColorScheme } from 'react-native';
+import { StyleSheet, View, Animated, Easing } from 'react-native';
+import { Image } from 'expo-image';
 
 export const TWELVE_PALZEE_COLORS = [
   '#FF5232', // Fire Red
@@ -30,28 +31,42 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
   const colorScheme = useFastColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const smileySize = 62.5;
-  const padding = 12;
+  const smileySize = 60.0;
+  const padding = 0;
 
-  const maxX = Math.max(10, cardWidth - smileySize - padding);
-  const maxY = Math.max(10, cardHeight - smileySize - padding);
+  const maxX = Math.max(0, cardWidth - smileySize);
+  const maxY = Math.max(0, cardHeight - smileySize);
 
   const [pos, setPos] = useState({
-    x: padding + Math.floor(Math.random() * (maxX - padding)),
-    y: padding + Math.floor(Math.random() * (maxY - padding)),
+    x: Math.floor(Math.random() * maxX),
+    y: Math.floor(Math.random() * maxY),
   });
 
   const [colorIndex, setColorIndex] = useState(0);
 
   const velRef = useRef({
-    vx: 2.02,
-    vy: 1.72,
+    vx: 3.20,
+    vy: 2.75,
   });
 
   const posRef = useRef(pos);
   posRef.current = pos;
 
   const animFrameRef = useRef<number | null>(null);
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [rotateAnim]);
 
   useEffect(() => {
     let active = true;
@@ -108,6 +123,11 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
 
   const currentColor = TWELVE_PALZEE_COLORS[colorIndex];
 
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <View
@@ -124,11 +144,25 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
           overflow: 'hidden',
         }}
       >
-        <Image
-          source={require('../../assets/images/capture_smile.png')}
-          style={{ width: 55, height: 55, tintColor: '#000000', transform: [{ scale: 1.25 }] }}
-          resizeMode="contain"
-        />
+        <Animated.View
+          style={{
+            width: smileySize,
+            height: smileySize,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{ rotate: spin }],
+          }}
+        >
+          <Image
+            source={require('../../assets/images/capture_smile.png')}
+            style={{
+              width: smileySize,
+              height: smileySize,
+              tintColor: '#000000',
+            }}
+            contentFit="contain"
+          />
+        </Animated.View>
       </View>
     </View>
   );
