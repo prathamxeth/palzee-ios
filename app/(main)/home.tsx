@@ -1369,15 +1369,17 @@ export default function HomeScreen({
                       onPress={() => setShowExportSheet(true)}
                       style={[
                         styles.smileyCircleOutline,
-                        { borderColor: isDark ? '#5C5C5E' : '#FFFFFF' },
+                        {
+                          backgroundColor: isDark ? '#5C5C5E' : '#FFFFFF',
+                        },
                       ]}
                     >
                       <Image
-                        source={require('../../assets/images/capture_smile.png')}
+                        source={require('../../assets/images/custom_rotate_smiley.png')}
                         style={[
                           styles.palGroupSmileyIcon,
                           {
-                            tintColor: isDark ? '#5C5C5E' : '#FFFFFF',
+                            tintColor: '#000000',
                           },
                         ]}
                         resizeMode="contain"
@@ -1397,7 +1399,7 @@ export default function HomeScreen({
                     >
                       <Image
                         source={require('../../assets/images/camera_list_icon.png')}
-                        style={[styles.palGroupActionIcon, { tintColor: isDark ? '#5C5C5E' : '#8E8E93' }]}
+                        style={[styles.palGroupActionIcon, { tintColor: isDark ? '#5C5C5E' : '#FFFFFF' }]}
                         resizeMode="contain"
                       />
                     </TouchableOpacity>
@@ -2766,24 +2768,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   smileyCircleOutline: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.4,
+    width: 22.5,
+    height: 22.5,
+    borderRadius: 11.25,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   palGroupSmileyIcon: {
-    width: 14,
-    height: 14,
+    width: 19.5,
+    height: 19.5,
   },
   palGroupActionIcon: {
-    width: 20,
-    height: 20,
+    width: 25,
+    height: 25,
   },
   palGroupDivider: {
     width: 1,
-    height: 16,
+    height: 18,
     marginHorizontal: 12,
   },
   vlogTextSection: {
