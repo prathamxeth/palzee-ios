@@ -148,16 +148,17 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   return (
     <View
       key={`pals_view_${isDark ? 'dark' : 'light'}`}
-      style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}
+      style={[
+        StyleSheet.absoluteFill,
+        styles.fullScreenContainer,
+        {
+          backgroundColor: isDark ? '#000000' : '#F5F5F7',
+          zIndex: 9999,
+          elevation: 9999,
+        },
+      ]}
     >
-      <DynamicGlowContainer
-        key={`pals_glow_${isDark ? 'dark' : 'light'}`}
-        selectedThemeColor={selectedThemeColor}
-        showBorder={true}
-        showGlow={true}
-        style={{ ...styles.fullScreenContainer, backgroundColor: isDark ? '#000000' : '#F5F5F7' }}
-      >
-        {/* TOP NAVIGATION HEADER (Exact matching VlogSheet positioning & dimensions) */}
+      {/* TOP NAVIGATION HEADER (Exact matching VlogSheet positioning & dimensions) */}
         <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
           {/* Top Left: Back button & Calendar Archive button */}
           <View style={styles.headerLeftCluster}>
@@ -488,7 +489,6 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           isDark={isDark}
           selectedThemeColor={selectedThemeColor}
         />
-      </DynamicGlowContainer>
     </View>
   );
 };
