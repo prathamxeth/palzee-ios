@@ -106,6 +106,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
   const [showEditGroupNameModal, setShowEditGroupNameModal] = useState(false);
   const [editedGroupName, setEditedGroupName] = useState(group?.name || '');
+  const [dropdownLayout, setDropdownLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [smileyTouch, setSmileyTouch] = useState<SmileyTouchInfo | null>(null);
   const rippleOpacityAnim = useRef(new Animated.Value(0)).current;
@@ -591,7 +592,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 )}
 
                 {/* Center: Time Text & Tap To Capture Pill (Exact VlogSheet tap to capture pill) */}
-                <View style={styles.centerActionGroup} pointerEvents="box-none">
+                <View style={styles.centerActionGroup} pointerEvents={showGroupDropdown ? 'none' : 'box-none'}>
                   <Text
                     style={[
                       styles.delaTimeText,
@@ -603,7 +604,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   >
                     {member.captureTime || getCurrentHourText()}
                   </Text>
-                  {isCurrentUser && (
+                  {isCurrentUser && !showGroupDropdown && (
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={() => {
@@ -922,7 +923,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               flex: 1,
               backgroundColor: 'transparent',
               alignItems: 'center',
-              paddingTop: Math.max(insets.top + 4, 12) + 54,
+              paddingTop: Math.max(insets.top + 4, 12) + 52,
             }}
             activeOpacity={1}
             onPress={() => {
@@ -930,405 +931,410 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               setGroupSubMenu('main');
             }}
           >
+            {/* SINGLE UNIFIED LIQUID GLASS DROPDOWN BOX (1 OUTLINE / 1 BOUNDARY) */}
             <TouchableOpacity
               activeOpacity={1}
               onPress={(e) => e.stopPropagation()}
               style={{
-                width: 245,
-                borderRadius: 28,
-                backgroundColor: isDark ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.94)',
-                borderWidth: 1.2,
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.08)',
+                alignSelf: 'center',
+                minWidth: 187.5,
+                maxWidth: 247.5,
+                borderRadius: 24,
                 shadowColor: '#000000',
                 shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.18,
-                shadowRadius: 18,
-                elevation: 10,
-                overflow: 'hidden',
-                paddingVertical: 14,
+                shadowOpacity: 0.16,
+                shadowRadius: 16,
+                elevation: 8,
+                backgroundColor: 'transparent',
               }}
             >
-              {/* 1. Frosted Backdrop Blur */}
-              <BlurView
-                key={`blur_pals_dropdown_${isDark ? 'dark' : 'light'}`}
-                intensity={Platform.OS === 'ios' ? 70 : 45}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-              />
-
-              {/* 2. Specular Rim Highlight (Pure Apple Liquid Glass) */}
-              <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-                <Defs>
-                  <LinearGradient
-                    id="palsDropdownRim"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.50 : 0.85} />
-                    <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.18 : 0.40} />
-                    <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                  </LinearGradient>
-                </Defs>
-                <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="99.4%"
-                  height="98.5%"
-                  rx={27}
-                  ry={27}
-                  fill="none"
-                  stroke="url(#palsDropdownRim)"
-                  strokeWidth={1.2}
+              <View
+                onLayout={(e) => {
+                  const { width, height } = e.nativeEvent.layout;
+                  if (width > 0 && height > 0) {
+                    setDropdownLayout({ width, height });
+                  }
+                }}
+                style={{
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.55)' : 'rgba(255, 255, 255, 0.65)',
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                }}
+              >
+                {/* 1. Frosted Backdrop Blur covering 100% of the entire card */}
+                <BlurView
+                  key={`blur_pals_dropdown_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 70 : 45}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={[StyleSheet.absoluteFillObject, { borderRadius: 24 }]}
                 />
-              </Svg>
 
-              {/* LAYER 1: MAIN MENU (MATCHING SCREENSHOT 1) */}
-              {groupSubMenu === 'main' && (
-                <>
-                  {/* Top Export Icon Button (No Text, per user request) */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={handleExportFromDropdown}
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingVertical: 2,
-                      zIndex: 10,
-                    }}
+                {/* 2. Specular Rim Highlight precisely covering full width and height */}
+                {dropdownLayout.width > 0 && dropdownLayout.height > 0 && (
+                  <Svg
+                    width={dropdownLayout.width}
+                    height={dropdownLayout.height}
+                    style={StyleSheet.absoluteFillObject}
+                    pointerEvents="none"
                   >
-                    <Ionicons name="share-outline" size={26} color={isDark ? '#FFFFFF' : '#000000'} />
-                  </TouchableOpacity>
+                    <Defs>
+                      <LinearGradient
+                        id="palsDropdownRim"
+                        x1="0%"
+                        y1="0%"
+                        x2="0%"
+                        y2="100%"
+                      >
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.55 : 0.85} />
+                        <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.18 : 0.40} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width={dropdownLayout.width - 1.5}
+                      height={dropdownLayout.height - 1.5}
+                      rx={23}
+                      ry={23}
+                      fill="none"
+                      stroke="url(#palsDropdownRim)"
+                      strokeWidth={1.2}
+                    />
+                  </Svg>
+                )}
 
-                  {/* Divider Line */}
-                  <View
-                    style={{
-                      height: StyleSheet.hairlineWidth,
-                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-                      marginHorizontal: 16,
-                      marginTop: 10,
-                      marginBottom: 10,
-                    }}
-                  />
-
-                  {/* Group Title Section Label */}
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontFamily: Fonts.SystemRoundedSemibold,
-                      color: isDark ? '#8E8E93' : '#636366',
-                      paddingHorizontal: 18,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {group.name}
-                  </Text>
-
-                  {/* Code Item with Vertical Barcode Stripes */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={handleShareInvite}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingVertical: 9,
-                      paddingHorizontal: 18,
-                      gap: 12,
-                      zIndex: 10,
-                    }}
-                  >
-                    <VerticalBarcodeIcon size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                {/* LAYER 1: MAIN MENU */}
+                {groupSubMenu === 'main' && (
+                  <>
+                    {/* Group Title Section Label (+2.5dp -> 16.5) */}
                     <Text
                       style={{
-                        fontSize: 15.5,
-                        fontFamily: Fonts.IBMPlexMono,
-                        color: isDark ? '#FFFFFF' : '#000000',
+                        fontSize: 16.5,
+                        fontFamily: Fonts.SystemRoundedSemibold,
+                        color: isDark ? '#8E8E93' : '#636366',
+                        paddingHorizontal: 6,
+                        paddingTop: 2,
+                        marginBottom: 8,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {group.name}
+                    </Text>
+
+                    {/* Code Item with Vertical Barcode Stripes (+2.5dp -> 17) */}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={handleShareInvite}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 6,
+                        paddingHorizontal: 6,
+                        gap: 10,
+                        zIndex: 10,
                       }}
                     >
-                      code: {group.code}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {/* Members Navigation Item -> switches to 'members' layer */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setGroupSubMenu('members')}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingVertical: 9,
-                      paddingHorizontal: 18,
-                      zIndex: 10,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Ionicons name="people-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+                      <VerticalBarcodeIcon size={19} color={isDark ? '#FFFFFF' : '#000000'} />
                       <Text
                         style={{
-                          fontSize: 16,
-                          fontFamily: Fonts.SystemRoundedMedium,
+                          fontSize: 17,
+                          fontFamily: Fonts.IBMPlexMono,
                           color: isDark ? '#FFFFFF' : '#000000',
                         }}
                       >
-                        members
+                        code: {group.code}
                       </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color={isDark ? '#8E8E93' : '#636366'}
-                    />
-                  </TouchableOpacity>
+                    </TouchableOpacity>
 
-                  {/* Settings Navigation Item -> switches to 'settings' layer */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setGroupSubMenu('settings')}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingVertical: 9,
-                      paddingHorizontal: 18,
-                      zIndex: 10,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Ionicons name="settings-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontFamily: Fonts.SystemRoundedMedium,
-                          color: isDark ? '#FFFFFF' : '#000000',
-                        }}
-                      >
-                        settings
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color={isDark ? '#8E8E93' : '#636366'}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-
-              {/* LAYER 2: MEMBERS SUB-LAYER (MATCHING SCREENSHOT 2) */}
-              {groupSubMenu === 'members' && (
-                <>
-                  {/* Bolder Header Row with Chevron-Down to go back */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setGroupSubMenu('main')}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingHorizontal: 18,
-                      paddingVertical: 6,
-                      zIndex: 10,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Ionicons name="people-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
-                      <Text
-                        style={{
-                          fontSize: 16.5,
-                          fontFamily: Fonts.SystemRoundedBold,
-                          fontWeight: '700',
-                          color: isDark ? '#FFFFFF' : '#000000',
-                        }}
-                      >
-                        members
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-down"
-                      size={18}
-                      color={isDark ? '#FFFFFF' : '#000000'}
-                    />
-                  </TouchableOpacity>
-
-                  {/* Hairline Divider */}
-                  <View
-                    style={{
-                      height: StyleSheet.hairlineWidth,
-                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-                      marginHorizontal: 16,
-                      marginTop: 8,
-                      marginBottom: 10,
-                    }}
-                  />
-
-                  {/* Members List (No change order) */}
-                  <View style={{ paddingHorizontal: 18, gap: 10, paddingBottom: 6 }}>
-                    {joinedMembers.map((member) => (
-                      <View
-                        key={member.id}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          paddingVertical: 2,
-                        }}
-                      >
+                    {/* Members Navigation Item -> switches to 'members' layer (+2.5dp -> 18) */}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setGroupSubMenu('members')}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingVertical: 6,
+                        paddingHorizontal: 6,
+                        zIndex: 10,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Ionicons name="people-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
                         <Text
                           style={{
-                            fontSize: 16,
+                            fontSize: 18,
                             fontFamily: Fonts.SystemRoundedMedium,
                             color: isDark ? '#FFFFFF' : '#000000',
                           }}
                         >
-                          {member.name}
+                          members
                         </Text>
                       </View>
-                    ))}
-                  </View>
-                </>
-              )}
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={isDark ? '#8E8E93' : '#636366'}
+                        style={{ marginLeft: 10 }}
+                      />
+                    </TouchableOpacity>
 
-              {/* LAYER 3: SETTINGS SUB-LAYER (MATCHING SCREENSHOT 3) */}
-              {groupSubMenu === 'settings' && (
-                <>
-                  {/* Bolder Header Row with Chevron-Down to go back */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setGroupSubMenu('main')}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingHorizontal: 18,
-                      paddingVertical: 6,
-                      zIndex: 10,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Ionicons name="settings-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
-                      <Text
-                        style={{
-                          fontSize: 16.5,
-                          fontFamily: Fonts.SystemRoundedBold,
-                          fontWeight: '700',
-                          color: isDark ? '#FFFFFF' : '#000000',
-                        }}
-                      >
-                        settings
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-down"
-                      size={18}
-                      color={isDark ? '#FFFFFF' : '#000000'}
-                    />
-                  </TouchableOpacity>
-
-                  {/* Hairline Divider */}
-                  <View
-                    style={{
-                      height: StyleSheet.hairlineWidth,
-                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-                      marginHorizontal: 16,
-                      marginTop: 8,
-                      marginBottom: 10,
-                    }}
-                  />
-
-                  {/* Settings Options: edit pal and delete pal (or leave pal) */}
-                  <View style={{ gap: 4, paddingBottom: 4 }}>
-                    {/* edit pal */}
+                    {/* Settings Navigation Item -> switches to 'settings' layer (+2.5dp -> 18) */}
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => {
-                        setShowGroupDropdown(false);
-                        setGroupSubMenu('main');
-                        setEditedGroupName(group?.name || '');
-                        setShowEditGroupNameModal(true);
-                      }}
+                      onPress={() => setGroupSubMenu('settings')}
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        gap: 12,
-                        paddingHorizontal: 18,
-                        paddingVertical: 9,
+                        justifyContent: 'space-between',
+                        paddingVertical: 6,
+                        paddingHorizontal: 6,
                         zIndex: 10,
                       }}
                     >
-                      <Ionicons name="options-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontFamily: Fonts.SystemRoundedMedium,
-                          color: isDark ? '#FFFFFF' : '#000000',
-                        }}
-                      >
-                        edit pal
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Ionicons name="settings-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+                        <Text
+                          style={{
+                            fontSize: 18,
+                            fontFamily: Fonts.SystemRoundedMedium,
+                            color: isDark ? '#FFFFFF' : '#000000',
+                          }}
+                        >
+                          settings
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={isDark ? '#8E8E93' : '#636366'}
+                        style={{ marginLeft: 10 }}
+                      />
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* LAYER 2: MEMBERS SUB-LAYER */}
+                {groupSubMenu === 'members' && (
+                  <>
+                    {/* Bolder Header Row with Chevron-Down to go back (+2.5dp -> 18.5) */}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setGroupSubMenu('main')}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 6,
+                        paddingVertical: 4,
+                        zIndex: 10,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Ionicons name="people-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+                        <Text
+                          style={{
+                            fontSize: 18.5,
+                            fontFamily: Fonts.SystemRoundedBold,
+                            fontWeight: '700',
+                            color: isDark ? '#FFFFFF' : '#000000',
+                          }}
+                        >
+                          members
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-down"
+                        size={18}
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                        style={{ marginLeft: 10 }}
+                      />
                     </TouchableOpacity>
 
-                    {/* delete pal (for creator) or leave pal (for member) */}
-                    {isCreator ? (
+                    {/* Hairline Divider */}
+                    <View
+                      style={{
+                        height: StyleSheet.hairlineWidth,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
+                        marginHorizontal: 4,
+                        marginTop: 6,
+                        marginBottom: 8,
+                      }}
+                    />
+
+                    {/* Members List (+2.5dp -> 17.5) */}
+                    <View style={{ paddingHorizontal: 6, gap: 8, paddingBottom: 2 }}>
+                      {joinedMembers.map((member) => (
+                        <View
+                          key={member.id}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 1,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 17.5,
+                              fontFamily: Fonts.SystemRoundedMedium,
+                              color: isDark ? '#FFFFFF' : '#000000',
+                            }}
+                            numberOfLines={1}
+                          >
+                            {member.name}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                {/* LAYER 3: SETTINGS SUB-LAYER */}
+                {groupSubMenu === 'settings' && (
+                  <>
+                    {/* Bolder Header Row with Chevron-Down to go back (+2.5dp -> 18.5) */}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setGroupSubMenu('main')}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 6,
+                        paddingVertical: 4,
+                        zIndex: 10,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Ionicons name="settings-outline" size={22} color={isDark ? '#FFFFFF' : '#000000'} />
+                        <Text
+                          style={{
+                            fontSize: 18.5,
+                            fontFamily: Fonts.SystemRoundedBold,
+                            fontWeight: '700',
+                            color: isDark ? '#FFFFFF' : '#000000',
+                          }}
+                        >
+                          settings
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-down"
+                        size={18}
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                        style={{ marginLeft: 10 }}
+                      />
+                    </TouchableOpacity>
+
+                    {/* Hairline Divider */}
+                    <View
+                      style={{
+                        height: StyleSheet.hairlineWidth,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
+                        marginHorizontal: 4,
+                        marginTop: 6,
+                        marginBottom: 8,
+                      }}
+                    />
+
+                    {/* Settings Options (+2.5dp -> 17.5) */}
+                    <View style={{ gap: 2, paddingBottom: 2 }}>
+                      {/* edit pal */}
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() => {
                           setShowGroupDropdown(false);
                           setGroupSubMenu('main');
-                          setShowDeleteGroupDialog(true);
+                          setEditedGroupName(group?.name || '');
+                          setShowEditGroupNameModal(true);
                         }}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
-                          gap: 12,
-                          paddingHorizontal: 18,
-                          paddingVertical: 9,
+                          gap: 10,
+                          paddingHorizontal: 6,
+                          paddingVertical: 6,
                           zIndex: 10,
                         }}
                       >
-                        <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                        <Ionicons name="options-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
                         <Text
                           style={{
-                            fontSize: 16,
+                            fontSize: 17.5,
                             fontFamily: Fonts.SystemRoundedMedium,
-                            color: '#FF3B30',
+                            color: isDark ? '#FFFFFF' : '#000000',
                           }}
                         >
-                          delete pal
+                          edit pal
                         </Text>
                       </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          setShowGroupDropdown(false);
-                          setGroupSubMenu('main');
-                          setShowLeaveGroupDialog(true);
-                        }}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 12,
-                          paddingHorizontal: 18,
-                          paddingVertical: 9,
-                          zIndex: 10,
-                        }}
-                      >
-                        <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
-                        <Text
+
+                      {/* delete pal (for creator) or leave pal (for member) */}
+                      {isCreator ? (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            setShowGroupDropdown(false);
+                            setGroupSubMenu('main');
+                            setShowDeleteGroupDialog(true);
+                          }}
                           style={{
-                            fontSize: 16,
-                            fontFamily: Fonts.SystemRoundedMedium,
-                            color: '#FF3B30',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 10,
+                            paddingHorizontal: 6,
+                            paddingVertical: 6,
+                            zIndex: 10,
                           }}
                         >
-                          leave pal
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </>
-              )}
+                          <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                          <Text
+                            style={{
+                              fontSize: 17.5,
+                              fontFamily: Fonts.SystemRoundedMedium,
+                              color: '#FF3B30',
+                            }}
+                          >
+                            delete pal
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            setShowGroupDropdown(false);
+                            setGroupSubMenu('main');
+                            setShowLeaveGroupDialog(true);
+                          }}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 10,
+                            paddingHorizontal: 6,
+                            paddingVertical: 6,
+                            zIndex: 10,
+                          }}
+                        >
+                          <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
+                          <Text
+                            style={{
+                              fontSize: 17.5,
+                              fontFamily: Fonts.SystemRoundedMedium,
+                              color: '#FF3B30',
+                            }}
+                          >
+                            leave pal
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                )}
+              </View>
             </TouchableOpacity>
           </TouchableOpacity>
         </Modal>
@@ -1672,8 +1678,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       </Defs>
                       <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#delPalsBtnRim)" strokeWidth={1.2} />
                     </Svg>
-                    <Text style={{ fontSize: 13.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
-                      delete pals group
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
+                      delete
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1801,7 +1807,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     </Text>
                   </TouchableOpacity>
 
-                  {/* Leave Pals Group Button */}
+                  {/* Leave Button */}
                   <TouchableOpacity
                     style={{
                       flex: 1,
@@ -1830,8 +1836,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       </Defs>
                       <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#leavePalsBtnRim)" strokeWidth={1.2} />
                     </Svg>
-                    <Text style={{ fontSize: 13.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
-                      leave pals group
+                    <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
+                      leave
                     </Text>
                   </TouchableOpacity>
                 </View>
