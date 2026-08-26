@@ -61,7 +61,16 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const colorScheme = useFastColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [activeScheme, setActiveScheme] = useState(Appearance.getColorScheme() || 'light');
+
+  useEffect(() => {
+    const sub = Appearance.addChangeListener(({ colorScheme: next }) => {
+      if (next) setActiveScheme(next);
+    });
+    return () => sub.remove();
+  }, []);
+
+  const isDark = (activeScheme || colorScheme || Appearance.getColorScheme()) === 'dark';
 
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
