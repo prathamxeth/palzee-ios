@@ -2690,6 +2690,7 @@ export default function HomeScreen({
           group={activePalGroupDetails}
           user={user}
           selectedThemeColor={selectedThemeColor}
+          isDark={isDark}
           onOpenCamera={() => {
             setActivePalGroupDetails(null);
             setShowCamera(true);

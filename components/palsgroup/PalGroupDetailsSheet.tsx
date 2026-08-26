@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   StyleSheet,
@@ -48,6 +48,7 @@ export interface PalGroupDetailsSheetProps {
   user: any;
   selectedThemeColor?: string;
   onOpenCamera: () => void;
+  isDark?: boolean;
 }
 
 export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
@@ -57,6 +58,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   user,
   selectedThemeColor = 'cyan',
   onOpenCamera,
+  isDark: propIsDark,
 }) => {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -70,7 +72,10 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
     return () => sub.remove();
   }, []);
 
-  const isDark = (activeScheme || colorScheme || Appearance.getColorScheme()) === 'dark';
+  const isDark =
+    propIsDark !== undefined
+      ? propIsDark
+      : (activeScheme || colorScheme || Appearance.getColorScheme()) === 'dark';
 
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
@@ -141,13 +146,12 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const isSmallSlot = maxSlots >= 4;
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
+    <View
+      key={`pals_view_${isDark ? 'dark' : 'light'}`}
+      style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}
     >
       <DynamicGlowContainer
+        key={`pals_glow_${isDark ? 'dark' : 'light'}`}
         selectedThemeColor={selectedThemeColor}
         showBorder={true}
         showGlow={true}
@@ -191,7 +195,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               />
               <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
                 <Defs>
-                  <LinearGradient id="groupPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <LinearGradient id={`groupPillGrad_${isDark ? 'dark' : 'light'}`} x1="0%" y1="0%" x2="0%" y2="100%">
                     <Stop
                       offset="0%"
                       stopColor={isDark ? '#28282E' : '#FFFFFF'}
@@ -208,7 +212,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       stopOpacity={isDark ? 0.85 : 0.65}
                     />
                   </LinearGradient>
-                  <LinearGradient id="groupPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <LinearGradient id={`groupPillBdr_${isDark ? 'dark' : 'light'}`} x1="0%" y1="0%" x2="0%" y2="100%">
                     <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
                     <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
                   </LinearGradient>
@@ -219,8 +223,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   width={108.5}
                   height={43.5}
                   rx={21.75}
-                  fill="url(#groupPillGrad)"
-                  stroke="url(#groupPillBdr)"
+                  fill={`url(#groupPillGrad_${isDark ? 'dark' : 'light'})`}
+                  stroke={`url(#groupPillBdr_${isDark ? 'dark' : 'light'})`}
                   strokeWidth={1.5}
                 />
               </Svg>
