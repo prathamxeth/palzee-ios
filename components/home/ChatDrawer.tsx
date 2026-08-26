@@ -23,6 +23,7 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { LiquidGlassIconButton } from '../ui/LiquidGlassIconButton';
+import { LiquidGlassPillBackground, LiquidGlassCapsule } from '../ui/LiquidGlassView';
 import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
 import { getLiveSandboxUri, formatExactTime } from '../../utils/mediaUtils';
 
@@ -69,6 +70,7 @@ export const ChatDrawer = ({
   onClose,
   onOpenCamera,
   onOpenVlog,
+  palName,
   palCode = 'palzee_space',
   user,
   selectedThemeColor = 'orange',
@@ -256,34 +258,22 @@ export const ChatDrawer = ({
                 </LiquidGlassIconButton>
 
                 <View style={styles.vlogPillWrapper} pointerEvents="box-none">
-                  <View style={styles.vlogPill}>
-                    <BlurView
-                      key={`blur_chat_vlog_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
-                      <Defs>
-                        <LinearGradient id="vlogHeaderPillRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect
-                        x="0.75"
-                        y="0.75"
-                        width={108.5}
-                        height={43.5}
-                        rx={21.75}
-                        fill="none"
-                        stroke="url(#vlogHeaderPillRim)"
-                        strokeWidth={1.2}
-                      />
-                    </Svg>
-                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center', zIndex: 10 }]}>vlog</Text>
-                  </View>
+                  <LiquidGlassCapsule
+                    idPrefix="chatVlogHeader"
+                    isDark={isDark}
+                    width={110}
+                    height={45}
+                  >
+                    <Text
+                      style={[
+                        styles.vlogPillText,
+                        { color: textColor, textAlign: 'center', zIndex: 10 },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {palName || 'vlog'}
+                    </Text>
+                  </LiquidGlassCapsule>
                 </View>
 
                 <View style={{ width: 44 }} />
@@ -408,7 +398,7 @@ export const ChatDrawer = ({
 
                           {/* THAT DAY'S VIEW PAL BOX ALIGNED IN STREAM */}
                           <TouchableOpacity
-                            activeOpacity={0.85}
+                            activeOpacity={0.8}
                             onPress={() => {
                               onClose();
                               if (onOpenVlog) onOpenVlog(group.dayOffset);
@@ -416,19 +406,20 @@ export const ChatDrawer = ({
                             style={[
                               styles.viewPalBtn,
                               {
-                                backgroundColor: isDark ? 'rgba(28, 28, 30, 0.75)' : 'rgba(229, 229, 234, 0.75)',
-                                borderWidth: 1.2,
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
-                                overflow: 'hidden',
                                 marginTop: 6,
+                                overflow: 'hidden',
                               },
                             ]}
                           >
-                            <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                            <Text style={[styles.viewPalDayText, { color: textColor }]}>
+                            <LiquidGlassPillBackground
+                              idPrefix={`viewpal_${group.dayOffset}`}
+                              isDark={isDark}
+                              borderRadius={29}
+                            />
+                            <Text style={[styles.viewPalDayText, { color: textColor, zIndex: 5 }]}>
                               {group.dayLabel}
                             </Text>
-                            <Text style={[styles.viewPalActionText, { color: edgeColor }]}>
+                            <Text style={[styles.viewPalActionText, { color: edgeColor, zIndex: 5 }]}>
                               view pal
                             </Text>
                           </TouchableOpacity>
@@ -439,78 +430,92 @@ export const ChatDrawer = ({
                 </ScrollView>
               </View>
 
-              {/* 3. BOTTOM INPUT BAR */}
-              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                <View style={styles.inputRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.smileyBtn,
-                      {
-                        backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
-                        borderWidth: 1.2,
-                        borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
-                        overflow: 'hidden',
-                      },
-                    ]}
-                    activeOpacity={0.85}
-                    onPress={() => {
-                      onClose();
-                      if (onOpenCamera) onOpenCamera();
-                    }}
-                  >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                    <View style={[styles.smileyCircle, { backgroundColor: edgeColor }]}>
-                      <Image
-                        source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={{ width: 25, height: 25 }}
-                        contentFit="contain"
-                      />
-                    </View>
-                  </TouchableOpacity>
-
-                  <View
-                    style={[
-                      styles.inputFieldContainer,
-                      {
-                        backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
-                        borderWidth: 1.2,
-                        borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
-                        overflow: 'hidden',
-                      },
-                    ]}
-                  >
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                    <TextInput
-                      style={[styles.input, { color: textColor }]}
-                      placeholder="message"
-                      placeholderTextColor="#8E8E93"
-                      value={messageText}
-                      onChangeText={setMessageText}
-                    />
+                {/* 3. BOTTOM INPUT BAR (Apple Liquid Glass Message Box + Previous Vlog Smiley Pill) */}
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                  <View style={styles.inputRow}>
                     <TouchableOpacity
                       style={[
-                        styles.sendBtn,
+                        styles.smileyBtn,
                         {
-                          backgroundColor:
+                          backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+                          borderWidth: 1.2,
+                          borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                          overflow: 'hidden',
+                        },
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        onClose();
+                        if (onOpenCamera) onOpenCamera();
+                      }}
+                    >
+                      <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                      <View style={[styles.smileyCircle, { backgroundColor: edgeColor }]}>
+                        <Image
+                          source={require('../../assets/images/custom_rotate_smiley.png')}
+                          style={{ width: 25, height: 25 }}
+                          contentFit="contain"
+                        />
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Apple Liquid Glass Message Box (Exact Edge-to-Edge Pill Geometry) */}
+                    <View
+                      style={[
+                        styles.inputFieldContainer,
+                        {
+                          paddingLeft: 18,
+                          paddingRight: 6,
+                          overflow: 'hidden',
+                        },
+                      ]}
+                    >
+                      <LiquidGlassPillBackground
+                        idPrefix="chatInputMsg"
+                        isDark={isDark}
+                        borderRadius={26}
+                      />
+                      <TextInput
+                        style={[styles.input, { color: textColor, zIndex: 5 }]}
+                        placeholder="message"
+                        placeholderTextColor={isDark ? '#8E8E93' : '#636366'}
+                        value={messageText}
+                        onChangeText={setMessageText}
+                      />
+                      {/* Apple Liquid Glass Upward Arrow Button */}
+                      <TouchableOpacity
+                        style={[
+                          styles.sendBtn,
+                          {
+                            zIndex: 5,
+                            overflow: 'hidden',
+                          },
+                        ]}
+                        activeOpacity={0.75}
+                        onPress={() => setMessageText('')}
+                      >
+                        <LiquidGlassPillBackground
+                          idPrefix="chatSendArrow"
+                          isDark={isDark}
+                          borderRadius={19}
+                          backgroundColor={
                             messageText.trim().length > 0
                               ? edgeColor
                               : isDark
                               ? 'rgba(255, 255, 255, 0.12)'
-                              : 'rgba(0, 0, 0, 0.08)',
-                        },
-                      ]}
-                      activeOpacity={0.75}
-                      onPress={() => setMessageText('')}
-                    >
-                      <Ionicons
-                        name="arrow-up"
-                        size={18}
-                        color={messageText.trim().length > 0 ? '#000000' : isDark ? '#8E8E93' : '#666666'}
-                      />
-                    </TouchableOpacity>
+                              : 'rgba(0, 0, 0, 0.06)'
+                          }
+                        />
+                        <Ionicons
+                          name="arrow-up"
+                          size={20}
+                          color={messageText.trim().length > 0 ? '#000000' : isDark ? '#FFFFFF' : '#000000'}
+                          style={{ zIndex: 10 }}
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
 
               {/* 4. PREVIEW VIDEO MODAL OVERLAY */}
               {previewVisible && (
@@ -701,10 +706,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     borderRadius: 26,
-    borderWidth: 1,
+    borderWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingLeft: 18,
+    paddingRight: 6,
     overflow: 'hidden',
   },
   input: {
@@ -714,9 +720,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   sendBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
   },

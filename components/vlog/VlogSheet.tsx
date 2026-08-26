@@ -24,7 +24,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
+import { LiquidGlassIconButton, LiquidGlassCapsule, DynamicGlowContainer } from '../ui';
 import { ActivityIndicator } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 
@@ -705,44 +705,25 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
             <View style={[styles.centerHeaderGroup, { marginTop: 52.5 }]} pointerEvents="box-none">
               <TouchableOpacity
-                style={[styles.vlogLiquidPillBtn, { width: 110 }]}
                 activeOpacity={0.8}
                 onPress={() => setShowVlogDropdown(!showVlogDropdown)}
               >
-                <BlurView
-                  key={`blur_vlog_${isDark ? 'dark' : 'light'}`}
-                  intensity={Platform.OS === 'ios' ? 40 : 30}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
-                  <Defs>
-                    <LinearGradient id="vlogPillRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect
-                    x="0.75"
-                    y="0.75"
-                    width={108.5}
-                    height={43.5}
-                    rx={21.75}
-                    fill="none"
-                    stroke="url(#vlogPillRim)"
-                    strokeWidth={1.2}
-                  />
-                </Svg>
-                <Text
-                  style={[
-                    styles.vlogPillText,
-                    { color: isDark ? '#FFFFFF' : '#000000', textAlign: 'center', zIndex: 10 },
-                  ]}
-                  numberOfLines={1}
+                <LiquidGlassCapsule
+                  idPrefix="vlogSheetHeader"
+                  isDark={isDark}
+                  width={110}
+                  height={45}
                 >
-                  vlog
-                </Text>
+                  <Text
+                    style={[
+                      styles.vlogPillText,
+                      { color: isDark ? '#FFFFFF' : '#000000', textAlign: 'center', zIndex: 10 },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    vlog
+                  </Text>
+                </LiquidGlassCapsule>
               </TouchableOpacity>
 
             {list.length > 0 && (
@@ -1176,6 +1157,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: 20,
                     overflow: 'hidden',
+                    backgroundColor: isDark ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                   }}
                 >
                   <BlurView
@@ -1480,6 +1462,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: 24,
                     overflow: 'hidden',
+                    backgroundColor: isDark ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.95)',
                   }}
                 >
                   <BlurView
@@ -1535,6 +1518,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
                       }}
                       activeOpacity={0.7}
                       onPress={() => setShowDeleteDialog(false)}
@@ -1569,28 +1553,28 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
                       }}
                       activeOpacity={0.7}
                       onPress={handleConfirmDelete}
                     >
                       <BlurView
-                        key={`blur_confirm_del_${isDark ? 'dark' : 'light'}`}
+                        key={`blur_del_btn_${isDark ? 'dark' : 'light'}`}
                         intensity={Platform.OS === 'ios' ? 40 : 30}
                         tint={isDark ? 'dark' : 'light'}
                         style={StyleSheet.absoluteFill}
                       />
                       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                         <Defs>
-                          <LinearGradient id="delActionRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                            <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                          <LinearGradient id="delBtnRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop offset="0%" stopColor="#FF3B30" stopOpacity={isDark ? 0.6 : 0.8} />
+                            <Stop offset="100%" stopColor="#FF3B30" stopOpacity={0.15} />
                           </LinearGradient>
                         </Defs>
-                        <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#delActionRim)" strokeWidth={1.2} />
+                        <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#delBtnRim)" strokeWidth={1.2} />
                       </Svg>
                       <Text style={{ fontSize: 14.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
-                        delete pal
+                        delete
                       </Text>
                     </TouchableOpacity>
                   </View>

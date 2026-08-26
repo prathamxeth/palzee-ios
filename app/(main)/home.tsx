@@ -89,70 +89,39 @@ const LiquidGlassPillButton = ({
   textColor: string;
   idPrefix?: string;
 }) => (
-  <TouchableOpacity style={styles.actionPillContainer} activeOpacity={0.8} onPress={onPress}>
-    <BlurView
-      key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
-      intensity={Platform.OS === 'ios' ? 40 : 30}
-      tint={isDark ? 'dark' : 'light'}
-      style={StyleSheet.absoluteFill}
-    />
-    <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
-      <Defs>
-        <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.45 : 0.85}
-          />
-          <Stop
-            offset="35%"
-            stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.15 : 0.40}
-          />
-          <Stop
-            offset="100%"
-            stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.05 : 0.08}
-          />
-        </LinearGradient>
-      </Defs>
-      <Rect
-        x="0.75"
-        y="0.75"
-        width="116.5"
-        height="34.5"
-        rx="17.25"
-        fill="none"
-        stroke={`url(#${idPrefix}GlassRim)`}
-        strokeWidth={1.2}
-      />
-    </Svg>
-    <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
-  </TouchableOpacity>
-);
-
-const LiquidGlassNavPillBar = ({
-  activeTab,
-  onSelectTab,
-  isDark = true,
-  accentColor = '#8A2BE2',
-}: {
-  activeTab: 'camera' | 'pals';
-  onSelectTab: (tab: 'camera' | 'pals') => void;
-  isDark?: boolean;
-  accentColor?: string;
-}) => (
-  <View style={styles.bottomSwitcherContainer}>
-    <View style={styles.liquidOuterCapsule}>
+  <View
+    style={[
+      styles.liquidCircleWrapper,
+      {
+        width: 118,
+        height: 36,
+        borderRadius: 18,
+      },
+    ]}
+  >
+    <TouchableOpacity
+      style={[
+        styles.actionPillContainer,
+        {
+          width: 118,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+          overflow: 'hidden',
+        },
+      ]}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
       <BlurView
-        key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
-        intensity={Platform.OS === 'ios' ? 40 : 30}
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+        intensity={Platform.OS === 'ios' ? 45 : 30}
         tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
-      <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
+      <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
         <Defs>
-          <LinearGradient id="capsuleRim" x1="0%" y1="0%" x2="0%" y2="100%">
+          <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
@@ -173,105 +142,188 @@ const LiquidGlassNavPillBar = ({
         <Rect
           x="0.75"
           y="0.75"
-          width="166"
-          height="48.5"
-          rx="24.25"
+          width="116.5"
+          height="34.5"
+          rx="17.25"
           fill="none"
-          stroke="url(#capsuleRim)"
+          stroke={`url(#${idPrefix}GlassRim)`}
           strokeWidth={1.2}
         />
       </Svg>
+      <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
+    </TouchableOpacity>
+  </View>
+);
 
-      <View style={styles.liquidCapsuleRow}>
-        {/* CAMERA TAB */}
-        <TouchableOpacity
-          style={styles.liquidTabButton}
-          activeOpacity={0.8}
-          onPress={() => onSelectTab('camera')}
-        >
-          {activeTab === 'camera' && (
-            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop
-                    offset="0%"
-                    stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.50 : 0.90}
-                  />
-                  <Stop
-                    offset="100%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.08 : 0.10}
-                  />
-                </LinearGradient>
-              </Defs>
-              <Rect
-                x="0.75"
-                y="0.75"
-                width="80.75"
-                height="46.5"
-                rx="23.25"
-                fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)'}
-                stroke="url(#actBdr1)"
-                strokeWidth={1.2}
+const LiquidGlassNavPillBar = ({
+  activeTab,
+  onSelectTab,
+  isDark = true,
+  accentColor = '#8A2BE2',
+}: {
+  activeTab: 'camera' | 'pals';
+  onSelectTab: (tab: 'camera' | 'pals') => void;
+  isDark?: boolean;
+  accentColor?: string;
+}) => (
+  <View style={styles.bottomSwitcherContainer}>
+    <View
+      style={[
+        styles.liquidNavShadowWrapper,
+        {
+          width: 167.5,
+          height: 50,
+          borderRadius: 25,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.liquidOuterCapsule,
+          {
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+          },
+        ]}
+      >
+        <BlurView
+          key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
+          intensity={Platform.OS === 'ios' ? 45 : 30}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id="capsuleRim" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop
+                offset="0%"
+                stopColor="#FFFFFF"
+                stopOpacity={isDark ? 0.45 : 0.85}
               />
-            </Svg>
-          )}
-          <Text
-            style={[
-              activeTab === 'camera'
-                ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
-                : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
-            ]}
-          >
-            camera
-          </Text>
-        </TouchableOpacity>
+              <Stop
+                offset="35%"
+                stopColor="#FFFFFF"
+                stopOpacity={isDark ? 0.15 : 0.40}
+              />
+              <Stop
+                offset="100%"
+                stopColor={isDark ? '#FFFFFF' : '#000000'}
+                stopOpacity={isDark ? 0.05 : 0.08}
+              />
+            </LinearGradient>
+          </Defs>
+          <Rect
+            x="0.75"
+            y="0.75"
+            width="166"
+            height="48.5"
+            rx="24.25"
+            fill="none"
+            stroke="url(#capsuleRim)"
+            strokeWidth={1.2}
+          />
+        </Svg>
 
-        {/* PALS TAB */}
-        <TouchableOpacity
-          style={styles.liquidTabButton}
-          activeOpacity={0.8}
-          onPress={() => onSelectTab('pals')}
-        >
-          {activeTab === 'pals' && (
-            <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop
-                    offset="0%"
-                    stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.50 : 0.90}
-                  />
-                  <Stop
-                    offset="100%"
-                    stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.08 : 0.10}
-                  />
-                </LinearGradient>
-              </Defs>
-              <Rect
-                x="0.75"
-                y="0.75"
-                width="80.75"
-                height="46.5"
-                rx="23.25"
-                fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)'}
-                stroke="url(#actBdr2)"
-                strokeWidth={1.2}
-              />
-            </Svg>
-          )}
-          <Text
-            style={[
-              activeTab === 'pals'
-                ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
-                : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
-            ]}
+        <View style={styles.liquidCapsuleRow}>
+          {/* CAMERA TAB */}
+          <TouchableOpacity
+            style={styles.liquidTabButton}
+            activeOpacity={0.8}
+            onPress={() => onSelectTab('camera')}
           >
-            pals
-          </Text>
-        </TouchableOpacity>
+            {activeTab === 'camera' && (
+              <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop
+                      offset="0%"
+                      stopColor="#FFFFFF"
+                      stopOpacity={isDark ? 0.50 : 0.85}
+                    />
+                    <Stop
+                      offset="35%"
+                      stopColor="#FFFFFF"
+                      stopOpacity={isDark ? 0.20 : 0.40}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={isDark ? '#FFFFFF' : '#000000'}
+                      stopOpacity={isDark ? 0.08 : 0.08}
+                    />
+                  </LinearGradient>
+                </Defs>
+                <Rect
+                  x="0.75"
+                  y="0.75"
+                  width="80.75"
+                  height="46.5"
+                  rx="23.25"
+                  fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.92)'}
+                  stroke="url(#actBdr1)"
+                  strokeWidth={1.2}
+                />
+              </Svg>
+            )}
+            <Text
+              style={[
+                activeTab === 'camera'
+                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
+                  : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+              ]}
+            >
+              camera
+            </Text>
+          </TouchableOpacity>
+
+          {/* PALS TAB */}
+          <TouchableOpacity
+            style={styles.liquidTabButton}
+            activeOpacity={0.8}
+            onPress={() => onSelectTab('pals')}
+          >
+            {activeTab === 'pals' && (
+              <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop
+                      offset="0%"
+                      stopColor="#FFFFFF"
+                      stopOpacity={isDark ? 0.50 : 0.85}
+                    />
+                    <Stop
+                      offset="35%"
+                      stopColor="#FFFFFF"
+                      stopOpacity={isDark ? 0.20 : 0.40}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={isDark ? '#FFFFFF' : '#000000'}
+                      stopOpacity={isDark ? 0.08 : 0.08}
+                    />
+                  </LinearGradient>
+                </Defs>
+                <Rect
+                  x="0.75"
+                  y="0.75"
+                  width="80.75"
+                  height="46.5"
+                  rx="23.25"
+                  fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.92)'}
+                  stroke="url(#actBdr2)"
+                  strokeWidth={1.2}
+                />
+              </Svg>
+            )}
+            <Text
+              style={[
+                activeTab === 'pals'
+                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
+                  : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+              ]}
+            >
+              pals
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   </View>
@@ -981,6 +1033,7 @@ export default function HomeScreen({
         <Animated.View
           style={{
             flex: 1,
+            backgroundColor: screenBg,
             opacity: tabTransitionAnim.interpolate({
               inputRange: [0, 0.25, 1],
               outputRange: [0, 0.5, 1],
@@ -1310,7 +1363,7 @@ export default function HomeScreen({
                   {
                     width: '100%',
                     alignSelf: 'center',
-                    backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                    backgroundColor: isDark ? '#161616' : '#F5F5F7',
                     overflow: 'hidden',
                     position: 'relative',
                   },
@@ -1344,7 +1397,7 @@ export default function HomeScreen({
                     {
                       width: '100%',
                       alignSelf: 'center',
-                      backgroundColor: isDark ? '#161616' : '#EFEFEF',
+                      backgroundColor: isDark ? '#161616' : '#F5F5F7',
                     },
                   ]}
                   activeOpacity={0.85}
@@ -2703,6 +2756,14 @@ export default function HomeScreen({
             setActivePalGroupDetails(null);
             setShowCamera(true);
           }}
+          onDeleteGroup={(groupCode) => {
+            setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
+            setActivePalGroupDetails(null);
+          }}
+          onLeaveGroup={(groupCode) => {
+            setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
+            setActivePalGroupDetails(null);
+          }}
         />
 
         {/* VIEWING PALS GUIDE OVERLAY MODAL */}
@@ -3005,6 +3066,20 @@ const styles = StyleSheet.create({
   bottomSwitcherContainer: {
     alignItems: 'center',
   },
+  liquidNavShadowWrapper: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  liquidCircleWrapper: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   liquidOuterCapsule: {
     width: 167.5,
     height: 50,
@@ -3012,11 +3087,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
   },
   liquidCapsuleRow: {
     flexDirection: 'row',

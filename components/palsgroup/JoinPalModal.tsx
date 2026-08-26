@@ -87,7 +87,14 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
               <View style={[styles.dialogWrapper, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
                 {/* 1. TOP FLOATING HEADER CARD */}
                 <View style={styles.topCardWrapper}>
-                  <View style={styles.topCardInner}>
+                  <View
+                    style={[
+                      styles.topCardInner,
+                      {
+                        backgroundColor: isDark ? 'rgba(28, 28, 30, 0.85)' : 'rgba(255, 255, 255, 0.94)',
+                      },
+                    ]}
+                  >
                     <BlurView
                       key={`blur_join_top_${isDark ? 'dark' : 'light'}`}
                       intensity={Platform.OS === 'ios' ? 40 : 30}
@@ -127,7 +134,14 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
 
                 {/* 2. BOTTOM INPUT CAPSULE CARD */}
                 <View style={styles.inputCapsuleWrapper}>
-                  <View style={styles.inputCapsuleInner}>
+                  <View
+                    style={[
+                      styles.inputCapsuleInner,
+                      {
+                        backgroundColor: isDark ? 'rgba(28, 28, 30, 0.85)' : 'rgba(255, 255, 255, 0.94)',
+                      },
+                    ]}
+                  >
                     <BlurView
                       key={`blur_join_input_${isDark ? 'dark' : 'light'}`}
                       intensity={Platform.OS === 'ios' ? 40 : 30}

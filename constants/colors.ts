@@ -2,7 +2,7 @@ export const Colors = {
   // Brand Palette
   PalBlack: '#000000',
   PalWhite: '#FFFFFF',
-  PalBackground: '#F7F6F3',
+  PalBackground: '#FFFFFF',
   PalTextDark: '#1A1A1A',
   PalTextMuted: '#666666',
 

@@ -92,12 +92,12 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
   },
   outerContainer: {
     flex: 1,
     borderRadius: 48,
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     position: 'relative',
     margin: -0.25,
