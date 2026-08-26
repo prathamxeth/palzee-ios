@@ -489,7 +489,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           selectedThemeColor={selectedThemeColor}
         />
       </DynamicGlowContainer>
-    </Modal>
+    </View>
   );
 };
 
