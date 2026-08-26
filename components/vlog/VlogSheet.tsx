@@ -678,7 +678,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            <View style={[styles.centerHeaderGroup, { marginTop: dayOffset === 1 ? 52.5 : 50.0 }]} pointerEvents="box-none">
+            <View style={[styles.centerHeaderGroup, { marginTop: 52.5 }]} pointerEvents="box-none">
               <TouchableOpacity
                 style={[styles.vlogLiquidPillBtn, { width: 110 }]}
                 activeOpacity={0.8}

@@ -8,6 +8,7 @@ import {
   ScrollView,
   Share,
   useWindowDimensions,
+  Appearance,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
+import { Colors } from '../../constants/colors';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
 import { BouncingSmileyView } from '../vlog/BouncingSmileyView';
@@ -66,7 +68,6 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [showChatDrawer, setShowChatDrawer] = useState(false);
 
   const cardWidth = screenWidth - 28;
-  const cardHeight = 154;
 
   const currentUserName = user?.displayName || user?.email?.split('@')[0] || 'apple_user';
 
@@ -106,9 +107,29 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
 
   const emptySlotsCount = Math.max(0, maxSlots - joinedMembers.length);
 
-  // Solid background shades matching CRT static card solid tone without animation
+  // EXACT CARD CONTAINER SIZING MATCHING VLOGSHEET & IMAGES (1 to 5)
+  // For 2 members: exact VlogSheet card height: cardWidth * (9.5 / 16) + 20 (~236.5dp)
+  // For 3, 4, 5 members: scaled cleanly to fit on screen
+  const cardHeight =
+    maxSlots <= 2
+      ? Math.round(cardWidth * (9.5 / 16) + 20)
+      : maxSlots === 3
+      ? Math.round(cardWidth * 0.46)
+      : maxSlots === 4
+      ? Math.round(cardWidth * 0.36)
+      : Math.round(cardWidth * 0.29);
+
+  const delaFontSize = maxSlots <= 2 ? 26 : maxSlots === 3 ? 22 : maxSlots === 4 ? 18 : 16;
+  const userNameFontSize = maxSlots <= 2 ? 22 : maxSlots === 3 ? 19 : maxSlots === 4 ? 17 : 15;
+
+  // Solid background shades adapting instantly to dark/light mode
   const solidCardBg = isDark ? '#161618' : '#EFEFF2';
   const solidCardBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+
+  const themeFillColor =
+    Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
+
+  const isSmallSlot = maxSlots >= 4;
 
   return (
     <Modal
@@ -121,10 +142,10 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
         selectedThemeColor={selectedThemeColor}
         showBorder={true}
         showGlow={true}
-        style={styles.fullScreenContainer}
+        style={{ ...styles.fullScreenContainer, backgroundColor: isDark ? '#000000' : '#F5F5F7' }}
       >
-        {/* TOP NAVIGATION HEADER (Matching VlogSheet & Images) */}
-        <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 14) }]}>
+        {/* TOP NAVIGATION HEADER (Exact matching VlogSheet positioning & dimensions) */}
+        <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
           {/* Top Left: Back button & Calendar Archive button */}
           <View style={styles.headerLeftCluster}>
             <LiquidGlassIconButton
@@ -146,8 +167,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             </LiquidGlassIconButton>
           </View>
 
-          {/* Top Center: Group Name Capsule & Page Dot (Exact VlogSheet Liquid Style) */}
-          <View style={styles.headerCenterCluster}>
+          {/* Top Center: Group Name Capsule & Page Dot (Moved below by 1.5dp -> marginTop: 49.0dp) */}
+          <View style={[styles.centerHeaderGroup, { marginTop: 49.0 }]} pointerEvents="box-none">
             <TouchableOpacity
               activeOpacity={0.8}
               style={[styles.vlogLiquidPillBtn, { width: 110 }]}
@@ -204,7 +225,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 {group.name} &gt;
               </Text>
             </TouchableOpacity>
-            {/* Center Page Dot Indicator */}
+
+            {/* Center Page Dot Indicator exactly under the pill */}
             <View
               style={[
                 styles.headerPageDot,
@@ -235,15 +257,19 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           </View>
         </View>
 
-        {/* BODY LIST OF PAL CARDS (Matching Images 1 to 5) */}
+        {/* BODY LIST OF PAL CARDS (Vertically Centered For 2 & 3 People On Screen) */}
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: Math.max(insets.bottom, 20) + 16 },
+            {
+              paddingBottom: Math.max(insets.bottom, 20) + 16,
+              gap: maxSlots >= 5 ? 8 : 10,
+              justifyContent: maxSlots <= 3 ? 'center' : 'flex-start',
+            },
           ]}
           showsVerticalScrollIndicator={false}
-          bounces={true}
+          bounces={maxSlots > 3}
         >
           {/* 1. JOINED MEMBER / CREATOR CARDS */}
           {joinedMembers.map((member, idx) => {
@@ -262,34 +288,41 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   },
                 ]}
               >
-                {/* Top-Left: Member Profile Icon + Name */}
-                <View style={styles.memberHeaderRow}>
+                {/* Top-Left: Member Profile Icon + Name (Exact VlogSheet Style) */}
+                <View style={styles.memberHeaderRow} pointerEvents="none">
                   <View
                     style={[
-                      styles.memberAvatarContainer,
-                      { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'transparent' },
+                      styles.avatarCircle,
+                      {
+                        backgroundColor: (user?.photoURL && isCurrentUser) || member.avatarUri
+                          ? 'transparent'
+                          : themeFillColor,
+                      },
                     ]}
                   >
-                    <Image
-                      source={require('../../assets/images/custom_rotate_smiley.png')}
-                      style={[
-                        styles.memberAvatarSmiley,
-                        { tintColor: isDark ? '#FFFFFF' : '#000000' },
-                      ]}
-                      contentFit="contain"
-                    />
+                    {user?.photoURL && isCurrentUser ? (
+                      <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
+                    ) : member.avatarUri ? (
+                      <Image source={{ uri: member.avatarUri }} style={styles.avatarImage} />
+                    ) : (
+                      <Image
+                        source={require('../../assets/images/capture_smile.png')}
+                        style={styles.smileyIcon}
+                        resizeMode="contain"
+                      />
+                    )}
                   </View>
                   <Text
                     style={[
                       styles.memberNameText,
-                      { color: isDark ? '#FFFFFF' : '#1C1C1E' },
+                      { color: '#636366', fontSize: userNameFontSize },
                     ]}
                   >
                     {member.name}
                   </Text>
                 </View>
 
-                {/* Bouncing / Floating Color-Changing Capture Smiley */}
+                {/* Bouncing / Floating Color-Changing Capture Smiley (Exact VlogSheet Properties) */}
                 <View style={StyleSheet.absoluteFill} pointerEvents="none">
                   <BouncingSmileyView
                     cardWidth={cardWidth}
@@ -297,13 +330,14 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   />
                 </View>
 
-                {/* Center: Time Text & Tap To Capture Pill (Dead Center of Card) */}
+                {/* Center: Time Text & Tap To Capture Pill (Exact VlogSheet tap to capture pill) */}
                 <View style={styles.centerActionGroup} pointerEvents="box-none">
                   <Text
                     style={[
                       styles.delaTimeText,
                       {
-                        color: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+                        fontSize: delaFontSize,
+                        color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
                       },
                     ]}
                   >
@@ -316,19 +350,29 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                         onClose();
                         onOpenCamera();
                       }}
-                      style={[
-                        styles.tapToCapturePill,
-                        {
-                          backgroundColor: isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.20)',
-                          borderColor: isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.12)',
-                        },
-                      ]}
+                      style={{
+                        paddingHorizontal: isSmallSlot ? 16 : 22,
+                        paddingVertical: isSmallSlot ? 8 : 12,
+                        borderRadius: isSmallSlot ? 18 : 22,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                        zIndex: 35,
+                      }}
                     >
+                      <BlurView
+                        key={isDark ? 'dark' : 'light'}
+                        intensity={30}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
                       <Text
-                        style={[
-                          styles.tapToCaptureText,
-                          { color: isDark ? '#FFFFFF' : '#000000' },
-                        ]}
+                        style={{
+                          color: isDark ? '#000000' : '#FFFFFF',
+                          fontSize: isSmallSlot ? 13 : 16,
+                          fontFamily: Fonts.SystemRoundedSemibold,
+                        }}
                       >
                         tap to capture
                       </Text>
@@ -375,7 +419,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 style={[
                   styles.plusIconCircle,
                   {
-                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#FFFFFF',
+                    backgroundColor: isDark ? '#242428' : '#FFFFFF',
                   },
                 ]}
               >
@@ -439,7 +483,6 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
 const styles = StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   headerBar: {
     flexDirection: 'row',
@@ -447,26 +490,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 14,
     paddingBottom: 10,
+    zIndex: 20,
   },
   headerLeftCluster: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    zIndex: 25,
   },
-  headerCenterCluster: {
+  centerHeaderGroup: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    zIndex: 10,
   },
   vlogLiquidPillBtn: {
+    width: 110,
     height: 45,
     borderRadius: 22.5,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
   },
   vlogPillText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 22.5,
     fontFamily: Fonts.SystemRoundedBold,
   },
   headerPageDot: {
@@ -479,42 +530,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    zIndex: 25,
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    paddingTop: 8,
-    gap: 12,
+    paddingTop: 0,
   },
   palCard: {
-    borderRadius: 24,
+    borderRadius: 28,
     borderWidth: 1.2,
     padding: 14,
     overflow: 'hidden',
     justifyContent: 'space-between',
   },
   memberHeaderRow: {
+    position: 'absolute',
+    top: 12,
+    left: 14,
+    right: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     zIndex: 10,
   },
-  memberAvatarContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
+  avatarCircle: {
+    width: 23.0,
+    height: 23.0,
+    borderRadius: 11.5,
     justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
-  memberAvatarSmiley: {
-    width: 20,
-    height: 20,
-    tintColor: '#000000',
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  smileyIcon: {
+    width: 23.0,
+    height: 23.0,
   },
   memberNameText: {
-    fontSize: 15,
     fontFamily: Fonts.SystemRoundedSemibold,
     fontWeight: '600',
   },
@@ -523,23 +582,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    zIndex: 10,
+    zIndex: 30,
+    elevation: 10,
   },
   delaTimeText: {
     fontFamily: Fonts.DelaGothicOne,
-    fontSize: 22,
     letterSpacing: -0.5,
+    zIndex: 30,
   },
   tapToCapturePill: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    zIndex: 35,
+    elevation: 12,
   },
   tapToCaptureText: {
-    fontSize: 13,
     fontFamily: Fonts.SystemRoundedSemibold,
     fontWeight: '600',
   },
