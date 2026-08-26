@@ -257,22 +257,32 @@ export const ChatDrawer = ({
 
                 <View style={styles.vlogPillWrapper} pointerEvents="box-none">
                   <View style={styles.vlogPill}>
-                    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+                    <BlurView
+                      key={`blur_chat_vlog_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
                     <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
                       <Defs>
-                        <LinearGradient id="vlogHeaderPillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor={isDark ? '#28282E' : '#FFFFFF'} stopOpacity={isDark ? 0.75 : 0.88} />
-                          <Stop offset="50%" stopColor={isDark ? '#18181B' : '#F7F6F3'} stopOpacity={isDark ? 0.6 : 0.75} />
-                          <Stop offset="100%" stopColor={isDark ? '#0E0E10' : '#EAE8E3'} stopOpacity={isDark ? 0.85 : 0.65} />
-                        </LinearGradient>
-                        <LinearGradient id="vlogHeaderPillBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.08 : 0.08} />
+                        <LinearGradient id="vlogHeaderPillRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0.75" y="0.75" width="108.5" height="43.5" rx="21.75" fill="url(#vlogHeaderPillGrad)" stroke="url(#vlogHeaderPillBdr)" strokeWidth={1.5} />
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width={108.5}
+                        height={43.5}
+                        rx={21.75}
+                        fill="none"
+                        stroke="url(#vlogHeaderPillRim)"
+                        strokeWidth={1.2}
+                      />
                     </Svg>
-                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center' }]}>vlog</Text>
+                    <Text style={[styles.vlogPillText, { color: textColor, textAlign: 'center', zIndex: 10 }]}>vlog</Text>
                   </View>
                 </View>
 

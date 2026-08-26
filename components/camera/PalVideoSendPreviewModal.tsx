@@ -113,7 +113,6 @@ const LiquidGlassCircleButton = ({
   idPrefix = 'circle',
   isDark = false,
   size = 44,
-  accentColor,
 }: {
   onPress: () => void;
   children: React.ReactNode;
@@ -123,55 +122,68 @@ const LiquidGlassCircleButton = ({
   accentColor?: string;
 }) => (
   <TouchableOpacity
-    style={[styles.liquidCircleBtn, { width: size, height: size, borderRadius: size / 2 }]}
+    style={{
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 10,
+      elevation: 3,
+      backgroundColor: 'transparent',
+    }}
     activeOpacity={0.8}
     onPress={onPress}
   >
-    <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-    <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-      <Defs>
-        <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor={accentColor ? accentColor : isDark ? '#28282E' : '#FFFFFF'}
-            stopOpacity={accentColor ? 0.72 : isDark ? 0.75 : 0.88}
-          />
-          <Stop
-            offset="50%"
-            stopColor={accentColor ? accentColor : isDark ? '#18181B' : '#F7F6F3'}
-            stopOpacity={accentColor ? 0.55 : isDark ? 0.6 : 0.75}
-          />
-          <Stop
-            offset="100%"
-            stopColor={accentColor ? accentColor : isDark ? '#0E0E10' : '#EAE8E3'}
-            stopOpacity={accentColor ? 0.82 : isDark ? 0.85 : 0.65}
-          />
-        </LinearGradient>
-        <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.45 : 0.95}
-          />
-          <Stop
-            offset="100%"
-            stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.12 : 0.12}
-          />
-        </LinearGradient>
-      </Defs>
-      <Rect
-        x="0.75"
-        y="0.75"
-        width={size - 1.5}
-        height={size - 1.5}
-        rx={(size - 1.5) / 2}
-        fill={`url(#${idPrefix}Grad)`}
-        stroke={`url(#${idPrefix}Bdr)`}
-        strokeWidth={1.5}
+    <View
+      style={{
+        ...StyleSheet.absoluteFillObject,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <BlurView
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+        intensity={Platform.OS === 'ios' ? 40 : 30}
+        tint={isDark ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFill}
       />
-    </Svg>
-    {children}
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        <Defs>
+          <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <Stop
+              offset="0%"
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.45 : 0.85}
+            />
+            <Stop
+              offset="35%"
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.15 : 0.40}
+            />
+            <Stop
+              offset="100%"
+              stopColor={isDark ? '#FFFFFF' : '#000000'}
+              stopOpacity={isDark ? 0.05 : 0.08}
+            />
+          </LinearGradient>
+        </Defs>
+        <Rect
+          x="0.75"
+          y="0.75"
+          width={size - 1.5}
+          height={size - 1.5}
+          rx={(size - 1.5) / 2}
+          fill="none"
+          stroke={`url(#${idPrefix}GlassRim)`}
+          strokeWidth={1.2}
+        />
+      </Svg>
+      {children}
+    </View>
   </TouchableOpacity>
 );
 

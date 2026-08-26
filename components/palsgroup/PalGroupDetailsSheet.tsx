@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,17 +10,18 @@ import {
   Share,
   useWindowDimensions,
   Appearance,
+  Animated,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, RadialGradient, Stop, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import { LiquidGlassIconButton, DynamicGlowContainer } from '../ui';
-import { BouncingSmileyView } from '../vlog/BouncingSmileyView';
+import { BouncingSmileyView, SmileyTouchInfo } from '../vlog/BouncingSmileyView';
 import { VlogSheet } from '../vlog/VlogSheet';
 import { EditExportSheet } from '../vlog/EditExportSheet';
 import { ChatDrawer } from '../home/ChatDrawer';
@@ -80,6 +82,27 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
+  const [smileyTouch, setSmileyTouch] = useState<SmileyTouchInfo | null>(null);
+  const rippleOpacityAnim = useRef(new Animated.Value(0)).current;
+
+  const handleSmileyHover = useCallback((info: SmileyTouchInfo | null) => {
+    if (info) {
+      setSmileyTouch(info);
+      Animated.timing(rippleOpacityAnim, {
+        toValue: 1,
+        duration: 80,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(rippleOpacityAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: false,
+      }).start(() => {
+        setSmileyTouch(null);
+      });
+    }
+  }, [rippleOpacityAnim]);
 
   const cardWidth = screenWidth - 28;
 
@@ -121,20 +144,18 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
 
   const emptySlotsCount = Math.max(0, maxSlots - joinedMembers.length);
 
-  // EXACT CARD CONTAINER SIZING MATCHING VLOGSHEET & IMAGES (1 to 5)
-  // For 2 members: exact VlogSheet card height: cardWidth * (9.5 / 16) + 20 (~236.5dp)
-  // For 3, 4, 5 members: scaled cleanly to fit on screen
+  // EXACT CARD CONTAINER SIZING MATCHING VLOGSHEET (Up to 3 members: exact VlogSheet box height; 4+ adjusted cleanly)
   const cardHeight =
-    maxSlots <= 2
+    maxSlots <= 3
       ? Math.round(cardWidth * (9.5 / 16) + 20)
-      : maxSlots === 3
-      ? Math.round(cardWidth * 0.46)
       : maxSlots === 4
-      ? Math.round(cardWidth * 0.36)
-      : Math.round(cardWidth * 0.29);
+      ? Math.round(cardWidth * 0.38)
+      : maxSlots === 5
+      ? Math.round(cardWidth * 0.31)
+      : Math.round(cardWidth * 0.26);
 
-  const delaFontSize = maxSlots <= 2 ? 26 : maxSlots === 3 ? 22 : maxSlots === 4 ? 18 : 16;
-  const userNameFontSize = maxSlots <= 2 ? 22 : maxSlots === 3 ? 19 : maxSlots === 4 ? 17 : 15;
+  const delaFontSize = maxSlots <= 3 ? 26 : maxSlots === 4 ? 20 : 16;
+  const userNameFontSize = maxSlots <= 3 ? 22 : maxSlots === 4 ? 18 : 15;
 
   // Solid background shades adapting instantly to dark/light mode
   const solidCardBg = isDark ? '#161618' : '#EFEFF2';
@@ -189,33 +210,17 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               onPress={handleShareInvite}
             >
               <BlurView
-                key={isDark ? 'dark' : 'light'}
-                intensity={35}
+                key={`blur_group_${isDark ? 'dark' : 'light'}`}
+                intensity={Platform.OS === 'ios' ? 40 : 30}
                 tint={isDark ? 'dark' : 'light'}
                 style={StyleSheet.absoluteFill}
               />
               <Svg width={110} height={45} style={StyleSheet.absoluteFill}>
                 <Defs>
-                  <LinearGradient id={`groupPillGrad_${isDark ? 'dark' : 'light'}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                      stopOpacity={isDark ? 0.75 : 0.88}
-                    />
-                    <Stop
-                      offset="50%"
-                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                      stopOpacity={isDark ? 0.6 : 0.75}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                      stopOpacity={isDark ? 0.85 : 0.65}
-                    />
-                  </LinearGradient>
-                  <LinearGradient id={`groupPillBdr_${isDark ? 'dark' : 'light'}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.35 : 0.95} />
-                    <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.08} />
+                  <LinearGradient id={`groupPillRim_${isDark ? 'dark' : 'light'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                    <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                    <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
                   </LinearGradient>
                 </Defs>
                 <Rect
@@ -224,9 +229,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   width={108.5}
                   height={43.5}
                   rx={21.75}
-                  fill={`url(#groupPillGrad_${isDark ? 'dark' : 'light'})`}
-                  stroke={`url(#groupPillBdr_${isDark ? 'dark' : 'light'})`}
-                  strokeWidth={1.5}
+                  fill="none"
+                  stroke={`url(#groupPillRim_${isDark ? 'dark' : 'light'})`}
+                  strokeWidth={1.2}
                 />
               </Svg>
               <Text
@@ -277,8 +282,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingBottom: Math.max(insets.bottom, 20) + 16,
-              gap: maxSlots >= 5 ? 8 : 10,
+              paddingTop: 10,
+              paddingBottom: Math.max(insets.bottom, 16) + 14,
+              gap: 0.5,
               justifyContent: maxSlots <= 3 ? 'center' : 'flex-start',
             },
           ]}
@@ -298,7 +304,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     width: cardWidth,
                     height: cardHeight,
                     backgroundColor: solidCardBg,
-                    borderColor: solidCardBorder,
+                    borderWidth: 0,
+                    borderColor: 'transparent',
                   },
                 ]}
               >
@@ -336,13 +343,16 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   </Text>
                 </View>
 
-                {/* Bouncing / Floating Color-Changing Capture Smiley (Exact VlogSheet Properties) */}
-                <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                  <BouncingSmileyView
-                    cardWidth={cardWidth}
-                    cardHeight={cardHeight}
-                  />
-                </View>
+                {/* Bouncing / Floating Color-Changing Capture Smiley (Only on current user's active capture slot) */}
+                {isCurrentUser && !member.hasCaptured && (
+                  <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                    <BouncingSmileyView
+                      cardWidth={cardWidth}
+                      cardHeight={cardHeight}
+                      onSmileyHover={handleSmileyHover}
+                    />
+                  </View>
+                )}
 
                 {/* Center: Time Text & Tap To Capture Pill (Exact VlogSheet tap to capture pill) */}
                 <View style={styles.centerActionGroup} pointerEvents="box-none">
@@ -368,24 +378,89 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                         paddingHorizontal: isSmallSlot ? 16 : 22,
                         paddingVertical: isSmallSlot ? 8 : 12,
                         borderRadius: isSmallSlot ? 18 : 22,
-                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        overflow: 'hidden',
+                        position: 'relative',
                         zIndex: 35,
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.12,
+                        shadowRadius: 10,
+                        elevation: 4,
                       }}
                     >
-                      <BlurView
-                        key={isDark ? 'dark' : 'light'}
-                        intensity={30}
-                        tint={isDark ? 'dark' : 'light'}
-                        style={StyleSheet.absoluteFill}
-                      />
+                      <View
+                        style={{
+                          ...StyleSheet.absoluteFillObject,
+                          borderRadius: isSmallSlot ? 18 : 22,
+                          overflow: 'hidden',
+                          backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                        }}
+                      >
+                        <BlurView
+                          key={`blur_grp_tap_${isDark ? 'dark' : 'light'}`}
+                          intensity={Platform.OS === 'ios' ? 40 : 30}
+                          tint={isDark ? 'dark' : 'light'}
+                          style={StyleSheet.absoluteFill}
+                        />
+
+                        {/* LOCALIZED WATER RIPPLE ILLUMINATION AT EXACT POINT OF CONTACT */}
+                        {smileyTouch && (
+                          <Animated.View
+                            style={[
+                              StyleSheet.absoluteFillObject,
+                              {
+                                opacity: rippleOpacityAnim,
+                              },
+                            ]}
+                            pointerEvents="none"
+                          >
+                            <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                              <Defs>
+                                <RadialGradient
+                                  id="grpSmileyRippleGlow"
+                                  cx={`${smileyTouch.relX || 0}`}
+                                  cy={`${smileyTouch.relY || 0}`}
+                                  r={isSmallSlot ? "38" : "46"}
+                                  gradientUnits="userSpaceOnUse"
+                                >
+                                  <Stop offset="0%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.70 : 0.60} />
+                                  <Stop offset="45%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.28 : 0.22} />
+                                  <Stop offset="100%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={0.0} />
+                                </RadialGradient>
+                              </Defs>
+                              <Rect width="100%" height="100%" fill="url(#grpSmileyRippleGlow)" />
+                            </Svg>
+                          </Animated.View>
+                        )}
+
+                        <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                          <Defs>
+                            <LinearGradient id="grpTapCapRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                              <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                            </LinearGradient>
+                          </Defs>
+                          <Rect
+                            x="0.75"
+                            y="0.75"
+                            width="98.5%"
+                            height="96.5%"
+                            rx={isSmallSlot ? 17.25 : 21.25}
+                            ry={isSmallSlot ? 17.25 : 21.25}
+                            fill="none"
+                            stroke="url(#grpTapCapRim)"
+                            strokeWidth={1.2}
+                          />
+                        </Svg>
+                      </View>
                       <Text
                         style={{
-                          color: isDark ? '#000000' : '#FFFFFF',
+                          color: isDark ? '#FFFFFF' : '#000000',
                           fontSize: isSmallSlot ? 13 : 16,
                           fontFamily: Fonts.SystemRoundedSemibold,
+                          zIndex: 10,
                         }}
                       >
                         tap to capture
@@ -425,7 +500,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   width: cardWidth,
                   height: cardHeight,
                   backgroundColor: solidCardBg,
-                  borderColor: solidCardBorder,
+                  borderWidth: 0,
+                  borderColor: 'transparent',
                 },
               ]}
             >
@@ -555,7 +631,7 @@ const styles = StyleSheet.create({
   },
   palCard: {
     borderRadius: 28,
-    borderWidth: 1.2,
+    borderWidth: 0,
     padding: 14,
     overflow: 'hidden',
     justifyContent: 'space-between',

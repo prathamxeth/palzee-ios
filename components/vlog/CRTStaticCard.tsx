@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { StyleSheet, View, Animated, Easing } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
-import { BouncingSmileyView } from './BouncingSmileyView';
+import { BouncingSmileyView, SmileyTouchInfo } from './BouncingSmileyView';
 
 const vhsLightTexture = require('../../assets/images/vhs_static_light.png');
 const vhsDarkTexture = require('../../assets/images/vhs_static_dark.png');
@@ -12,14 +12,18 @@ interface CRTStaticCardProps {
   height: number;
   borderRadius?: number;
   showBouncingSmiley?: boolean;
+  onSmileyHover?: (info: SmileyTouchInfo | null) => void;
+  pillRect?: { x: number; y: number; width: number; height: number };
 }
 
-export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
+export const CRTStaticCard: React.FC<CRTStaticCardProps> = React.memo(({
   isDark = false,
   width,
   height,
   borderRadius = 24,
   showBouncingSmiley = false,
+  onSmileyHover,
+  pillRect,
 }) => {
   const grainX1 = useRef(new Animated.Value(0)).current;
   const grainY1 = useRef(new Animated.Value(0)).current;
@@ -143,8 +147,13 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = ({
       </Animated.View>
 
       {showBouncingSmiley && (
-        <BouncingSmileyView cardWidth={width} cardHeight={height} />
+        <BouncingSmileyView
+          cardWidth={width}
+          cardHeight={height}
+          onSmileyHover={onSmileyHover}
+          pillRect={pillRect}
+        />
       )}
     </View>
   );
-};
+});

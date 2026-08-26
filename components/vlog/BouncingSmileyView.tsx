@@ -17,26 +17,39 @@ export const TWELVE_PALZEE_COLORS = [
   '#4FFFB0', // Palzee Mint
 ];
 
+export interface SmileyTouchInfo {
+  color: string;
+  relX: number;
+  relY: number;
+}
+
 export interface BouncingSmileyViewProps {
   cardWidth: number;
   cardHeight: number;
+  onSmileyHover?: (info: SmileyTouchInfo | null) => void;
+  pillRect?: { x: number; y: number; width: number; height: number };
 }
 
-export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
+export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(({
   cardWidth,
   cardHeight,
+  onSmileyHover,
+  pillRect,
 }) => {
   const smileySize = 60.0;
   const maxX = Math.max(0, cardWidth - smileySize);
   const maxY = Math.max(0, cardHeight - smileySize);
 
-  const initialX = Math.floor(Math.random() * (maxX || 1));
-  const initialY = Math.floor(Math.random() * (maxY || 1));
+  // STABLE INITIAL POSITION - NEVER RE-RANDOMIZED ON RE-RENDERS
+  const initialPosRef = useRef({
+    x: Math.floor(Math.random() * (maxX || 1)),
+    y: Math.floor(Math.random() * (maxY || 1)),
+  });
 
   const boxRef = useRef<View>(null);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  const posRef = useRef({ x: initialX, y: initialY });
+  const posRef = useRef({ x: initialPosRef.current.x, y: initialPosRef.current.y });
   const velRef = useRef({
     vx: 3.20,
     vy: 2.75,
@@ -44,8 +57,14 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
 
   const colorIndexRef = useRef(0);
   const animFrameRef = useRef<number | null>(null);
+  const hoverCallbackRef = useRef(onSmileyHover);
+  hoverCallbackRef.current = onSmileyHover;
+  const pillRectRef = useRef(pillRect);
+  pillRectRef.current = pillRect;
 
-  // 1. HARDWARE-ACCELERATED INFINITE 60FPS CONTINUOUS ROTATION (NEVER STALLS / NEVER GLITCHES)
+  const isOverlappingRef = useRef(false);
+
+  // 1. HARDWARE-ACCELERATED INFINITE CONTINUOUS ROTATION
   useEffect(() => {
     rotateAnim.setValue(0);
     const loop = Animated.loop(
@@ -60,7 +79,7 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
     return () => loop.stop();
   }, [rotateAnim]);
 
-  // 2. ULTRA-SMOOTH DIRECT VIEW TRANSFORMS (ZERO REACT RE-RENDERS / ZERO ANIMATION NODE JAMS)
+  // 2. ULTRA-SMOOTH DIRECT VIEW TRANSFORMS
   useEffect(() => {
     let active = true;
 
@@ -122,6 +141,33 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
         colorIndexRef.current = (colorIndexRef.current + 1) % TWELVE_PALZEE_COLORS.length;
       }
 
+      const pRect = pillRectRef.current;
+      const pillW = pRect?.width ?? 155;
+      const pillH = pRect?.height ?? 48;
+      const pillX = pRect?.x ?? (cardWidth - pillW) / 2;
+      const pillY = pRect?.y ?? (cardHeight - pillH) / 2;
+
+      const isOverlapping = (
+        nextX + smileySize >= pillX &&
+        nextX <= pillX + pillW &&
+        nextY + smileySize >= pillY &&
+        nextY <= pillY + pillH
+      );
+
+      if (isOverlapping) {
+        isOverlappingRef.current = true;
+        const relX = Math.round(nextX + smileySize / 2 - pillX);
+        const relY = Math.round(nextY + smileySize / 2 - pillY);
+        hoverCallbackRef.current?.({
+          color: TWELVE_PALZEE_COLORS[colorIndexRef.current],
+          relX,
+          relY,
+        });
+      } else if (isOverlappingRef.current) {
+        isOverlappingRef.current = false;
+        hoverCallbackRef.current?.(null);
+      }
+
       if (boxRef.current) {
         boxRef.current.setNativeProps({
           style: {
@@ -158,8 +204,8 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
           left: 0,
           top: 0,
           transform: [
-            { translateX: initialX },
-            { translateY: initialY },
+            { translateX: initialPosRef.current.x },
+            { translateY: initialPosRef.current.y },
           ],
           width: smileySize,
           height: smileySize,
@@ -192,4 +238,4 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = ({
       </View>
     </View>
   );
-};
+});

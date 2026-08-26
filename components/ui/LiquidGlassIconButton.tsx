@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
@@ -9,6 +9,8 @@ export interface LiquidGlassIconButtonProps {
   isDark?: boolean;
   idPrefix?: string;
   size?: number;
+  disabled?: boolean;
+  style?: any;
 }
 
 export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
@@ -17,80 +19,94 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
   isDark = true,
   idPrefix = 'btn',
   size = 45,
+  disabled = false,
+  style,
 }) => {
   const btnRadius = size / 2;
-  const rectSize = size - 1.5;
-  const rectRadius = (size - 1.5) / 2;
 
   return (
     <TouchableOpacity
       style={[
-        styles.circleIconBtn,
-        { width: size, height: size, borderRadius: btnRadius },
+        styles.liquidCircleWrapper,
+        {
+          width: size,
+          height: size,
+          borderRadius: btnRadius,
+          opacity: disabled ? 0.45 : 1,
+        },
+        style,
       ]}
       activeOpacity={0.8}
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
     >
-      <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop
-              offset="0%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.65 : 0.88}
-            />
-            <Stop
-              offset="50%"
-              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.50 : 0.75}
-            />
-            <Stop
-              offset="100%"
-              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.60 : 0.65}
-            />
-          </LinearGradient>
-          <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop
-              offset="0%"
-              stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.28 : 0.95}
-            />
-            <Stop
-              offset="100%"
-              stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.04 : 0.08}
-            />
-          </LinearGradient>
-        </Defs>
-        <Rect
-          x="0.5"
-          y="0.5"
-          width={size - 1.0}
-          height={size - 1.0}
-          rx={(size - 1.0) / 2}
-          fill={`url(#${idPrefix}Grad)`}
-          stroke={`url(#${idPrefix}Bdr)`}
-          strokeWidth={1.0}
+      <View
+        style={[
+          styles.liquidCircleInner,
+          {
+            borderRadius: btnRadius,
+          },
+        ]}
+      >
+        <BlurView
+          key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+          intensity={Platform.OS === 'ios' ? 40 : 30}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
         />
-      </Svg>
-      <View style={styles.contentContainer}>
-        {children}
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop
+                offset="0%"
+                stopColor="#FFFFFF"
+                stopOpacity={isDark ? 0.45 : 0.85}
+              />
+              <Stop
+                offset="35%"
+                stopColor="#FFFFFF"
+                stopOpacity={isDark ? 0.15 : 0.40}
+              />
+              <Stop
+                offset="100%"
+                stopColor={isDark ? '#FFFFFF' : '#000000'}
+                stopOpacity={isDark ? 0.05 : 0.08}
+              />
+            </LinearGradient>
+          </Defs>
+          <Rect
+            x="0.75"
+            y="0.75"
+            width={size - 1.5}
+            height={size - 1.5}
+            rx={btnRadius - 0.75}
+            fill="none"
+            stroke={`url(#${idPrefix}GlassRim)`}
+            strokeWidth={1.2}
+          />
+        </Svg>
+        <View style={styles.contentContainer}>
+          {children}
+        </View>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  circleIconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  liquidCircleWrapper: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 10,
+    elevation: 3,
+    backgroundColor: 'transparent',
+  },
+  liquidCircleInner: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
   },
   contentContainer: {
     ...StyleSheet.absoluteFillObject,

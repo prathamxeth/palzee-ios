@@ -11,8 +11,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { DynamicGlowContainer } from '../ui/DynamicGlowContainer';
+import { LiquidGlassIconButton } from '../ui';
 import { Fonts } from '../../constants/typography';
+import { Colors } from '../../constants/colors';
 
 interface ActivityDrawerProps {
   visible: boolean;
@@ -33,9 +34,9 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
   const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
 
-  const screenBg = isDark ? '#121212' : '#FFFFFF';
-  const textColor = isDark ? '#FFFFFF' : '#1C1C1E';
-  const iconColor = isDark ? '#FFFFFF' : '#1C1C1E';
+  const screenBg = isDark ? '#000000' : Colors.PalBackground;
+  const textColor = isDark ? '#FFFFFF' : Colors.PalTextDark;
+  const iconColor = isDark ? '#FFFFFF' : '#000000';
 
   if (!visible) return null;
 
@@ -57,58 +58,11 @@ export const ActivityDrawer: React.FC<ActivityDrawerProps> = ({
               activity
             </Text>
 
-            <TouchableOpacity
-              style={styles.closeButtonPill}
-              activeOpacity={0.8}
-              onPress={onClose}
-            >
-              <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-              <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id="actCloseBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                      stopOpacity={isDark ? 0.75 : 0.92}
-                    />
-                    <Stop
-                      offset="50%"
-                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                      stopOpacity={isDark ? 0.6 : 0.80}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                      stopOpacity={isDark ? 0.85 : 0.70}
-                    />
-                  </LinearGradient>
-                  <LinearGradient id="actCloseBtnBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.35 : 0.95}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.08}
-                    />
-                  </LinearGradient>
-                </Defs>
-                <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="42.5"
-                  height="42.5"
-                  rx="21.25"
-                  fill="url(#actCloseBtnGrad)"
-                  stroke="url(#actCloseBtnBdr)"
-                  strokeWidth="1.5"
-                />
-              </Svg>
-
-              <Ionicons name="close" size={24} color={iconColor} />
-            </TouchableOpacity>
+            <View style={{ position: 'absolute', right: 16 }}>
+              <LiquidGlassIconButton idPrefix="btnActClose" isDark={isDark} size={44} onPress={onClose}>
+                <Ionicons name="close" size={26} color={iconColor} />
+              </LiquidGlassIconButton>
+            </View>
           </View>
 
           {/* CONTENT BODY AREA */}

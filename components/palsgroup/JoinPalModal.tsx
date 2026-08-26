@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
@@ -84,102 +86,141 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View style={[styles.dialogWrapper, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
                 {/* 1. TOP FLOATING HEADER CARD */}
-                <View
-                  style={[
-                    styles.topCard,
-                    {
-                      backgroundColor: isDark ? 'rgba(32, 32, 36, 0.90)' : 'rgba(255, 255, 255, 0.92)',
-                      borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)',
-                      overflow: 'hidden',
-                    },
-                  ]}
-                >
-                  <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                  <Text style={[styles.titleText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-                    join with code
-                  </Text>
-                  <Text style={[styles.subtitleText, { color: pinkEdgeColor }]}>
-                    ask your friends for their pin#
-                  </Text>
+                <View style={styles.topCardWrapper}>
+                  <View style={styles.topCardInner}>
+                    <BlurView
+                      key={`blur_join_top_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                      <Defs>
+                        <LinearGradient id="joinTopRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="99.5%"
+                        height="98.5%"
+                        rx="23.25"
+                        ry="23.25"
+                        fill="none"
+                        stroke="url(#joinTopRim)"
+                        strokeWidth={1.2}
+                      />
+                    </Svg>
+                  </View>
+                  <View style={styles.topCardContent}>
+                    <Text style={[styles.titleText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                      join with code
+                    </Text>
+                    <Text style={[styles.subtitleText, { color: pinkEdgeColor }]}>
+                      ask your friends for their pin#
+                    </Text>
+                  </View>
                 </View>
 
                 {/* 2. BOTTOM INPUT CAPSULE CARD */}
-                <View
-                  style={[
-                    styles.inputCapsule,
-                    {
-                      backgroundColor: isDark ? 'rgba(32, 32, 36, 0.90)' : 'rgba(255, 255, 255, 0.92)',
-                      borderWidth: 1.2,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)',
-                      overflow: 'hidden',
-                    },
-                  ]}
-                >
-                  <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                  {/* Left Hash Symbol # */}
-                  <Text style={[styles.hashSymbol, { color: isDark ? '#FFFFFF' : '#000000' }]}>#</Text>
-
-                  {/* Middle Text Area with Black Underline & Blinking Pink Cursor */}
-                  <View style={styles.inputCenterArea}>
-                    <View style={styles.textRowContainer}>
-                      {inputVal.length === 0 ? (
-                        <View style={styles.placeholderRow}>
-                          <Text
-                            style={[
-                              styles.blinkingCursor,
-                              { color: pinkEdgeColor, opacity: cursorVisible ? 1 : 0 },
-                            ]}
-                          >
-                            |
-                          </Text>
-                          <Text style={styles.placeholderText}>abc123</Text>
-                        </View>
-                      ) : (
-                        <View style={styles.typedRow}>
-                          <Text style={[styles.typedText, { color: isDark ? '#FFFFFF' : '#000000' }]}>{inputVal}</Text>
-                          <Text
-                            style={[
-                              styles.blinkingCursor,
-                              { color: pinkEdgeColor, opacity: cursorVisible ? 1 : 0, marginLeft: 1 },
-                            ]}
-                          >
-                            |
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Underline Bar */}
-                    <View style={[styles.blackUnderlineBar, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]} />
-
-                    {/* Hidden Native TextInput with AutoFocus */}
-                    <TextInput
-                      style={styles.invisibleInput}
-                      value={inputVal}
-                      onChangeText={setInputVal}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      autoFocus={true}
-                      caretHidden={true}
-                      onSubmitEditing={handleSubmit}
-                      returnKeyType="join"
+                <View style={styles.inputCapsuleWrapper}>
+                  <View style={styles.inputCapsuleInner}>
+                    <BlurView
+                      key={`blur_join_input_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
                     />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                      <Defs>
+                        <LinearGradient id="joinInputRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="99.5%"
+                        height="98.5%"
+                        rx="27.25"
+                        ry="27.25"
+                        fill="none"
+                        stroke="url(#joinInputRim)"
+                        strokeWidth={1.2}
+                      />
+                    </Svg>
                   </View>
 
-                  {/* Right Circular Pink Arrow Button (Black arrow inside) */}
-                  <TouchableOpacity
-                    style={[
-                      styles.arrowCircleBtn,
-                      { backgroundColor: pinkEdgeColor },
-                      !inputVal.trim() && styles.arrowDisabledOpacity,
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={handleSubmit}
-                    disabled={!inputVal.trim() || isSubmitting}
-                  >
-                    <Text style={styles.arrowIconText}>→</Text>
-                  </TouchableOpacity>
+                  <View style={styles.inputCapsuleContent}>
+                    {/* Left Hash Symbol # */}
+                    <Text style={[styles.hashSymbol, { color: isDark ? '#FFFFFF' : '#000000' }]}>#</Text>
+
+                    {/* Middle Text Area with Black Underline & Blinking Pink Cursor */}
+                    <View style={styles.inputCenterArea}>
+                      <View style={styles.textRowContainer}>
+                        {inputVal.length === 0 ? (
+                          <View style={styles.placeholderRow}>
+                            <Text
+                              style={[
+                                styles.blinkingCursor,
+                                { color: pinkEdgeColor, opacity: cursorVisible ? 1 : 0 },
+                              ]}
+                            >
+                              |
+                            </Text>
+                            <Text style={styles.placeholderText}>abc123</Text>
+                          </View>
+                        ) : (
+                          <View style={styles.typedRow}>
+                            <Text style={[styles.typedText, { color: isDark ? '#FFFFFF' : '#000000' }]}>{inputVal}</Text>
+                            <Text
+                              style={[
+                                styles.blinkingCursor,
+                                { color: pinkEdgeColor, opacity: cursorVisible ? 1 : 0, marginLeft: 1 },
+                              ]}
+                            >
+                              |
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Underline Bar */}
+                      <View style={[styles.blackUnderlineBar, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]} />
+
+                      {/* Hidden Native TextInput with AutoFocus */}
+                      <TextInput
+                        style={styles.invisibleInput}
+                        value={inputVal}
+                        onChangeText={setInputVal}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        autoFocus={true}
+                        caretHidden={true}
+                        onSubmitEditing={handleSubmit}
+                        returnKeyType="join"
+                      />
+                    </View>
+
+                    {/* Right Circular Pink Arrow Button (Black arrow inside) */}
+                    <TouchableOpacity
+                      style={[
+                        styles.arrowCircleBtn,
+                        { backgroundColor: pinkEdgeColor },
+                        !inputVal.trim() && styles.arrowDisabledOpacity,
+                      ]}
+                      activeOpacity={0.8}
+                      onPress={handleSubmit}
+                      disabled={!inputVal.trim() || isSubmitting}
+                    >
+                      <Text style={styles.arrowIconText}>→</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -211,13 +252,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
-  topCard: {
+  topCardWrapper: {
     width: '100%',
     borderRadius: 24,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 4,
+    backgroundColor: 'transparent',
+    position: 'relative',
+  },
+  topCardInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  topCardContent: {
     paddingVertical: 18,
     paddingHorizontal: 24,
     alignItems: 'flex-start',
     justifyContent: 'center',
+    zIndex: 10,
   },
   titleText: {
     fontFamily: SystemFont,
@@ -234,13 +290,29 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
     textAlign: 'left',
   },
-  inputCapsule: {
+  inputCapsuleWrapper: {
     width: '100%',
     height: 68,
     borderRadius: 28,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 4,
+    backgroundColor: 'transparent',
+    position: 'relative',
+  },
+  inputCapsuleInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 28,
+    overflow: 'hidden',
+  },
+  inputCapsuleContent: {
+    ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
+    zIndex: 10,
   },
   hashSymbol: {
     fontSize: 26,

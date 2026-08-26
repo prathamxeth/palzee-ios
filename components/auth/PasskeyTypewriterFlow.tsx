@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Image,
   Linking,
@@ -12,6 +13,8 @@ import {
   View,
   useColorScheme,
 } from 'react-native';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as Notifications from 'expo-notifications';
@@ -281,6 +284,15 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
         console.log('[PERMISSIONS] Camera response:', res);
         if (res?.granted) {
           cameraWarmupStore.setCameraGranted(true);
+        } else if (!res?.canAskAgain) {
+          Alert.alert(
+            'Camera Access Required',
+            'Palzee needs Camera access to capture moments with friends. Please enable Camera in iOS Settings.',
+            [
+              { text: 'Later', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            ]
+          );
         }
       } catch (e) {
         console.warn('[PERMISSIONS] Camera permission error:', e);
@@ -295,6 +307,15 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
         console.log('[PERMISSIONS] Mic response:', res);
         if (res?.granted) {
           cameraWarmupStore.setMicGranted(true);
+        } else if (!res?.canAskAgain) {
+          Alert.alert(
+            'Microphone Access Required',
+            'Palzee needs Microphone access to record sound with your videos. Please enable Microphone in iOS Settings.',
+            [
+              { text: 'Later', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            ]
+          );
         }
       } catch (e) {
         console.warn('[PERMISSIONS] Microphone permission error:', e);
@@ -327,6 +348,16 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
     }
   };
 
+  const THEME_ACCENTS: Record<string, string> = {
+    green: '#2EE99C',
+    pink: '#FF69B4',
+    yellow: '#FFD700',
+    blue: '#00BFFF',
+    orange: '#FF8C00',
+    purple: '#8A2BE2',
+  };
+  const accentColor = THEME_ACCENTS[themeColor] || themeColor || '#2EE99C';
+
   const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const flowBg = isDark ? '#000000' : '#FFFFF2';
@@ -334,19 +365,27 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
   const subtextColor = isDark ? '#8E8E93' : '#6E6E73';
   const termsLinkColor = isDark ? '#CCCCCC' : '#333333';
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="slide" transparent={false}>
-      <View style={[styles.container, { backgroundColor: flowBg }]}>
-          <View
-            style={[
-              styles.content,
-              {
-                backgroundColor: flowBg,
-                paddingTop: Math.max(insets.top, 20) + 23,
-                paddingBottom: Math.max(insets.bottom, 16),
-              },
-            ]}
-          >
+    <View
+      key={`typewriter_view_${isDark ? 'dark' : 'light'}`}
+      style={[
+        StyleSheet.absoluteFill,
+        styles.container,
+        { backgroundColor: flowBg, zIndex: 99999, elevation: 99999 },
+      ]}
+    >
+      <View
+        style={[
+          styles.content,
+          {
+            backgroundColor: flowBg,
+            paddingTop: Math.max(insets.top, 20) + 23,
+            paddingBottom: Math.max(insets.bottom, 16),
+          },
+        ]}
+      >
             {/* TOP HEADER: DOODLE & NEED HELP LINK */}
             <View style={styles.topRow}>
               <Image
@@ -380,7 +419,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   >
                     {line1Typed}
                     {!line1Done && (
-                      <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                      <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                         {'█'}
                       </Text>
                     )}
@@ -397,7 +436,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                     >
                       {line2Typed}
                       {!line2Done && (
-                        <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                        <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                           {'█'}
                         </Text>
                       )}
@@ -422,13 +461,13 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         {firstName ? (
                           <Text style={[styles.inputText, { color: textColor }]}>
                             {firstName}
-                            <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                            <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
                           </Text>
                         ) : (
                           <Text style={[styles.inputText, styles.placeholderText, { color: subtextColor }]}>
-                            <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                            <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
                             {'First'}
@@ -476,13 +515,13 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         {lastName ? (
                           <Text style={[styles.inputText, { color: textColor }]}>
                             {lastName}
-                            <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                            <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
                           </Text>
                         ) : (
                           <Text style={[styles.inputText, styles.placeholderText, { color: subtextColor }]}>
-                            <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                            <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                               {'█'}
                             </Text>
                             {'Last'}
@@ -539,10 +578,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   {/* STEP 4: CREATING ACCOUNT */}
                   {step === 'CREATING' && (
                     <View style={styles.creatingSection}>
-                      <Text style={[styles.monoText, { color: textColor }]}>{firstName}</Text>
-                      <Text style={[styles.monoText, { marginTop: 6, color: textColor }]}>
-                        {lastName}
-                      </Text>
+                      <Text style={[styles.monoText, { color: textColor }]}>{`${firstName} ${lastName} :)`}</Text>
                       <Text
                         style={[
                           styles.monoText,
@@ -557,19 +593,13 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   {/* STEP 5: FAILED SCREEN */}
                   {step === 'FAILED' && (
                     <View style={styles.failedSection}>
-                      <Text style={[styles.monoText, styles.greyText]}>
-                        {firstName}
-                      </Text>
-                      <Text
-                        style={[styles.monoText, styles.greyText, { marginTop: 6 }]}
-                      >
-                        {lastName}
+                      <Text style={[styles.monoText, { color: textColor }]}>
+                        {`${firstName} ${lastName} :)`}
                       </Text>
                       <Text
                         style={[
                           styles.monoText,
-                          styles.greyText,
-                          { marginTop: 24, textDecorationLine: 'line-through' },
+                          { marginTop: 24, textDecorationLine: 'line-through', color: textColor },
                         ]}
                       >
                         creating account...
@@ -598,24 +628,24 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                   )}
                 </>
               ) : (
-                /* STEP 6: PERMISSIONS FLOW (Exact Match with Reference Video) */
+                /* STEP 6: PERMISSIONS FLOW */
                 <View style={styles.permissionsContainer}>
                   {/* Header: → permissions */}
                   <Text style={[styles.monoText, { color: textColor }]}>
                     {permTitleTyped}
                     {permTitleTyped.length < fullPermTitle.length && (
-                      <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                      <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                         {'█'}
                       </Text>
                     )}
                   </Text>
 
-                  {/* Subtitle: English version of "먼저 몇 가지 권한이 필요해요..." */}
+                  {/* Subtitle */}
                   {permTitleTyped.length === fullPermTitle.length && (
                     <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
                       {permSubtitleTyped}
                       {permSubtitleTyped.length < fullPermSubtitle.length && (
-                        <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                        <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                           {'█'}
                         </Text>
                       )}
@@ -627,7 +657,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                       {/* CAMERA ITEM */}
                       {cameraDone ? (
                         <Text style={[styles.monoText, { color: textColor }]}>
-                          <Text style={{ color: '#00E676' }}>✓ </Text>
+                          <Text style={{ color: accentColor }}>✓ </Text>
                           <Text style={{ color: textColor }}>camera</Text>
                         </Text>
                       ) : (
@@ -646,7 +676,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                               </>
                             )}
                             {!permDescDone && (
-                              <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                              <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                                 {'█'}
                               </Text>
                             )}
@@ -657,7 +687,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                       {/* MICROPHONE ITEM */}
                       {micDone ? (
                         <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
-                          <Text style={{ color: '#00E676' }}>✓ </Text>
+                          <Text style={{ color: accentColor }}>✓ </Text>
                           <Text style={{ color: textColor }}>microphone</Text>
                         </Text>
                       ) : (
@@ -676,7 +706,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                               </>
                             )}
                             {!permDescDone && (
-                              <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                              <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                                 {'█'}
                               </Text>
                             )}
@@ -687,7 +717,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                       {/* NOTIFICATIONS ITEM */}
                       {notifDone ? (
                         <Text style={[styles.monoText, { marginTop: 16, color: textColor }]}>
-                          <Text style={{ color: '#00E676' }}>✓ </Text>
+                          <Text style={{ color: accentColor }}>✓ </Text>
                           <Text style={{ color: textColor }}>notifications</Text>
                         </Text>
                       ) : (
@@ -706,7 +736,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                               </>
                             )}
                             {!permDescDone && (
-                              <Text style={{ color: '#00E676', opacity: cursorVisible ? 1 : 0 }}>
+                              <Text style={{ color: accentColor, opacity: cursorVisible ? 1 : 0 }}>
                                 {'█'}
                               </Text>
                             )}
@@ -714,7 +744,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
                         )
                       )}
 
-                      {/* ACTION LINK: continue → or done → (Only shown once description finished typing) */}
+                      {/* ACTION LINK */}
                       {(permDescDone || permSubStep === 'DONE') && (
                         <TouchableOpacity
                           style={styles.continueButton}
@@ -733,7 +763,6 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
             </View>
           </View>
         </View>
-    </Modal>
   );
 };
 

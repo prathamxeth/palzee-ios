@@ -10,6 +10,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -89,48 +90,41 @@ const LiquidGlassPillButton = ({
   idPrefix?: string;
 }) => (
   <TouchableOpacity style={styles.actionPillContainer} activeOpacity={0.8} onPress={onPress}>
-    <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+    <BlurView
+      key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+      intensity={Platform.OS === 'ios' ? 40 : 30}
+      tint={isDark ? 'dark' : 'light'}
+      style={StyleSheet.absoluteFill}
+    />
     <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
       <Defs>
-        <LinearGradient id={`${idPrefix}Grad`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop
-            offset="0%"
-            stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-            stopOpacity={isDark ? 0.65 : 0.88}
-          />
-          <Stop
-            offset="50%"
-            stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-            stopOpacity={isDark ? 0.50 : 0.75}
-          />
-          <Stop
-            offset="100%"
-            stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
-            stopOpacity={isDark ? 0.60 : 0.65}
-          />
-        </LinearGradient>
-        <LinearGradient id={`${idPrefix}Bdr`} x1="0%" y1="0%" x2="0%" y2="100%">
+        <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
           <Stop
             offset="0%"
             stopColor="#FFFFFF"
-            stopOpacity={isDark ? 0.28 : 0.95}
+            stopOpacity={isDark ? 0.45 : 0.85}
+          />
+          <Stop
+            offset="35%"
+            stopColor="#FFFFFF"
+            stopOpacity={isDark ? 0.15 : 0.40}
           />
           <Stop
             offset="100%"
             stopColor={isDark ? '#FFFFFF' : '#000000'}
-            stopOpacity={isDark ? 0.04 : 0.08}
+            stopOpacity={isDark ? 0.05 : 0.08}
           />
         </LinearGradient>
       </Defs>
       <Rect
-        x="0.5"
-        y="0.5"
-        width="117"
-        height="35"
-        rx="17.5"
-        fill={`url(#${idPrefix}Grad)`}
-        stroke={`url(#${idPrefix}Bdr)`}
-        strokeWidth={1.0}
+        x="0.75"
+        y="0.75"
+        width="116.5"
+        height="34.5"
+        rx="17.25"
+        fill="none"
+        stroke={`url(#${idPrefix}GlassRim)`}
+        strokeWidth={1.2}
       />
     </Svg>
     <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
@@ -150,48 +144,41 @@ const LiquidGlassNavPillBar = ({
 }) => (
   <View style={styles.bottomSwitcherContainer}>
     <View style={styles.liquidOuterCapsule}>
-      <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+      <BlurView
+        key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
+        intensity={Platform.OS === 'ios' ? 40 : 30}
+        tint={isDark ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFill}
+      />
       <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
         <Defs>
-          <LinearGradient id="capsuleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop
-              offset="0%"
-              stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-              stopOpacity={isDark ? 0.65 : 0.88}
-            />
-            <Stop
-              offset="50%"
-              stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-              stopOpacity={isDark ? 0.50 : 0.75}
-            />
-            <Stop
-              offset="100%"
-              stopColor={isDark ? '#0A0A0C' : '#EAE8E3'}
-              stopOpacity={isDark ? 0.60 : 0.65}
-            />
-          </LinearGradient>
-          <LinearGradient id="capsuleBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+          <LinearGradient id="capsuleRim" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.28 : 0.95}
+              stopOpacity={isDark ? 0.45 : 0.85}
+            />
+            <Stop
+              offset="35%"
+              stopColor="#FFFFFF"
+              stopOpacity={isDark ? 0.15 : 0.40}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.04 : 0.08}
+              stopOpacity={isDark ? 0.05 : 0.08}
             />
           </LinearGradient>
         </Defs>
         <Rect
-          x="0.5"
-          y="0.5"
-          width="166.5"
-          height="49"
-          rx="24.5"
-          fill="url(#capsuleGrad)"
-          stroke="url(#capsuleBorder)"
-          strokeWidth={1.0}
+          x="0.75"
+          y="0.75"
+          width="166"
+          height="48.5"
+          rx="24.25"
+          fill="none"
+          stroke="url(#capsuleRim)"
+          strokeWidth={1.2}
         />
       </Svg>
 
@@ -205,33 +192,16 @@ const LiquidGlassNavPillBar = ({
           {activeTab === 'camera' && (
             <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
               <Defs>
-                <LinearGradient id="actGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop
-                    offset="0%"
-                    stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.98 : 0.95}
-                  />
-                  <Stop
-                    offset="50%"
-                    stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-                    stopOpacity={isDark ? 0.98 : 0.85}
-                  />
-                  <Stop
-                    offset="100%"
-                    stopColor={isDark ? '#000000' : '#EAE8E3'}
-                    stopOpacity={isDark ? 0.98 : 0.75}
-                  />
-                </LinearGradient>
                 <LinearGradient id="actBdr1" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.40 : 0.95}
+                    stopOpacity={isDark ? 0.50 : 0.90}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.12 : 0.12}
+                    stopOpacity={isDark ? 0.08 : 0.10}
                   />
                 </LinearGradient>
               </Defs>
@@ -241,9 +211,9 @@ const LiquidGlassNavPillBar = ({
                 width="80.75"
                 height="46.5"
                 rx="23.25"
-                fill="url(#actGrad1)"
+                fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)'}
                 stroke="url(#actBdr1)"
-                strokeWidth={1.5}
+                strokeWidth={1.2}
               />
             </Svg>
           )}
@@ -267,33 +237,16 @@ const LiquidGlassNavPillBar = ({
           {activeTab === 'pals' && (
             <Svg width={82.25} height={48} style={StyleSheet.absoluteFill}>
               <Defs>
-                <LinearGradient id="actGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop
-                    offset="0%"
-                    stopColor={isDark ? '#2C2C2E' : '#FFFFFF'}
-                    stopOpacity={isDark ? 0.98 : 0.95}
-                  />
-                  <Stop
-                    offset="50%"
-                    stopColor={isDark ? '#1C1C1E' : '#F7F6F3'}
-                    stopOpacity={isDark ? 0.98 : 0.85}
-                  />
-                  <Stop
-                    offset="100%"
-                    stopColor={isDark ? '#000000' : '#EAE8E3'}
-                    stopOpacity={isDark ? 0.98 : 0.75}
-                  />
-                </LinearGradient>
                 <LinearGradient id="actBdr2" x1="0%" y1="0%" x2="0%" y2="100%">
                   <Stop
                     offset="0%"
                     stopColor="#FFFFFF"
-                    stopOpacity={isDark ? 0.40 : 0.95}
+                    stopOpacity={isDark ? 0.50 : 0.90}
                   />
                   <Stop
                     offset="100%"
                     stopColor={isDark ? '#FFFFFF' : '#000000'}
-                    stopOpacity={isDark ? 0.12 : 0.12}
+                    stopOpacity={isDark ? 0.08 : 0.10}
                   />
                 </LinearGradient>
               </Defs>
@@ -303,9 +256,9 @@ const LiquidGlassNavPillBar = ({
                 width="80.75"
                 height="46.5"
                 rx="23.25"
-                fill="url(#actGrad2)"
+                fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)'}
                 stroke="url(#actBdr2)"
-                strokeWidth={1.5}
+                strokeWidth={1.2}
               />
             </Svg>
           )}
@@ -752,12 +705,30 @@ export default function HomeScreen({
   }, [homeVlogIndex, vlogList, activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'camera') {
+    if (
+      showAddMenu ||
+      showProfileMenu ||
+      showActivityDrawer ||
+      showChatDrawer ||
+      showExportSheet ||
+      showEditExportSheet ||
+      showCreateModal ||
+      activeTab !== 'pals'
+    ) {
       homeVideoRef.current?.pauseAsync().catch(() => {});
     } else if (activeTab === 'pals') {
       homeVideoRef.current?.playAsync().catch(() => {});
     }
-  }, [activeTab]);
+  }, [
+    showAddMenu,
+    showProfileMenu,
+    showActivityDrawer,
+    showChatDrawer,
+    showExportSheet,
+    showEditExportSheet,
+    showCreateModal,
+    activeTab,
+  ]);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -1677,21 +1648,48 @@ export default function HomeScreen({
           onRequestClose={() => setShowAddMenu(false)}
         >
           <TouchableOpacity
-            style={styles.dropdownModalOverlay}
+            style={{ flex: 1, backgroundColor: 'transparent' }}
             activeOpacity={1}
             onPress={() => setShowAddMenu(false)}
           >
             <TouchableWithoutFeedback>
               <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
-                <LiquidGlass
-                  style={styles.addDropdownCard}
-                  isDark={isDark}
-                  accentColor={accentColor}
-                  borderRadius={26}
-                  variant="clear"
-                  renderer="auto"
-                  cornerStyle="continuous"
+                <View
+                  style={[
+                    styles.addDropdownCard,
+                    {
+                      backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                      shadowColor: '#000000',
+                    },
+                  ]}
                 >
+                  <BlurView
+                    key={`blur_add_${isDark ? 'dark' : 'light'}`}
+                    intensity={Platform.OS === 'ios' ? 50 : 40}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient id="addMenuRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                        <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect
+                      x="0.75"
+                      y="0.75"
+                      width="99.2%"
+                      height="98.5%"
+                      rx="25.25"
+                      ry="25.25"
+                      fill="none"
+                      stroke="url(#addMenuRim)"
+                      strokeWidth={1.2}
+                    />
+                  </Svg>
+
                   {/* ADD MENU ITEMS LIST */}
                   <View style={{ paddingTop: 11.5, paddingBottom: 16.5, paddingLeft: 20.0, paddingRight: 12 }}>
                     {/* Option 1: create a pal */}
@@ -1704,7 +1702,7 @@ export default function HomeScreen({
                         setShowCreateModal(true);
                       }}
                     >
-                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#000000', fontFamily: Fonts.SystemRoundedSemibold }]}>
                         create a pal
                       </Text>
                     </TouchableOpacity>
@@ -1719,12 +1717,12 @@ export default function HomeScreen({
                         setShowCreateModal(true);
                       }}
                     >
-                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>
+                      <Text style={[styles.addMenuText, { color: isDark ? '#FFFFFF' : '#000000', fontFamily: Fonts.SystemRoundedSemibold }]}>
                         join a pal
                       </Text>
                     </TouchableOpacity>
                   </View>
-                </LiquidGlass>
+                </View>
               </View>
             </TouchableWithoutFeedback>
           </TouchableOpacity>
@@ -1741,7 +1739,7 @@ export default function HomeScreen({
           }}
         >
           <TouchableOpacity
-            style={styles.dropdownModalOverlay}
+            style={{ flex: 1, backgroundColor: 'transparent' }}
             activeOpacity={1}
             onPress={() => {
               setShowProfileMenu(false);
@@ -1754,64 +1752,74 @@ export default function HomeScreen({
                   style={[
                     styles.profileDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
-                      shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
+                      backgroundColor: 'transparent',
+                      shadowColor: '#000000',
                     },
                   ]}
                 >
-                {/* 1. FROSTED GLASS BACKDROP BLUR (ALLOWS UNDERLYING TEXT ON LEFT TO BLEED THROUGH) */}
-                <BlurView
-                  intensity={80}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
-                />
+                  <View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      borderRadius: 24,
+                      overflow: 'hidden',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                    }}
+                  >
+                    {/* 1. FROSTED GLASS BACKDROP BLUR */}
+                    <BlurView
+                      key={`blur_profile_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 70 : 50}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
 
-                {/* 2. INNER DIAGONAL AMBIENT GLOW: TRANSLUCENT TOP-RIGHT GLOW SPREADING SMOOTHLY */}
-                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                  <Defs>
-                    <LinearGradient
-                      id="dropdownDiagonalGlow"
-                      x1="100%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
-                      <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
-                      <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
-                      <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
-                </Svg>
+                    {/* 2. INNER DIAGONAL AMBIENT THEME GLOW */}
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                      <Defs>
+                        <LinearGradient
+                          id="dropdownDiagonalGlow"
+                          x1="100%"
+                          y1="0%"
+                          x2="0%"
+                          y2="100%"
+                        >
+                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
+                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
+                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
+                          <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
+                    </Svg>
 
-                {/* 3. SMOOTH SLANTING EDGE HIGHLIGHT ON TOP-RIGHT SIDES */}
-                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-                  <Defs>
-                    <LinearGradient
-                      id="cardBorderGradient"
-                      x1="100%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      <Stop offset="0%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.50 : 0.80} />
-                      <Stop offset="45%" stopColor={isDark ? accentColor : '#FFFFFF'} stopOpacity={isDark ? 0.22 : 0.38} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#FFFFFF'} stopOpacity={isDark ? 0.06 : 0.10} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect
-                    x="1"
-                    y="1"
-                    width="99.1%"
-                    height="99.1%"
-                    rx="23"
-                    ry="23"
-                    fill="none"
-                    stroke="url(#cardBorderGradient)"
-                    strokeWidth="1.0"
-                  />
-                </Svg>
+                    {/* 3. SPECULAR RIM GRADIENT HIGHLIGHT */}
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                      <Defs>
+                        <LinearGradient
+                          id="profileRimGrad"
+                          x1="0%"
+                          y1="0%"
+                          x2="0%"
+                          y2="100%"
+                        >
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect
+                        x="0.75"
+                        y="0.75"
+                        width="99.2%"
+                        height="99.0%"
+                        rx="23.25"
+                        ry="23.25"
+                        fill="none"
+                        stroke="url(#profileRimGrad)"
+                        strokeWidth={1.2}
+                      />
+                    </Svg>
+                  </View>
 
                 {/* BASE CARD HEADER: UPRIGHT SMILEY AVATAR OR CHOSEN PFP + USERNAME (DIMMED FOR EDIT PROFILE, HIDDEN FOR COLOR) */}
                 <View
@@ -2736,7 +2744,6 @@ const styles = StyleSheet.create({
   palzeeLogoText: {
     fontFamily: Fonts.Unpack,
     fontSize: 47,
-    fontWeight: 'bold',
     color: '#4FFFB0',
     letterSpacing: 1.5,
     marginLeft: -5,

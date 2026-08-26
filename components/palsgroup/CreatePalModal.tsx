@@ -16,6 +16,7 @@ import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
 import { JoinPalModal } from './JoinPalModal';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
+import { LiquidGlassIconButton } from '../ui';
 
 interface CreatePalModalProps {
   visible: boolean;
@@ -203,53 +204,14 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
         {/* HEADER: CLOSE (✕) | PALZEE LOGO | SUBMIT (✓) */}
         <View style={styles.headerRow}>
           {step === 'FORM' ? (
-            <TouchableOpacity style={styles.closeBtn} activeOpacity={0.7} onPress={onClose}>
-              <BlurView intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-              <Svg width={44} height={44} style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id="closeBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor={isDark ? '#28282E' : '#FFFFFF'}
-                      stopOpacity={isDark ? 0.75 : 0.88}
-                    />
-                    <Stop
-                      offset="50%"
-                      stopColor={isDark ? '#18181B' : '#F7F6F3'}
-                      stopOpacity={isDark ? 0.6 : 0.75}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#0E0E10' : '#EAE8E3'}
-                      stopOpacity={isDark ? 0.85 : 0.65}
-                    />
-                  </LinearGradient>
-                  <LinearGradient id="closeBtnBdr" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop
-                      offset="0%"
-                      stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.35 : 0.95}
-                    />
-                    <Stop
-                      offset="100%"
-                      stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.08}
-                    />
-                  </LinearGradient>
-                </Defs>
-                <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="42.5"
-                  height="42.5"
-                  rx="21.25"
-                  fill="url(#closeBtnGrad)"
-                  stroke="url(#closeBtnBdr)"
-                  strokeWidth={1.5}
-                />
-              </Svg>
-              <Text style={[styles.closeIcon, { color: isDark ? '#FFFFFF' : '#1C1C1E' }]}>✕</Text>
-            </TouchableOpacity>
+            <LiquidGlassIconButton
+              idPrefix="btnCreateClose"
+              isDark={isDark}
+              size={44}
+              onPress={onClose}
+            >
+              <Text style={[styles.closeIcon, { color: isDark ? '#FFFFFF' : '#000000', fontSize: 20 }]}>✕</Text>
+            </LiquidGlassIconButton>
           ) : (
             <View style={styles.btnPlaceholder} />
           )}
@@ -257,18 +219,28 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
           <Text style={[styles.palzeeLogo, { color: logoTextColor }]}>PALZEE</Text>
 
           {step === 'FORM' ? (
-            <TouchableOpacity
-              style={[
-                styles.checkBtn,
-                { backgroundColor: accentColor },
-                !inputVal.trim() && styles.disabledCheckBtn,
-              ]}
-              activeOpacity={0.7}
+            <LiquidGlassIconButton
+              idPrefix="btnCreateCheck"
+              isDark={isDark}
+              size={44}
               onPress={handleSubmit}
               disabled={!inputVal.trim()}
             >
-              <Text style={styles.checkIcon}>✓</Text>
-            </TouchableOpacity>
+              <Text
+                style={[
+                  styles.checkIcon,
+                  {
+                    color: !inputVal.trim()
+                      ? (isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')
+                      : accentColor,
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                  },
+                ]}
+              >
+                ✓
+              </Text>
+            </LiquidGlassIconButton>
           ) : (
             <View style={styles.btnPlaceholder} />
           )}
@@ -339,17 +311,58 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                     <TouchableOpacity
                       key={key}
                       style={[
-                        styles.sizePill,
-                        { borderColor: isDark ? '#444448' : '#C7C6C0' },
-                        isActive && { backgroundColor: accentColor, borderColor: accentColor },
+                        styles.sizePillWrapper,
+                        isActive && {
+                          shadowColor: accentColor,
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.35,
+                          shadowRadius: 8,
+                          elevation: 4,
+                        },
                       ]}
                       activeOpacity={0.8}
                       onPress={() => setSizeKey(key)}
                     >
+                      <View
+                        style={[
+                          styles.sizePillInner,
+                          {
+                            backgroundColor: isActive
+                              ? accentColor
+                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)'),
+                          },
+                        ]}
+                      >
+                        <BlurView
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          intensity={Platform.OS === 'ios' ? 35 : 25}
+                          tint={isDark ? 'dark' : 'light'}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                          <Defs>
+                            <LinearGradient id={`sizeRim_${key}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isActive ? 0.90 : (isDark ? 0.45 : 0.85)} />
+                              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isActive ? 0.30 : (isDark ? 0.05 : 0.08)} />
+                            </LinearGradient>
+                          </Defs>
+                          <Rect
+                            x="0.75"
+                            y="0.75"
+                            width="97%"
+                            height="95%"
+                            rx="11.25"
+                            ry="11.25"
+                            fill="none"
+                            stroke={`url(#sizeRim_${key})`}
+                            strokeWidth={1.2}
+                          />
+                        </Svg>
+                      </View>
                       <Text
                         style={[
                           styles.sizePillText,
-                          { color: textColor },
+                          { color: isActive ? '#000000' : textColor },
                           isActive && styles.activeSizePillText,
                         ]}
                       >
@@ -368,17 +381,58 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                     <TouchableOpacity
                       key={key}
                       style={[
-                        styles.sizePill,
-                        { borderColor: isDark ? '#444448' : '#C7C6C0' },
-                        isActive && { backgroundColor: accentColor, borderColor: accentColor },
+                        styles.sizePillWrapper,
+                        isActive && {
+                          shadowColor: accentColor,
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.35,
+                          shadowRadius: 8,
+                          elevation: 4,
+                        },
                       ]}
                       activeOpacity={0.8}
                       onPress={() => setSizeKey(key)}
                     >
+                      <View
+                        style={[
+                          styles.sizePillInner,
+                          {
+                            backgroundColor: isActive
+                              ? accentColor
+                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)'),
+                          },
+                        ]}
+                      >
+                        <BlurView
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          intensity={Platform.OS === 'ios' ? 35 : 25}
+                          tint={isDark ? 'dark' : 'light'}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                          <Defs>
+                            <LinearGradient id={`sizeRim_${key}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isActive ? 0.90 : (isDark ? 0.45 : 0.85)} />
+                              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isActive ? 0.30 : (isDark ? 0.05 : 0.08)} />
+                            </LinearGradient>
+                          </Defs>
+                          <Rect
+                            x="0.75"
+                            y="0.75"
+                            width="97%"
+                            height="95%"
+                            rx="11.25"
+                            ry="11.25"
+                            fill="none"
+                            stroke={`url(#sizeRim_${key})`}
+                            strokeWidth={1.2}
+                          />
+                        </Svg>
+                      </View>
                       <Text
                         style={[
                           styles.sizePillText,
-                          { color: textColor },
+                          { color: isActive ? '#000000' : textColor },
                           isActive && styles.activeSizePillText,
                         ]}
                       >
@@ -564,30 +618,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     flexWrap: 'wrap',
   },
-  sizePill: {
+  sizePillWrapper: {
     height: 36,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#444448',
-    alignItems: 'center',
-    justifyContent: 'center',
     minWidth: 42,
+    borderRadius: 12,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    backgroundColor: 'transparent',
   },
-  sizePillWide: {
-    minWidth: 64,
-    paddingHorizontal: 14,
+  sizePillInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   sizePillText: {
     fontFamily: Fonts.IBMPlexMono,
     fontSize: 15,
     color: '#FFFFFF',
     fontWeight: '500',
+    zIndex: 10,
   },
   activeSizePillText: {
     color: '#000000',
     fontWeight: '700',
+    zIndex: 10,
   },
   subtextDescription: {
     fontFamily: Fonts.IBMPlexMono,
