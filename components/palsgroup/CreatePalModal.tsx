@@ -334,9 +334,9 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                         ]}
                       >
                         <BlurView
-                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'systemMaterialLight'}`}
                           intensity={Platform.OS === 'ios' ? 35 : 25}
-                          tint={isDark ? 'dark' : 'light'}
+                          tint={isDark ? 'dark' : 'systemMaterialLight'}
                           style={StyleSheet.absoluteFill}
                         />
                         <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -349,10 +349,10 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           <Rect
                             x="0.75"
                             y="0.75"
-                            width="97%"
-                            height="95%"
-                            rx="11.25"
-                            ry="11.25"
+                            width="98.5%"
+                            height="98.5%"
+                            rx={13.25}
+                            ry={13.25}
                             fill="none"
                             stroke={`url(#sizeRim_${key})`}
                             strokeWidth={1.2}
@@ -362,8 +362,7 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                       <Text
                         style={[
                           styles.sizePillText,
-                          { color: isActive ? '#000000' : textColor },
-                          isActive && styles.activeSizePillText,
+                          { color: isActive ? '#FFFFFF' : (isDark ? '#FFFFFF' : '#000000') },
                         ]}
                       >
                         {key}
@@ -399,14 +398,14 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           {
                             backgroundColor: isActive
                               ? accentColor
-                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)'),
+                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.35)'),
                           },
                         ]}
                       >
                         <BlurView
-                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'systemMaterialLight'}`}
                           intensity={Platform.OS === 'ios' ? 35 : 25}
-                          tint={isDark ? 'dark' : 'light'}
+                          tint={isDark ? 'dark' : 'systemMaterialLight'}
                           style={StyleSheet.absoluteFill}
                         />
                         <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">

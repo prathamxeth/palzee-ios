@@ -79,15 +79,15 @@ const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) => (
 const LiquidGlassPillButton = ({
   onPress,
   text,
-  isDark = true,
   textColor,
-  idPrefix = 'pill',
+  idPrefix,
+  isDark = true,
 }: {
   onPress: () => void;
   text: string;
-  isDark?: boolean;
   textColor: string;
-  idPrefix?: string;
+  idPrefix: string;
+  isDark?: boolean;
 }) => (
   <View
     style={[
@@ -106,7 +106,7 @@ const LiquidGlassPillButton = ({
           width: 118,
           height: 36,
           borderRadius: 18,
-          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
           overflow: 'hidden',
         },
       ]}
@@ -114,9 +114,9 @@ const LiquidGlassPillButton = ({
       onPress={onPress}
     >
       <BlurView
-        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
         intensity={Platform.OS === 'ios' ? 45 : 30}
-        tint={isDark ? 'dark' : 'light'}
+        tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
         style={StyleSheet.absoluteFill}
       />
       <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
@@ -125,17 +125,17 @@ const LiquidGlassPillButton = ({
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.45 : 0.85}
+              stopOpacity={isDark ? 0.45 : 0.70}
             />
             <Stop
               offset="35%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.15 : 0.40}
+              stopOpacity={isDark ? 0.15 : 0.30}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.05 : 0.08}
+              stopOpacity={isDark ? 0.05 : 0.06}
             />
           </LinearGradient>
         </Defs>
@@ -147,7 +147,7 @@ const LiquidGlassPillButton = ({
           rx="17.25"
           fill="none"
           stroke={`url(#${idPrefix}GlassRim)`}
-          strokeWidth={1.2}
+          strokeWidth={1.0}
         />
       </Svg>
       <Text style={[styles.actionPillText, { color: textColor }]}>{text}</Text>
@@ -181,14 +181,14 @@ const LiquidGlassNavPillBar = ({
         style={[
           styles.liquidOuterCapsule,
           {
-            backgroundColor: 'transparent',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
           },
         ]}
       >
         <BlurView
-          key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
+          key={`blur_capsule_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
           intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'light'}
+          tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
           style={StyleSheet.absoluteFill}
         />
         <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
@@ -257,7 +257,7 @@ const LiquidGlassNavPillBar = ({
                   width="80.75"
                   height="46.5"
                   rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)'}
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#F5F5F7'}
                   stroke={`url(#actBdr1)`}
                   strokeWidth={1.0}
                 />
@@ -307,7 +307,7 @@ const LiquidGlassNavPillBar = ({
                   width="80.75"
                   height="46.5"
                   rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)'}
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#F5F5F7'}
                   stroke={`url(#actBdr2)`}
                   strokeWidth={1.0}
                 />
@@ -1747,23 +1747,44 @@ export default function HomeScreen({
                   style={[
                     styles.addDropdownCard,
                     {
-                      backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                      backgroundColor: 'transparent',
                       shadowColor: '#000000',
                     },
                   ]}
                 >
+                  {/* 1. FROSTED BACKDROP BLUR */}
                   <BlurView
                     key={`blur_add_${isDark ? 'dark' : 'light'}`}
-                    intensity={Platform.OS === 'ios' ? 50 : 40}
+                    intensity={Platform.OS === 'ios' ? 65 : 45}
                     tint={isDark ? 'dark' : 'light'}
                     style={StyleSheet.absoluteFill}
                   />
+
+                  {/* 2. INNER SLANTING DIAGONAL FROSTED GRADIENT */}
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                    <Defs>
+                      <LinearGradient
+                        id="addMenuSlantingFrostedGlow"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.16 : 0.65} />
+                        <Stop offset="45%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.06 : 0.28} />
+                        <Stop offset="100%" stopColor={isDark ? '#000000' : '#FFFFFF'} stopOpacity={isDark ? 0.20 : 0.05} />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#addMenuSlantingFrostedGlow)" />
+                  </Svg>
+
+                  {/* 3. SPECULAR RIM HIGHLIGHT */}
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
                     <Defs>
                       <LinearGradient id="addMenuRim" x1="0%" y1="0%" x2="0%" y2="100%">
                         <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
                         <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.06} />
                       </LinearGradient>
                     </Defs>
                     <Rect
@@ -1775,7 +1796,7 @@ export default function HomeScreen({
                       ry="25.25"
                       fill="none"
                       stroke="url(#addMenuRim)"
-                      strokeWidth={1.2}
+                      strokeWidth={1.0}
                     />
                   </Svg>
 

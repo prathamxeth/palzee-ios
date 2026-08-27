@@ -405,9 +405,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   onPress={onClose}
                 >
                   <BlurView
-                    key={`blur_logs_${isDark ? 'dark' : 'light'}`}
+                    key={`blur_logs_${isDark ? 'dark' : 'systemMaterialLight'}`}
                     intensity={Platform.OS === 'ios' ? 40 : 30}
-                    tint={isDark ? 'dark' : 'light'}
+                    tint={isDark ? 'dark' : 'systemMaterialLight'}
                     style={StyleSheet.absoluteFill}
                   />
                   <Svg width={96} height={42} style={StyleSheet.absoluteFill}>

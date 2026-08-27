@@ -19,7 +19,7 @@ export const LiquidGlassPillBackground: React.FC<LiquidGlassPillBackgroundProps>
 }) => {
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const rx = borderRadius !== undefined ? borderRadius : layout.height > 0 ? layout.height / 2 : 26;
-  const bg = backgroundColor !== undefined ? backgroundColor : (isDark ? 'transparent' : 'rgba(255, 255, 255, 0.35)');
+  const bg = backgroundColor !== undefined ? backgroundColor : (isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)');
 
   return (
     <View
@@ -40,9 +40,9 @@ export const LiquidGlassPillBackground: React.FC<LiquidGlassPillBackgroundProps>
       }}
     >
       <BlurView
-        key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemMaterialLight'}`}
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
         intensity={Platform.OS === 'ios' ? 45 : 30}
-        tint={isDark ? 'dark' : 'systemMaterialLight'}
+        tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
         style={StyleSheet.absoluteFill}
       />
       {layout.width > 0 && (
@@ -115,15 +115,15 @@ export const LiquidGlassCapsule: React.FC<LiquidGlassCapsuleProps> = ({
           flex: 1,
           borderRadius: rx,
           overflow: 'hidden',
-          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.35)',
+          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
         <BlurView
-          key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemMaterialLight'}`}
+          key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
           intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'systemMaterialLight'}
+          tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
           style={StyleSheet.absoluteFill}
         />
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
@@ -190,15 +190,15 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           styles.liquidInner,
           {
             borderRadius,
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.35)',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
           },
         ]}
       >
         {/* 1. FROSTED BACKDROP BLUR (ORGANIC APPLE TRANSLUCENCY) */}
         <BlurView
-          key={`blur_view_${isDark ? 'dark' : 'systemMaterialLight'}`}
+          key={`blur_view_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
           intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'systemMaterialLight'}
+          tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
           style={StyleSheet.absoluteFill}
         />
 

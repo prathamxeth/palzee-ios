@@ -143,12 +143,13 @@ const LiquidGlassCircleButton = ({
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.35)',
       }}
     >
       <BlurView
-        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemMaterialLight'}`}
         intensity={Platform.OS === 'ios' ? 40 : 30}
-        tint={isDark ? 'dark' : 'light'}
+        tint={isDark ? 'dark' : 'systemMaterialLight'}
         style={StyleSheet.absoluteFill}
       />
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
