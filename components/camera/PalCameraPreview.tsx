@@ -36,7 +36,7 @@ interface PalCameraPreviewProps {
   autoTickVlog?: boolean;
   palCount?: number;
   palGroups?: PalGroupItem[];
-  onCaptureSuccess?: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
+  onCaptureSuccess?: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string, targets?: string[]) => void;
   onClose?: () => void;
   timerMode?: TimerMode;
   onToggleTimerMode?: () => void;
@@ -468,8 +468,9 @@ export default function PalCameraPreview({
       style={[
         styles.container,
         {
-          paddingTop: Math.max(insets.top - 24, 0),
+          paddingTop: Math.max(insets.top - 44, 0),
           paddingBottom: Math.max(insets.bottom - 24, 0),
+          marginTop: -20,
         },
       ]}
     >
@@ -493,9 +494,9 @@ export default function PalCameraPreview({
               left: -0.75,
               right: -0.75,
               borderRadius: 32,
-              borderWidth: 1.625,
+              borderWidth: 2.125,
               borderColor: baseAccentColor,
-              opacity: 0.50,
+              opacity: 0.75,
               zIndex: 100,
             }}
             pointerEvents="none"
@@ -600,7 +601,7 @@ export default function PalCameraPreview({
           <View
             style={{
               position: 'absolute',
-              bottom: 124,
+              bottom: 139,
               left: (cameraWidth - 70) / 2,
               flexDirection: 'row',
               alignItems: 'center',
@@ -743,12 +744,12 @@ export default function PalCameraPreview({
           setIsRecording(false);
           progressAnim.setValue(0);
         }}
-        onSend={(uri, caption, isMuted, rate, mode) => {
+        onSend={(uri, caption, isMuted, rate, mode, targets) => {
           setPreviewVideoUri(null);
           setIsRecording(false);
           progressAnim.setValue(0);
           if (onCaptureSuccess) {
-            onCaptureSuccess(uri, caption, isMuted, rate || (timerMode === 'timelapse' ? 3.5 : timerMode === 'jump_cut' ? 1.35 : 1.0), mode || timerMode);
+            onCaptureSuccess(uri, caption, isMuted, rate || (timerMode === 'timelapse' ? 3.5 : timerMode === 'jump_cut' ? 1.35 : 1.0), mode || timerMode, targets);
           }
         }}
       />
@@ -863,7 +864,7 @@ const styles = StyleSheet.create({
   },
   flashBtnAbsolute: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 45,
     width: 44,
     height: 44,
     justifyContent: 'center',
@@ -871,7 +872,7 @@ const styles = StyleSheet.create({
   },
   shutterWrapperAbsolute: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 27,
     width: 83,
     height: 83,
     justifyContent: 'center',

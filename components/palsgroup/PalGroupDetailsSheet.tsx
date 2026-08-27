@@ -13,8 +13,11 @@ import {
   Appearance,
   Animated,
   Easing,
+  Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, RadialGradient, Stop, Rect } from 'react-native-svg';
@@ -47,6 +50,8 @@ export interface PalGroupMember {
   captureTime?: string;
   hasCaptured?: boolean;
   smileyColor?: string;
+  caption?: string;
+  videoUri?: string;
 }
 
 export interface PalGroupDetailsSheetProps {
@@ -66,6 +71,8 @@ export interface PalGroupDetailsSheetProps {
   isDark?: boolean;
   onDeleteGroup?: (groupCode: string) => void;
   onLeaveGroup?: (groupCode: string) => void;
+  vlogList?: any[];
+  activeVideoUri?: string | null;
 }
 
 export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
@@ -78,6 +85,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   isDark: propIsDark,
   onDeleteGroup,
   onLeaveGroup,
+  vlogList = [],
+  activeVideoUri = null,
 }) => {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -110,6 +119,23 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [smileyTouch, setSmileyTouch] = useState<SmileyTouchInfo | null>(null);
   const rippleOpacityAnim = useRef(new Animated.Value(0)).current;
+
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [selectedMemberForOptions, setSelectedMemberForOptions] = useState<PalGroupMember | null>(null);
+  const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
+  const [editingCaptionText, setEditingCaptionText] = useState('');
+  const [memberCaptions, setMemberCaptions] = useState<Record<string, string>>({});
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const handleSaveCaption = () => {
+    if (selectedMemberForOptions) {
+      setMemberCaptions((prev) => ({
+        ...prev,
+        [selectedMemberForOptions.id]: editingCaptionText,
+      }));
+    }
+    setShowEditCaptionBox(false);
+  };
 
   const logsRotateAnim = useRef(new Animated.Value(0)).current;
   const logsOpacityAnim = useRef(new Animated.Value(1)).current;
@@ -334,6 +360,20 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const delaFontSize = maxSlots <= 3 ? 26 : maxSlots === 4 ? 20 : 16;
   const userNameFontSize = maxSlots <= 3 ? 22 : maxSlots === 4 ? 18 : 15;
 
+  const videoWidth = cardHeight;
+  const videoHeight = cardWidth;
+  const videoTop = (cardHeight - videoHeight) / 2;
+  const videoLeft = (cardWidth - videoWidth) / 2;
+
+  const rotatedStyle = {
+    position: 'absolute' as const,
+    top: videoTop,
+    left: videoLeft,
+    width: videoWidth,
+    height: videoHeight,
+    transform: [{ rotate: '270deg' }],
+  };
+
   // Solid background shades adapting instantly to dark/light mode
   const solidCardBg = isDark ? '#161618' : '#EFEFF2';
   const solidCardBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
@@ -531,6 +571,10 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           {/* 1. JOINED MEMBER / CREATOR CARDS */}
           {joinedMembers.map((member, idx) => {
             const isCurrentUser = member.isCreator || member.id === 'user_self' || member.name === currentUserName;
+            const memberVideoUri = isCurrentUser
+              ? (activeVideoUri || (vlogList && vlogList.length > 0 ? vlogList[0]?.uri : null) || member.videoUri)
+              : member.videoUri;
+            const hasVideo = !!memberVideoUri;
 
             return (
               <View
@@ -543,9 +587,27 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     backgroundColor: solidCardBg,
                     borderWidth: 0,
                     borderColor: 'transparent',
+                    overflow: 'hidden',
                   },
                 ]}
               >
+                {/* VIDEO PLAYBACK WHEN VIDEO PAL EXISTS */}
+                {hasVideo && (
+                  <Video
+                    source={{ uri: memberVideoUri }}
+                    style={
+                      (member as any)?.needsRotation !== false
+                        ? rotatedStyle
+                        : [StyleSheet.absoluteFill, { borderRadius: isSmallSlot ? 18 : 22 }]
+                    }
+                    resizeMode={ResizeMode.COVER}
+                    shouldPlay={visible && !showEditCaptionBox && !showOptionsMenu && !showChatDrawer && !showExportSheet}
+                    isLooping={true}
+                    isMuted={false}
+                    useNativeControls={false}
+                  />
+                )}
+
                 {/* Top-Left: Member Profile Icon + Name (Exact VlogSheet Style) */}
                 <View style={styles.memberHeaderRow} pointerEvents="none">
                   <View
@@ -573,15 +635,15 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   <Text
                     style={[
                       styles.memberNameText,
-                      { color: '#636366', fontSize: userNameFontSize },
+                      { color: hasVideo ? '#FFFFFF' : '#636366', fontSize: userNameFontSize },
                     ]}
                   >
                     {member.name}
                   </Text>
                 </View>
 
-                {/* Bouncing / Floating Color-Changing Capture Smiley (Only on current user's active capture slot) */}
-                {isCurrentUser && !member.hasCaptured && (
+                {/* Bouncing / Floating Color-Changing Capture Smiley (Only on current user's uncaptured slot) */}
+                {isCurrentUser && !hasVideo && !member.hasCaptured && (
                   <View style={StyleSheet.absoluteFill} pointerEvents="none">
                     <BouncingSmileyView
                       cardWidth={cardWidth}
@@ -591,134 +653,219 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   </View>
                 )}
 
-                {/* Center: Time Text & Tap To Capture Pill (Exact VlogSheet tap to capture pill) */}
-                <View style={styles.centerActionGroup} pointerEvents={showGroupDropdown ? 'none' : 'box-none'}>
-                  <Text
-                    style={[
-                      styles.delaTimeText,
-                      {
-                        fontSize: delaFontSize,
-                        color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
-                      },
-                    ]}
-                  >
-                    {member.captureTime || getCurrentHourText()}
-                  </Text>
-                  {isCurrentUser && !showGroupDropdown && (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => {
-                        onClose();
-                        if (onOpenCamera) onOpenCamera();
-                      }}
-                      style={{
-                        paddingHorizontal: isSmallSlot ? 16 : 22,
-                        paddingVertical: isSmallSlot ? 8 : 12,
-                        borderRadius: isSmallSlot ? 18 : 22,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        position: 'relative',
-                        zIndex: 35,
-                        shadowColor: '#000000',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.12,
-                        shadowRadius: 10,
-                        elevation: 4,
-                      }}
+                {/* Center: When Video is present -> ONLY Time in Dela Gothic font in center */}
+                {hasVideo ? (
+                  <View style={styles.centerActionGroup} pointerEvents="none">
+                    <Text
+                      style={[
+                        styles.delaTimeText,
+                        {
+                          fontSize: isSmallSlot ? 20 : 26,
+                          color: '#FFFFFF',
+                          fontFamily: Fonts.DelaGothicOne,
+                        },
+                      ]}
                     >
-                      <View
+                      {member.captureTime || getCurrentHourText()}
+                    </Text>
+                  </View>
+                ) : (
+                  /* Center: When NO Video -> Dela Time + Tap To Capture Pill */
+                  <View style={styles.centerActionGroup} pointerEvents={showGroupDropdown ? 'none' : 'box-none'}>
+                    <Text
+                      style={[
+                        styles.delaTimeText,
+                        {
+                          fontSize: delaFontSize,
+                          color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
+                        },
+                      ]}
+                    >
+                      {member.captureTime || getCurrentHourText()}
+                    </Text>
+                    {isCurrentUser && !showGroupDropdown && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          onClose();
+                          if (onOpenCamera) onOpenCamera();
+                        }}
                         style={{
-                          ...StyleSheet.absoluteFillObject,
+                          paddingHorizontal: isSmallSlot ? 16 : 22,
+                          paddingVertical: isSmallSlot ? 8 : 12,
                           borderRadius: isSmallSlot ? 18 : 22,
-                          overflow: 'hidden',
-                          backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          position: 'relative',
+                          zIndex: 35,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.12,
+                          shadowRadius: 10,
+                          elevation: 4,
                         }}
                       >
-                        <BlurView
-                          key={`blur_grp_tap_${isDark ? 'dark' : 'light'}`}
-                          intensity={Platform.OS === 'ios' ? 40 : 30}
-                          tint={isDark ? 'dark' : 'light'}
-                          style={StyleSheet.absoluteFill}
-                        />
-
-                        {/* LOCALIZED WATER RIPPLE ILLUMINATION AT EXACT POINT OF CONTACT */}
-                        {smileyTouch && (
-                          <Animated.View
-                            style={[
-                              StyleSheet.absoluteFillObject,
-                              {
-                                opacity: rippleOpacityAnim,
-                              },
-                            ]}
-                            pointerEvents="none"
-                          >
-                            <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
-                              <Defs>
-                                <RadialGradient
-                                  id="grpSmileyRippleGlow"
-                                  cx={`${smileyTouch.relX || 0}`}
-                                  cy={`${smileyTouch.relY || 0}`}
-                                  r={isSmallSlot ? "38" : "46"}
-                                  gradientUnits="userSpaceOnUse"
-                                >
-                                  <Stop offset="0%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.70 : 0.60} />
-                                  <Stop offset="45%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.28 : 0.22} />
-                                  <Stop offset="100%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={0.0} />
-                                </RadialGradient>
-                              </Defs>
-                              <Rect width="100%" height="100%" fill="url(#grpSmileyRippleGlow)" />
-                            </Svg>
-                          </Animated.View>
-                        )}
-
-                        <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-                          <Defs>
-                            <LinearGradient id="grpTapCapRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                              <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                            </LinearGradient>
-                          </Defs>
-                          <Rect
-                            x="0.75"
-                            y="0.75"
-                            width="98.5%"
-                            height="96.5%"
-                            rx={isSmallSlot ? 17.25 : 21.25}
-                            ry={isSmallSlot ? 17.25 : 21.25}
-                            fill="none"
-                            stroke="url(#grpTapCapRim)"
-                            strokeWidth={1.2}
+                        <View
+                          style={{
+                            ...StyleSheet.absoluteFillObject,
+                            borderRadius: isSmallSlot ? 18 : 22,
+                            overflow: 'hidden',
+                            backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                          }}
+                        >
+                          <BlurView
+                            key={`blur_grp_tap_${isDark ? 'dark' : 'light'}`}
+                            intensity={Platform.OS === 'ios' ? 40 : 30}
+                            tint={isDark ? 'dark' : 'light'}
+                            style={StyleSheet.absoluteFill}
                           />
-                        </Svg>
-                      </View>
-                      <Text
-                        style={{
-                          color: isDark ? '#FFFFFF' : '#000000',
-                          fontSize: isSmallSlot ? 13 : 16,
-                          fontFamily: Fonts.SystemRoundedSemibold,
-                          zIndex: 10,
-                        }}
-                      >
-                        tap to capture
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
 
-                {/* Bottom Right: Options Triple Dots */}
+                          {/* LOCALIZED WATER RIPPLE ILLUMINATION AT EXACT POINT OF CONTACT */}
+                          {smileyTouch && (
+                            <Animated.View
+                              style={[
+                                StyleSheet.absoluteFillObject,
+                                {
+                                  opacity: rippleOpacityAnim,
+                                },
+                              ]}
+                              pointerEvents="none"
+                            >
+                              <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                                <Defs>
+                                  <RadialGradient
+                                    id="grpSmileyRippleGlow"
+                                    cx={`${smileyTouch.relX || 0}`}
+                                    cy={`${smileyTouch.relY || 0}`}
+                                    r={isSmallSlot ? "38" : "46"}
+                                    gradientUnits="userSpaceOnUse"
+                                  >
+                                    <Stop offset="0%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.70 : 0.60} />
+                                    <Stop offset="45%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.28 : 0.22} />
+                                    <Stop offset="100%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={0.0} />
+                                  </RadialGradient>
+                                </Defs>
+                                <Rect width="100%" height="100%" fill="url(#grpSmileyRippleGlow)" />
+                              </Svg>
+                            </Animated.View>
+                          )}
+
+                          <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                            <Defs>
+                              <LinearGradient id="grpTapCapRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                                <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                                <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                              </LinearGradient>
+                            </Defs>
+                            <Rect
+                              x="0.75"
+                              y="0.75"
+                              width="98.5%"
+                              height="96.5%"
+                              rx={isSmallSlot ? 17.25 : 21.25}
+                              ry={isSmallSlot ? 17.25 : 21.25}
+                              fill="none"
+                              stroke="url(#grpTapCapRim)"
+                              strokeWidth={1.2}
+                            />
+                          </Svg>
+                        </View>
+                        <Text
+                          style={{
+                            color: isDark ? '#FFFFFF' : '#000000',
+                            fontSize: isSmallSlot ? 13 : 16,
+                            fontFamily: Fonts.SystemRoundedSemibold,
+                            zIndex: 10,
+                          }}
+                        >
+                          tap to capture
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
+
+                {/* Caption Display if set */}
+                {!!memberCaptions[member.id] && (
+                  <View style={{ position: 'absolute', left: 20, right: 20, bottom: 48, zIndex: 32, alignItems: 'center' }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center' }}>
+                      {memberCaptions[member.id]}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Bottom Right: Options Triple Dots (ONLY on current user's card) */}
                 {isCurrentUser && (
                   <TouchableOpacity
                     activeOpacity={0.7}
                     style={styles.cardOptionsBtn}
-                    onPress={handleShareInvite}
+                    onPress={() => {
+                      setSelectedMemberForOptions(member);
+                      setEditingCaptionText(memberCaptions[member.id] || member.caption || '');
+                      setShowOptionsMenu(true);
+                    }}
                   >
                     <Ionicons
                       name="ellipsis-horizontal"
-                      size={20}
-                      color={isDark ? '#8E8E93' : '#636366'}
+                      size={22}
+                      color={hasVideo || member.hasCaptured ? '#FFFFFF' : (isDark ? 'rgba(255, 255, 255, 0.40)' : 'rgba(0, 0, 0, 0.35)')}
                     />
                   </TouchableOpacity>
+                )}
+
+                {/* IN-CARD EDIT CAPTION OVERLAY WITH CENTER BLINKING CURSOR & TOP CONTROLS (ONLY on current user) */}
+                {isCurrentUser && showEditCaptionBox && selectedMemberForOptions?.id === member.id && (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center', borderRadius: 24, overflow: 'hidden' }]}>
+                    {/* TOP LEFT CROSS BUTTON */}
+                    <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
+                      <LiquidGlassIconButton
+                        idPrefix="btnGrpCaptionClose"
+                        isDark={isDark}
+                        size={45}
+                        onPress={() => {
+                          Keyboard.dismiss();
+                          setShowEditCaptionBox(false);
+                        }}
+                      >
+                        <Ionicons name="close-sharp" size={25} color={isDark ? '#FFFFFF' : '#000000'} />
+                      </LiquidGlassIconButton>
+                    </View>
+
+                    {/* TOP RIGHT TICK BUTTON */}
+                    <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
+                      <LiquidGlassIconButton
+                        idPrefix="btnGrpCaptionSave"
+                        isDark={isDark}
+                        size={45}
+                        onPress={() => {
+                          Keyboard.dismiss();
+                          handleSaveCaption();
+                        }}
+                      >
+                        <Ionicons name="checkmark-sharp" size={25} color={isDark ? '#FFFFFF' : '#000000'} />
+                      </LiquidGlassIconButton>
+                    </View>
+
+                    {/* CENTER BLINKING CURSOR CAPTION INPUT */}
+                    <TextInput
+                      style={{
+                        width: '85%',
+                        textAlign: 'center',
+                        color: '#FFFFFF',
+                        fontSize: 22,
+                        fontFamily: Fonts.SystemRoundedBold,
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                      }}
+                      value={editingCaptionText}
+                      onChangeText={setEditingCaptionText}
+                      placeholder=""
+                      placeholderTextColor="transparent"
+                      autoFocus={true}
+                      selectionColor="#4FFFB0"
+                    />
+                  </View>
                 )}
               </View>
             );
@@ -1843,6 +1990,156 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 </View>
               </View>
             </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* TRIPLE DOT 3-OPTIONS MENU POPUP MODAL (MATCHING VLOGSHEET) */}
+        <Modal
+          visible={showOptionsMenu}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowOptionsMenu(false)}
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+              paddingBottom: 302.6,
+              paddingRight: 10.0,
+            }}
+            activeOpacity={1}
+            onPress={() => setShowOptionsMenu(false)}
+          >
+            <View
+              style={{
+                width: 155,
+                borderRadius: 20,
+                shadowColor: '#000000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.12,
+                shadowRadius: 14,
+                elevation: 6,
+                backgroundColor: 'transparent',
+                position: 'relative',
+              }}
+            >
+              <View
+                style={{
+                  ...StyleSheet.absoluteFillObject,
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  backgroundColor: isDark ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                }}
+              >
+                <BlurView
+                  key={`blur_grp_opts_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 40 : 30}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="grpOptsRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect
+                    x="0.75"
+                    y="0.75"
+                    width="99%"
+                    height="98.5%"
+                    rx={19.25}
+                    ry={19.25}
+                    fill="none"
+                    stroke="url(#grpOptsRim)"
+                    strokeWidth={1.2}
+                  />
+                </Svg>
+              </View>
+
+              {/* 1. Edit Caption */}
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingLeft: 18.5,
+                  paddingRight: 12,
+                  gap: 10,
+                  zIndex: 10,
+                }}
+                activeOpacity={0.7}
+                onPress={() => {
+                  setShowOptionsMenu(false);
+                  setShowEditCaptionBox(true);
+                }}
+              >
+                <Ionicons name="create-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                  edit caption
+                </Text>
+              </TouchableOpacity>
+
+              {!!selectedMemberForOptions?.hasCaptured && (
+                <>
+                  {/* 2. Save */}
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 10,
+                      paddingLeft: 18.5,
+                      paddingRight: 12,
+                      gap: 10,
+                      zIndex: 10,
+                    }}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setSaveState('saving');
+                      setTimeout(() => {
+                        setSaveState('saved');
+                        setTimeout(() => setSaveState('idle'), 2000);
+                      }, 1000);
+                    }}
+                  >
+                    {saveState === 'saving' ? (
+                      <ActivityIndicator size="small" color={isDark ? '#FFFFFF' : '#000000'} style={{ width: 20, height: 20 }} />
+                    ) : (
+                      <Ionicons name={saveState === 'saved' ? "checkmark" : "download-outline"} size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+                    )}
+                    <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                      {saveState === 'saved' ? 'saved' : 'save'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* 3. Delete */}
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 10,
+                      paddingLeft: 18.5,
+                      paddingRight: 12,
+                      gap: 10,
+                      zIndex: 10,
+                    }}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setShowOptionsMenu(false);
+                    }}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                    <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                      delete
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
           </TouchableOpacity>
         </Modal>
     </View>

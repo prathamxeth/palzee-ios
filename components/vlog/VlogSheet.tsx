@@ -901,19 +901,20 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     </Text>
                   </>
                 ) : dayOffset === 0 ? (
-                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, zIndex: 30 }} pointerEvents="box-none">
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 0, zIndex: 30 }} pointerEvents="box-none">
+                    {/* Middle Left: Vlog text in standard SF Pro Heavy/Black (shifted 5dp left) */}
                     <Text
                       style={{
-                        fontFamily: Fonts.DelaGothicOne,
-                        fontSize: 26,
-                        letterSpacing: -0.5,
-                        color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
-                        zIndex: 30,
+                        fontSize: 23.5,
+                        fontWeight: '900',
+                        color: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.40)',
+                        marginLeft: -5,
                       }}
                     >
-                      {getNearestHourText()}
+                      Vlog
                     </Text>
 
+                    {/* Center: Tap To Capture Pill */}
                     <TouchableOpacity
                       style={{
                         paddingHorizontal: 22,
@@ -993,8 +994,8 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                             y="0.75"
                             width="98.5%"
                             height="96.5%"
-                            rx="21.25"
-                            ry="21.25"
+                            rx={21.25}
+                            ry={21.25}
                             fill="none"
                             stroke="url(#tapCapRim)"
                             strokeWidth={1.2}
@@ -1005,6 +1006,19 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         tap to capture
                       </Text>
                     </TouchableOpacity>
+
+                    {/* Middle Right: Time text in SF Rounded Semibold (shifted 5dp right) */}
+                    <Text
+                      style={{
+                        fontSize: 21,
+                        fontFamily: Fonts.SystemRoundedSemibold,
+                        fontWeight: '600',
+                        color: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.40)',
+                        marginRight: -5,
+                      }}
+                    >
+                      {getNearestHourText() || '0:00'}
+                    </Text>
                   </View>
                 ) : null}
               </View>

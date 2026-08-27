@@ -104,7 +104,7 @@ interface PalVideoSendPreviewModalProps {
   palCount?: number;
   palGroups?: PalGroupItem[];
   onRetake: () => void;
-  onSend: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => void;
+  onSend: (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string, targets?: string[]) => void;
 }
 
 const LiquidGlassCircleButton = ({
@@ -359,7 +359,7 @@ export default function PalVideoSendPreviewModal({
       }),
     ]).start(() => {
       if (videoUri) {
-        onSend(videoUri, captionText, isMuted, playbackRate || 1.0, timerMode || 'off');
+        onSend(videoUri, captionText, isMuted, playbackRate || 1.0, timerMode || 'off', selectedTargets);
       }
     });
   };
@@ -402,14 +402,21 @@ export default function PalVideoSendPreviewModal({
     transform: [],
   };
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: containerBg }]}>
+    <Modal
+      visible={visible && !!videoUri}
+      animationType="none"
+      transparent={true}
+      statusBarTranslucent={true}
+      onRequestClose={handleClose}
+    >
+      <View style={[StyleSheet.absoluteFill, { zIndex: 99999, backgroundColor: containerBg }]}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
           <KeyboardAvoidingView
             behavior="padding"
             style={[styles.modalContainer, { backgroundColor: containerBg }]}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top - 46, 0), paddingBottom: 20 }}>
+              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top - 46, 0) + 40, paddingBottom: 20 }}>
                 {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
@@ -717,7 +724,8 @@ export default function PalVideoSendPreviewModal({
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </Animated.View>
-    </View>
+      </View>
+    </Modal>
   );
 }
 

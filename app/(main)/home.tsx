@@ -700,12 +700,37 @@ export default function HomeScreen({
     } catch (e) {}
   };
 
+  const [groupClipsMap, setGroupClipsMap] = useState<Record<string, any[]>>({});
+
+  const loadCachedGroupClips = async () => {
+    try {
+      const cached = await AsyncStorage.getItem('@palzee_group_clips_map');
+      if (!cached) return;
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed === 'object') {
+        const liveMapped: Record<string, any[]> = {};
+        for (const [key, clips] of Object.entries(parsed)) {
+          if (Array.isArray(clips)) {
+            liveMapped[key] = clips.map((item: any) => ({
+              ...item,
+              uri: getLiveSandboxUri(item.uri),
+              thumbnailUri: item.thumbnailUri ? getLiveSandboxUri(item.thumbnailUri) : '',
+            }));
+          }
+        }
+        setGroupClipsMap(liveMapped);
+      }
+    } catch (e) {}
+  };
+
   useEffect(() => {
     loadCachedVlogs();
+    loadCachedGroupClips();
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active') {
         loadCachedVlogs();
+        loadCachedGroupClips();
         homeVideoRef.current?.playAsync().catch(() => {});
       }
     });
@@ -833,13 +858,19 @@ export default function HomeScreen({
       setHomeSaveState('idle');
     }
   };
-
   useEffect(() => {
     setHomeSaveState('idle');
   }, [homeVlogIndex]);
 
-  const handleVideoSent = async (uri: string, caption?: string, isMuted?: boolean, rate?: number, mode?: string) => {
-    console.log('🎥 [handleVideoSent] Processing video:', uri);
+  const handleVideoSent = async (
+    uri: string,
+    caption?: string,
+    isMuted?: boolean,
+    rate?: number,
+    mode?: string,
+    targets: string[] = ['vlog']
+  ) => {
+    console.log('🎥 [handleVideoSent] Processing video:', uri, 'targets:', targets);
 
     let permanentUri = uri;
     let thumbnailUri = '';
@@ -892,13 +923,30 @@ export default function HomeScreen({
 
     console.log('📦 Vlog State Saved:', newLog);
 
-    setVlogList((prev) => {
-      const updated = [newLog, ...prev];
-      AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updated));
-      return updated;
-    });
-    setHomeVlogIndex(0);
-    homeProgressAnim.setValue(0);
+    const isSendToVlog = targets.includes('vlog') || targets.length === 0;
+    const groupTargets = targets.filter((t) => t !== 'vlog');
+
+    if (isSendToVlog) {
+      setVlogList((prev) => {
+        const updated = [newLog, ...prev];
+        AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updated));
+        return updated;
+      });
+      setHomeVlogIndex(0);
+      homeProgressAnim.setValue(0);
+    }
+
+    if (groupTargets.length > 0) {
+      setGroupClipsMap((prev) => {
+        const updated = { ...prev };
+        for (const grpId of groupTargets) {
+          updated[grpId] = [newLog, ...(updated[grpId] || [])];
+        }
+        AsyncStorage.setItem('@palzee_group_clips_map', JSON.stringify(updated));
+        return updated;
+      });
+    }
+
     setShowCamera(false);
     setShowExportSheet(false);
     setShowChatDrawer(false);
@@ -932,102 +980,89 @@ export default function HomeScreen({
     setVlogList(updatedList);
     AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updatedList));
     setHomeVlogIndex(0);
-    homeProgressAnim.setValue(0);
-    setShowExportSheet(false);
   };
 
-  const handleUpdateCaption = (newCaption: string, targetId?: string) => {
-    setVlogList((prev) =>
-      prev.map((item, idx) =>
-        (targetId ? item.id === targetId : idx === homeVlogIndex)
-          ? { ...item, caption: newCaption }
-          : item
-      )
-    );
+  const handleUpdateCaption = async (newCaption: string, targetId?: string) => {
+    let updatedList: typeof vlogList = [];
+    if (targetId) {
+      updatedList = vlogList.map((item) =>
+        item.id === targetId ? { ...item, caption: newCaption } : item
+      );
+    } else {
+      if (vlogList.length === 0) return;
+      updatedList = vlogList.map((item, index) =>
+        index === homeVlogIndex ? { ...item, caption: newCaption } : item
+      );
+    }
+
+    setVlogList(updatedList);
+    AsyncStorage.setItem('@palzee_vlog_list', JSON.stringify(updatedList));
   };
-
-  if (showGroupsView) {
-    return (
-      <PalGroupGridScreen
-        groups={[]}
-        onSelectGroup={() => setShowGroupsView(false)}
-        onOpenCreateModal={() => setShowCreateModal(true)}
-        onBackToFeed={() => setShowGroupsView(false)}
-      />
-    );
-  }
-
-  if (showCamera) {
-    return (
-      <CameraScreen
-        selectedThemeColor={selectedThemeColor}
-        onCapture={(uri, caption, isMuted, rate, mode) => handleVideoSent(uri, caption, isMuted, rate, mode)}
-        onClose={() => setShowCamera(false)}
-      />
-    );
-  }
 
   return (
     <DynamicGlowContainer selectedThemeColor={selectedThemeColor || 'cyan'} showBorder={true}>
-      <CameraPrewarmer />
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: screenBg,
-            paddingTop: activeTab === 'camera' ? Math.max(insets.top, 8) : insets.top,
-            paddingBottom: 0,
-          },
-        ]}
-      >
-        {/* 1. PERSISTENT LIVE CAMERA PREVIEW LAYER (ALWAYS MOUNTED & READY) */}
-        <Animated.View
+      <>
+        <CameraPrewarmer />
+        <View
           style={[
-            StyleSheet.absoluteFill,
+            styles.container,
             {
-              paddingTop: Math.max(insets.top, 8),
-              paddingBottom: Math.max(insets.bottom, 8) + 60,
-              opacity: tabTransitionAnim.interpolate({
-                inputRange: [0, 0.8, 1],
-                outputRange: [1, 0.2, 0],
-              }),
-              transform: [
-                {
-                  scale: tabTransitionAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 0.94],
-                  }),
-                },
-              ],
+              backgroundColor: screenBg,
+              paddingTop: activeTab === 'camera' ? Math.max(insets.top, 8) : insets.top,
+              paddingBottom: 0,
             },
           ]}
-          pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
         >
-          <PalCameraPreview
-            isActive={activeTab === 'camera'}
-            selectedThemeColor={selectedThemeColor}
-            timerMode={cameraTimerMode}
-            onToggleTimerMode={toggleTimerMode}
-            facing={cameraFacing}
-            onToggleFacing={toggleFacing}
-            autoTickVlog={false}
-            palCount={getClipsForDayOffset(vlogList, 0).length}
-            palGroups={userPalRooms.map((r) => {
-              const currentFirstName = user?.displayName ? user.displayName.split(' ')[0] : (user?.email?.split('@')[0] || 'apple_user');
-              const memberFirstNames = (r.members && r.members.length > 0)
-                ? r.members.map((m) => m.split(' ')[0])
-                : [currentFirstName];
-              return {
-                id: r.code,
-                name: r.name,
-                members: memberFirstNames,
-                size: memberFirstNames.length,
-                maxCount: r.maxCount || 5,
-              };
-            })}
-            onCaptureSuccess={(uri, caption, isMuted, rate, mode) => handleVideoSent(uri, caption, isMuted, rate, mode)}
-          />
-        </Animated.View>
+        {/* HORIZONTAL SWIPE VIEW: INDEX 0 = HOME/CAMERA, INDEX 1 = PALS MENU */}
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {/* 1. PERSISTENT LIVE CAMERA PREVIEW LAYER (ALWAYS MOUNTED & READY) */}
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                paddingTop: Math.max(insets.top, 8),
+                paddingBottom: Math.max(insets.bottom, 8) + 60,
+                opacity: tabTransitionAnim.interpolate({
+                  inputRange: [0, 0.8, 1],
+                  outputRange: [1, 0.2, 0],
+                }),
+                transform: [
+                  {
+                    scale: tabTransitionAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 0.94],
+                    }),
+                  },
+                ],
+              },
+            ]}
+            pointerEvents={activeTab === 'camera' ? 'auto' : 'none'}
+          >
+            <PalCameraPreview
+              isActive={activeTab === 'camera'}
+              selectedThemeColor={selectedThemeColor}
+              timerMode={cameraTimerMode}
+              onToggleTimerMode={toggleTimerMode}
+              facing={cameraFacing}
+              onToggleFacing={toggleFacing}
+              autoTickVlog={false}
+              palCount={getClipsForDayOffset(vlogList, 0).length}
+              palGroups={userPalRooms.map((r: PalRoom) => {
+                const currentFirstName = user?.displayName ? user.displayName.split(' ')[0] : (user?.email?.split('@')[0] || 'apple_user');
+                const memberFirstNames = (r.members && r.members.length > 0)
+                  ? r.members.map((m) => m.split(' ')[0])
+                  : [currentFirstName];
+                return {
+                  id: r.code,
+                  name: r.name,
+                  members: memberFirstNames,
+                  size: memberFirstNames.length,
+                  maxCount: r.maxCount || 5,
+                };
+              })}
+              onCaptureSuccess={(uri, caption, isMuted, rate, mode, targets) => handleVideoSent(uri, caption, isMuted, rate, mode, targets)}
+            />
+          </Animated.View>
 
         {/* 2. PALS MENU / FEED SLIDING OVERLAY LAYER */}
         <Animated.View
@@ -1575,6 +1610,7 @@ export default function HomeScreen({
                 )}
           </ScrollView>
         </Animated.View>
+      </View>
 
         {/* 3. UNIFIED BOTTOM LIQUID GLASS NAVIGATION BAR */}
         <View style={styles.unifiedBottomRow}>
@@ -2670,120 +2706,132 @@ export default function HomeScreen({
             </KeyboardAvoidingView>
           </TouchableOpacity>
         </Modal>
-
-        {/* OVERLAY MODALS */}
-        <CreatePalModal
-          key={isDark ? 'create_dark' : 'create_light'}
-          visible={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreateRoom}
-          onJoin={handleJoinRoom}
-          themeColor={selectedThemeColor}
-          initialTab={createModalInitialTab}
-        />
-
-        <ActivityDrawer
-          key={isDark ? 'act_dark' : 'act_light'}
-          visible={showActivityDrawer}
-          onClose={() => setShowActivityDrawer(false)}
-          isDark={isDark}
-          selectedThemeColor={selectedThemeColor}
-        />
-
-        <ChatDrawer
-          key={isDark ? 'chat_dark' : 'chat_light'}
-          visible={showChatDrawer}
-          onClose={() => setShowChatDrawer(false)}
-          onOpenVlog={() => {
-            setShowChatDrawer(false);
-            setShowEditExportSheet(true);
-          }}
-          palCode="palzee_space"
-          user={user}
-          isDark={isDark}
-          selectedThemeColor={selectedThemeColor}
-          vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
-          activeVideoUri={getClipsForDayOffset(vlogList, selectedDayOffset).length > 0 ? getClipsForDayOffset(vlogList, selectedDayOffset)[0]?.uri : undefined}
-          selectedDayOffset={selectedDayOffset}
-        />
-
-        <VlogSheet
-          key={isDark ? 'vlog_dark' : 'vlog_light'}
-          visible={showExportSheet}
-          onClose={() => {
-            setShowChatDrawer(false);
-            setShowExportSheet(false);
-          }}
-          user={user}
-          selectedThemeColor={selectedThemeColor}
-          vlogList={vlogList}
-          activeVideoUri={vlogList.length > 0 ? vlogList[0]?.uri : null}
-          caption={vlogList.length > 0 ? vlogList[0]?.caption : ''}
-          timestamp={vlogList.length > 0 ? vlogList[0]?.timestamp : ''}
-          isMuted={vlogList.length > 0 ? vlogList[0]?.isMuted : false}
-          onDeleteVideo={handleDeleteVideo}
-          onUpdateCaption={handleUpdateCaption}
-          selectedDayOffset={selectedDayOffset}
-          onSelectDayOffset={(offset) => setSelectedDayOffset(offset)}
-          onOpenCamera={() => {
-            setShowChatDrawer(false);
-            setShowExportSheet(false);
-            setShowCamera(true);
-          }}
-          onOpenChat={() => {
-            setShowChatDrawer(true);
-          }}
-        />
-
-        <EditExportSheet
-          key={isDark ? 'export_dark' : 'export_light'}
-          visible={showEditExportSheet}
-          onClose={() => setShowEditExportSheet(false)}
-          vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
-          selectedThemeColor={selectedThemeColor}
-          onDeleteVideo={handleDeleteVideo}
-          onUpdateCaption={handleUpdateCaption}
-        />
-
-        <PalGroupDetailsSheet
-          visible={!!activePalGroupDetails}
-          onClose={() => setActivePalGroupDetails(null)}
-          group={activePalGroupDetails}
-          user={user}
-          selectedThemeColor={selectedThemeColor}
-          isDark={isDark}
-          onOpenCamera={() => {
-            setActivePalGroupDetails(null);
-            setShowCamera(true);
-          }}
-          onDeleteGroup={(groupCode) => {
-            setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
-            setActivePalGroupDetails(null);
-          }}
-          onLeaveGroup={(groupCode) => {
-            setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
-            setActivePalGroupDetails(null);
-          }}
-        />
-
-        {/* VIEWING PALS GUIDE OVERLAY MODAL */}
-        <ViewingPalsInstructionModal
-          key={isDark ? 'guide_dark' : 'guide_light'}
-          visible={showViewingPalsGuide}
-          onContinue={() => setShowViewingPalsGuide(false)}
-        />
-
-        {/* IN-APP BROWSER SHEET MODAL */}
-        <InAppBrowserModal
-          visible={!!inAppBrowserUrl}
-          url={inAppBrowserUrl || ''}
-          title={inAppBrowserTitle}
-          onClose={() => setInAppBrowserUrl(null)}
-          accentColor={accentColor}
-        />
       </View>
-    </DynamicGlowContainer>
-  );
+
+    {/* OVERLAY MODALS (FULLSCREEN ROOT LEVEL) */}
+    <CreatePalModal
+      key={isDark ? 'create_dark' : 'create_light'}
+      visible={showCreateModal}
+      onClose={() => setShowCreateModal(false)}
+      onCreate={handleCreateRoom}
+      onJoin={handleJoinRoom}
+      themeColor={selectedThemeColor}
+      initialTab={createModalInitialTab}
+    />
+
+    <ActivityDrawer
+      key={isDark ? 'act_dark' : 'act_light'}
+      visible={showActivityDrawer}
+      onClose={() => setShowActivityDrawer(false)}
+      isDark={isDark}
+      selectedThemeColor={selectedThemeColor}
+    />
+
+    <ChatDrawer
+      key={isDark ? 'chat_dark' : 'chat_light'}
+      visible={showChatDrawer}
+      onClose={() => setShowChatDrawer(false)}
+      onOpenVlog={() => {
+        setShowChatDrawer(false);
+        setShowEditExportSheet(true);
+      }}
+      palCode="palzee_space"
+      user={user}
+      isDark={isDark}
+      selectedThemeColor={selectedThemeColor}
+      vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
+      activeVideoUri={getClipsForDayOffset(vlogList, selectedDayOffset).length > 0 ? getClipsForDayOffset(vlogList, selectedDayOffset)[0]?.uri : undefined}
+      selectedDayOffset={selectedDayOffset}
+    />
+
+    <VlogSheet
+      key={isDark ? 'vlog_dark' : 'vlog_light'}
+      visible={showExportSheet}
+      onClose={() => {
+        setShowChatDrawer(false);
+        setShowExportSheet(false);
+      }}
+      user={user}
+      selectedThemeColor={selectedThemeColor}
+      vlogList={vlogList}
+      activeVideoUri={vlogList.length > 0 ? vlogList[0]?.uri : null}
+      caption={vlogList.length > 0 ? vlogList[0]?.caption : ''}
+      timestamp={vlogList.length > 0 ? vlogList[0]?.timestamp : ''}
+      isMuted={vlogList.length > 0 ? vlogList[0]?.isMuted : false}
+      onDeleteVideo={handleDeleteVideo}
+      onUpdateCaption={handleUpdateCaption}
+      selectedDayOffset={selectedDayOffset}
+      onSelectDayOffset={(offset) => setSelectedDayOffset(offset)}
+      onOpenCamera={() => {
+        setShowChatDrawer(false);
+        setShowExportSheet(false);
+        setShowCamera(true);
+      }}
+      onOpenChat={() => {
+        setShowChatDrawer(true);
+      }}
+    />
+
+    <EditExportSheet
+      key={isDark ? 'export_dark' : 'export_light'}
+      visible={showEditExportSheet}
+      onClose={() => setShowEditExportSheet(false)}
+      vlogList={getClipsForDayOffset(vlogList, selectedDayOffset)}
+      selectedThemeColor={selectedThemeColor}
+      onDeleteVideo={handleDeleteVideo}
+      onUpdateCaption={handleUpdateCaption}
+    />
+
+    <PalGroupDetailsSheet
+      visible={!!activePalGroupDetails}
+      onClose={() => setActivePalGroupDetails(null)}
+      group={activePalGroupDetails}
+      user={user}
+      selectedThemeColor={selectedThemeColor}
+      isDark={isDark}
+      vlogList={
+        activePalGroupDetails
+          ? groupClipsMap[activePalGroupDetails.code] || groupClipsMap[activePalGroupDetails.name] || []
+          : []
+      }
+      activeVideoUri={
+        activePalGroupDetails
+          ? groupClipsMap[activePalGroupDetails.code]?.[0]?.uri ||
+            groupClipsMap[activePalGroupDetails.name]?.[0]?.uri ||
+            null
+          : null
+      }
+      onOpenCamera={() => {
+        setActivePalGroupDetails(null);
+        setShowCamera(true);
+      }}
+      onDeleteGroup={(groupCode) => {
+        setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
+        setActivePalGroupDetails(null);
+      }}
+      onLeaveGroup={(groupCode) => {
+        setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
+        setActivePalGroupDetails(null);
+      }}
+    />
+
+    {/* VIEWING PALS GUIDE OVERLAY MODAL */}
+    <ViewingPalsInstructionModal
+      key={isDark ? 'guide_dark' : 'guide_light'}
+      visible={showViewingPalsGuide}
+      onContinue={() => setShowViewingPalsGuide(false)}
+    />
+
+      <InAppBrowserModal
+        visible={!!inAppBrowserUrl}
+        url={inAppBrowserUrl || ''}
+        title={inAppBrowserTitle}
+        onClose={() => setInAppBrowserUrl(null)}
+        accentColor={accentColor}
+      />
+    </>
+  </DynamicGlowContainer>
+);
 }
 
 const styles = StyleSheet.create({
