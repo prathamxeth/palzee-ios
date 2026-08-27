@@ -632,7 +632,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
       <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
           {/* 1. TOP NAVIGATION HEADER BAR */}
           <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
-            <View style={{ width: 100, height: 44, justifyContent: 'center' }}>
+            <View style={{ minWidth: 45, height: 45, justifyContent: 'center' }}>
               {show0Logs ? (
                 <Animated.View style={{ opacity: logsOpacityAnim }}>
                   <TouchableOpacity
@@ -764,7 +764,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             )}
             </View>
 
-            <View style={[styles.headerRightIcons, { marginTop: 5 }]}>
+            <View style={styles.headerRightIcons}>
               <LiquidGlassIconButton
                 idPrefix="btnVlogShare"
                 isDark={isDark}
@@ -1089,17 +1089,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
-          {/* BOTTOM BAR FOR VLOGSHEET (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
+          {/* BOTTOM BAR FOR VLOGSHEET MATCHING HOMESCREEN FOOTER (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
           <View
             style={{
               position: 'absolute',
-              bottom: 14,
+              bottom: 24,
               left: 0,
               right: 0,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingHorizontal: 12,
+              paddingHorizontal: 20,
               zIndex: 100,
             }}
             pointerEvents="box-none"
@@ -1611,7 +1611,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     zIndex: 100,
   },
   zeroLogsPillBtn: {
