@@ -1070,7 +1070,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               flex: 1,
               backgroundColor: 'transparent',
               alignItems: 'center',
-              paddingTop: Math.max(insets.top + 4, 12) + 52,
+              paddingTop: Math.max(insets.top - 1, 7) + 52,
             }}
             activeOpacity={1}
             onPress={() => {
@@ -1106,7 +1106,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   borderRadius: 24,
                   overflow: 'hidden',
                   position: 'relative',
-                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.55)' : 'rgba(255, 255, 255, 0.65)',
+                  backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.65)',
                   paddingVertical: 12,
                   paddingHorizontal: 14,
                 }}
@@ -1114,7 +1114,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 {/* 1. Frosted Backdrop Blur covering 100% of the entire card */}
                 <BlurView
                   key={`blur_pals_dropdown_${isDark ? 'dark' : 'light'}`}
-                  intensity={Platform.OS === 'ios' ? 70 : 45}
+                  intensity={Platform.OS === 'ios' ? 45 : 30}
                   tint={isDark ? 'dark' : 'light'}
                   style={[StyleSheet.absoluteFillObject, { borderRadius: 24 }]}
                 />
@@ -1135,8 +1135,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                         x2="0%"
                         y2="100%"
                       >
-                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.55 : 0.85} />
-                        <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.18 : 0.40} />
+                        <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                        <Stop offset="40%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
                         <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
                       </LinearGradient>
                     </Defs>
@@ -1149,7 +1149,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       ry={23}
                       fill="none"
                       stroke="url(#palsDropdownRim)"
-                      strokeWidth={1.2}
+                      strokeWidth={1.0}
                     />
                   </Svg>
                 )}
