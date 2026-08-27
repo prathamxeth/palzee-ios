@@ -1106,7 +1106,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   borderRadius: 24,
                   overflow: 'hidden',
                   position: 'relative',
-                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.35)' : 'rgba(255, 255, 255, 0.65)',
+                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.65)' : 'rgba(255, 255, 255, 0.65)',
                   paddingVertical: 12,
                   paddingHorizontal: 14,
                 }}
@@ -1114,7 +1114,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 {/* 1. Frosted Backdrop Blur covering 100% of the entire card */}
                 <BlurView
                   key={`blur_pals_dropdown_${isDark ? 'dark' : 'light'}`}
-                  intensity={Platform.OS === 'ios' ? 60 : 45}
+                  intensity={Platform.OS === 'ios' ? 75 : 50}
                   tint={isDark ? 'dark' : 'light'}
                   style={[StyleSheet.absoluteFillObject, { borderRadius: 24 }]}
                 />
