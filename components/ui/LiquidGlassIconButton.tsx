@@ -45,13 +45,13 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
           styles.liquidCircleInner,
           {
             borderRadius: btnRadius,
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.78)',
           },
         ]}
       >
         <BlurView
           key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
-          intensity={Platform.OS === 'ios' ? 45 : 30}
+          intensity={Platform.OS === 'ios' ? 50 : 35}
           tint={isDark ? 'dark' : 'light'}
           style={StyleSheet.absoluteFill}
         />
@@ -61,12 +61,12 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.45 : 0.85}
+                stopOpacity={isDark ? 0.45 : 0.95}
               />
               <Stop
                 offset="35%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.15 : 0.40}
+                stopOpacity={isDark ? 0.15 : 0.45}
               />
               <Stop
                 offset="100%"
@@ -97,8 +97,8 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
 const styles = StyleSheet.create({
   liquidCircleWrapper: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
     backgroundColor: 'transparent',
