@@ -30,6 +30,7 @@ import { BouncingSmileyView, SmileyTouchInfo } from '../vlog/BouncingSmileyView'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PalGroupExportSheet } from './PalGroupExportSheet';
 import { PalGroupChatDrawer } from './PalGroupChatDrawer';
+import { EditPalModal } from './EditPalModal';
 
 const VerticalBarcodeIcon = ({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -71,6 +72,7 @@ export interface PalGroupDetailsSheetProps {
   isDark?: boolean;
   onDeleteGroup?: (groupCode: string) => void;
   onLeaveGroup?: (groupCode: string) => void;
+  onUpdateGroup?: (groupCode: string, newName: string, newSize: number) => void;
   vlogList?: any[];
   activeVideoUri?: string | null;
 }
@@ -85,6 +87,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   isDark: propIsDark,
   onDeleteGroup,
   onLeaveGroup,
+  onUpdateGroup,
   vlogList = [],
   activeVideoUri = null,
 }) => {
@@ -114,7 +117,15 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
   const [showEditGroupNameModal, setShowEditGroupNameModal] = useState(false);
-  const [editedGroupName, setEditedGroupName] = useState(group?.name || '');
+  const [currentGroupName, setCurrentGroupName] = useState(group?.name || '');
+  const [currentGroupSize, setCurrentGroupSize] = useState(group?.size || group?.maxCount || 3);
+
+  useEffect(() => {
+    if (group) {
+      setCurrentGroupName(group.name);
+      setCurrentGroupSize(group.size || group.maxCount || 3);
+    }
+  }, [group]);
   const [dropdownLayout, setDropdownLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [smileyTouch, setSmileyTouch] = useState<SmileyTouchInfo | null>(null);
@@ -333,7 +344,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
     onClose();
   };
 
-  const maxSlots = group.maxCount || group.size || 5;
+  const maxSlots = currentGroupSize || group.maxCount || group.size || 5;
   const joinedMembers: PalGroupMember[] = group.members && group.members.length > 0
     ? group.members
     : [
@@ -503,7 +514,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     ]}
                     numberOfLines={1}
                   >
-                    {group.name}
+                    {currentGroupName || group.name}
                   </Text>
                   <Ionicons
                     name={showGroupDropdown ? 'chevron-up' : 'chevron-down'}
@@ -1169,7 +1180,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       }}
                       numberOfLines={1}
                     >
-                      {group.name}
+                      {currentGroupName || group.name}
                     </Text>
 
                     {/* Code Item with Vertical Barcode Stripes (+2.5dp -> 17) */}
@@ -1396,7 +1407,6 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                         onPress={() => {
                           setShowGroupDropdown(false);
                           setGroupSubMenu('main');
-                          setEditedGroupName(group?.name || '');
                           setShowEditGroupNameModal(true);
                         }}
                         style={{
@@ -1486,196 +1496,37 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           </TouchableOpacity>
         </Modal>
 
-        {/* EDIT PALS GROUP DIALOG MODAL */}
-        <Modal
+        {/* EDIT PALS GROUP MODAL (MATCHING EXACT CREATE PAL MODAL DESIGN & CONTROLS UP TO 10) */}
+        <EditPalModal
           visible={showEditGroupNameModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowEditGroupNameModal(false)}
-        >
-          <TouchableOpacity
-            style={{
-              flex: 1,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingHorizontal: 20,
-            }}
-            activeOpacity={1}
-            onPress={() => setShowEditGroupNameModal(false)}
-          >
-            <TouchableOpacity
-              style={{
-                width: Math.min(cardWidth * 0.88, 290),
-                borderRadius: 24,
-                shadowColor: '#000000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.16,
-                shadowRadius: 16,
-                elevation: 8,
-                backgroundColor: 'transparent',
-                position: 'relative',
-              }}
-              activeOpacity={1}
-              onPress={(e) => e.stopPropagation()}
-            >
-              <View
-                style={{
-                  ...StyleSheet.absoluteFillObject,
-                  borderRadius: 24,
-                  overflow: 'hidden',
-                  backgroundColor: isDark ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.95)',
-                }}
-              >
-                <BlurView
-                  key={`blur_edit_pals_${isDark ? 'dark' : 'light'}`}
-                  intensity={Platform.OS === 'ios' ? 40 : 30}
-                  tint={isDark ? 'dark' : 'light'}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
-                  <Defs>
-                    <LinearGradient id="editPalsRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                    </LinearGradient>
-                  </Defs>
-                  <Rect
-                    x="0.75"
-                    y="0.75"
-                    width="99.2%"
-                    height="98.5%"
-                    rx={23.25}
-                    ry={23.25}
-                    fill="none"
-                    stroke="url(#editPalsRim)"
-                    strokeWidth={1.2}
-                  />
-                </Svg>
-              </View>
+          onClose={() => setShowEditGroupNameModal(false)}
+          initialName={currentGroupName || group?.name || ''}
+          initialSize={currentGroupSize || group?.size || 3}
+          minSize={Math.max(joinedMembers.length, 2)}
+          themeColor={selectedThemeColor}
+          onSave={async (newName, newSize) => {
+            if (group) {
+              group.name = newName;
+              group.size = newSize;
+              setCurrentGroupName(newName);
+              setCurrentGroupSize(newSize);
+              try {
+                const stored = await AsyncStorage.getItem('pal_rooms_key');
+                if (stored) {
+                  const rooms = JSON.parse(stored);
+                  const updated = rooms.map((r: any) =>
+                    r.code === group.code ? { ...r, name: newName, size: newSize, maxCount: newSize } : r
+                  );
+                  await AsyncStorage.setItem('pal_rooms_key', JSON.stringify(updated));
+                }
+              } catch (e) {}
 
-              <View style={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 16, alignItems: 'center', zIndex: 10 }}>
-                <Text
-                  style={{
-                    fontSize: 17,
-                    fontFamily: Fonts.SystemRoundedBold,
-                    fontWeight: '700',
-                    color: isDark ? '#FFFFFF' : '#000000',
-                    textAlign: 'center',
-                    marginBottom: 14,
-                  }}
-                >
-                  edit pals group
-                </Text>
-
-                <TextInput
-                  value={editedGroupName}
-                  onChangeText={setEditedGroupName}
-                  placeholder="group name"
-                  placeholderTextColor={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)'}
-                  style={{
-                    width: '100%',
-                    height: 42,
-                    borderRadius: 14,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                    paddingHorizontal: 14,
-                    fontSize: 16,
-                    fontFamily: Fonts.SystemRoundedMedium,
-                    color: isDark ? '#FFFFFF' : '#000000',
-                    marginBottom: 16,
-                  }}
-                />
-
-                <View style={{ flexDirection: 'row', gap: 10, width: '100%' }}>
-                  {/* Cancel Button */}
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 44,
-                      borderRadius: 22,
-                      overflow: 'hidden',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
-                    }}
-                    activeOpacity={0.7}
-                    onPress={() => setShowEditGroupNameModal(false)}
-                  >
-                    <BlurView
-                      key={`blur_cancel_edit_grp_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-                      <Defs>
-                        <LinearGradient id="cancelEditPalsRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
-                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#cancelEditPalsRim)" strokeWidth={1.2} />
-                    </Svg>
-                    <Text style={{ fontSize: 14.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: isDark ? '#FFFFFF' : '#000000', zIndex: 10 }}>
-                      cancel
-                    </Text>
-                  </TouchableOpacity>
-
-                  {/* Save Button */}
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 44,
-                      borderRadius: 22,
-                      overflow: 'hidden',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
-                    }}
-                    activeOpacity={0.7}
-                    onPress={async () => {
-                      if (editedGroupName.trim() && group) {
-                        group.name = editedGroupName.trim();
-                        try {
-                          const stored = await AsyncStorage.getItem('pal_rooms_key');
-                          if (stored) {
-                            const rooms = JSON.parse(stored);
-                            const updated = rooms.map((r: any) =>
-                              r.code === group.code ? { ...r, name: editedGroupName.trim() } : r
-                            );
-                            await AsyncStorage.setItem('pal_rooms_key', JSON.stringify(updated));
-                          }
-                        } catch (e) {}
-                      }
-                      setShowEditGroupNameModal(false);
-                    }}
-                  >
-                    <BlurView
-                      key={`blur_save_edit_pals_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-                      <Defs>
-                        <LinearGradient id="saveEditPalsRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.60 : 0.85} />
-                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={0.10} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#saveEditPalsRim)" strokeWidth={1.2} />
-                    </Svg>
-                    <Text style={{ fontSize: 14.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: isDark ? '#FFFFFF' : '#000000', zIndex: 10 }}>
-                      save
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
+              if (onUpdateGroup) {
+                onUpdateGroup(group.code, newName, newSize);
+              }
+            }
+          }}
+        />
 
         {/* DELETE PALS GROUP DIALOG MODAL (IMAGE 4) */}
         <Modal
@@ -2142,6 +1993,15 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* PAL GROUP CHAT DRAWER WITH MEME EMOJI BUTTON */}
+        <PalGroupChatDrawer
+          visible={showChatDrawer}
+          onClose={() => setShowChatDrawer(false)}
+          palName={currentGroupName || group?.name || 'pals'}
+          selectedThemeColor={selectedThemeColor}
+          members={joinedMembers.map(m => m.name)}
+        />
     </View>
   );
 };

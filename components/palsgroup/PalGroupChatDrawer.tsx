@@ -35,10 +35,11 @@ export interface PalGroupChatDrawerProps {
   onOpenCamera?: () => void;
   palName: string;
   palCode?: string;
-  user: any;
+  user?: any;
   selectedThemeColor?: string;
   vlogList?: any[];
   isDark?: boolean;
+  members?: string[];
 }
 
 export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({

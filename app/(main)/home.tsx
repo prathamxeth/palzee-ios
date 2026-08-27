@@ -1524,7 +1524,10 @@ export default function HomeScreen({
                               text="create pal"
                               isDark={isDark}
                               textColor={mainTextColor}
-                              onPress={() => setShowCreateModal(true)}
+                              onPress={() => {
+                                setCreateModalInitialTab('create');
+                                setShowCreateModal(true);
+                              }}
                             />
                             <Text style={[styles.actionHintText, { color: mainTextColor }]}>
                               (new group)
@@ -1537,7 +1540,10 @@ export default function HomeScreen({
                               text="join pal"
                               isDark={isDark}
                               textColor={mainTextColor}
-                              onPress={() => setShowCreateModal(true)}
+                              onPress={() => {
+                                setCreateModalInitialTab('join');
+                                setShowCreateModal(true);
+                              }}
                             />
                             <Text style={[styles.actionHintText, { color: mainTextColor }]}>
                               (with a code)
@@ -2833,6 +2839,16 @@ export default function HomeScreen({
       onLeaveGroup={(groupCode) => {
         setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));
         setActivePalGroupDetails(null);
+      }}
+      onUpdateGroup={(groupCode, newName, newSize) => {
+        setUserPalRooms((prev: PalRoom[]) =>
+          prev.map((r: PalRoom) =>
+            r.code === groupCode ? { ...r, name: newName, size: newSize, maxCount: newSize } : r
+          )
+        );
+        setActivePalGroupDetails((prev: any) =>
+          prev && prev.code === groupCode ? { ...prev, name: newName, size: newSize, maxCount: newSize } : prev
+        );
       }}
     />
 
