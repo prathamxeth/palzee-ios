@@ -887,8 +887,8 @@ const styles = StyleSheet.create({
   },
   topLeftCloseBtnWrapper: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 11,
+    left: 20,
     zIndex: 9999,
   },
 });

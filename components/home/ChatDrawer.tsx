@@ -246,8 +246,8 @@ export const ChatDrawer = ({
                 styles.container,
                 {
                   backgroundColor: screenBg,
-                  paddingTop: Math.max(insets.top, 12),
-                  paddingBottom: Math.max(insets.bottom - 10, 2),
+                  paddingTop: Math.max(insets.top - 1, 7),
+                  paddingBottom: 24,
                 },
               ]}
             >
@@ -616,11 +616,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   headerRow: {
-    height: 54,
+    height: 45,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   vlogPillWrapper: {
     alignItems: 'center',
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 4,
     paddingBottom: 6,
     gap: 10,

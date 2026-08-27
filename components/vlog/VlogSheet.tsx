@@ -631,7 +631,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
       <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
           {/* 1. TOP NAVIGATION HEADER BAR */}
-          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
+          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}>
             <View style={{ minWidth: 45, height: 45, justifyContent: 'center' }}>
               {show0Logs ? (
                 <Animated.View style={{ opacity: logsOpacityAnim }}>
@@ -703,7 +703,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top + 4, 12) }]} pointerEvents="box-none">
+            <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top - 1, 7) }]} pointerEvents="box-none">
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setShowVlogDropdown(!showVlogDropdown)}

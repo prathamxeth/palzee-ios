@@ -412,14 +412,15 @@ export default function PalVideoSendPreviewModal({
     >
       <View style={[StyleSheet.absoluteFill, { zIndex: 99999, backgroundColor: containerBg }]}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim, transform: [{ translateX: slideAnim }, { scale: scaleAnim }] }]}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalContainer, { backgroundColor: containerBg }]}
-          >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top + 4, 12), paddingBottom: 20 }}>
-                {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
-                <View style={styles.headerRow}>
+          <DynamicGlowContainer selectedThemeColor={selectedThemeColor || 'cyan'} showBorder={true} showGlow={true}>
+            <KeyboardAvoidingView
+              behavior="padding"
+              style={[styles.modalContainer, { backgroundColor: containerBg }]}
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: Math.max(insets.top - 1, 7), paddingBottom: 20 }}>
+                  {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
+                  <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
                   <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
                     <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
@@ -573,11 +574,11 @@ export default function PalVideoSendPreviewModal({
                           {
                             backgroundColor: isSelected
                               ? isDark
-                                ? 'rgba(255, 255, 255, 0.12)'
-                                : '#F2F2F7'
+                                ? '#222226'
+                                : '#E5E5EA'
                               : isDark
-                              ? 'rgba(255, 255, 255, 0.05)'
-                              : '#F9F9FB',
+                              ? '#161616'
+                              : '#F5F5F7',
                             marginBottom: 10,
                           },
                         ]}
@@ -650,11 +651,11 @@ export default function PalVideoSendPreviewModal({
                       {
                         backgroundColor: selectedTargets.includes('vlog')
                           ? isDark
-                            ? 'rgba(255, 255, 255, 0.12)'
-                            : '#F2F2F7'
+                            ? '#222226'
+                            : '#E5E5EA'
                           : isDark
-                          ? 'rgba(255, 255, 255, 0.05)'
-                          : '#F9F9FB',
+                          ? '#161616'
+                          : '#F5F5F7',
                       },
                     ]}
                   >
@@ -732,9 +733,10 @@ export default function PalVideoSendPreviewModal({
               </View>
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
-        </Animated.View>
-      </View>
-    </Modal>
+        </DynamicGlowContainer>
+      </Animated.View>
+    </View>
+  </Modal>
   );
 }
 
@@ -860,11 +862,11 @@ const styles = StyleSheet.create({
   targetBoxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
     borderRadius: 24,
     marginBottom: 10,
-    minHeight: 76,
+    height: 84,
   },
   leftCircleWrapper: {
     marginRight: 14,
@@ -889,8 +891,9 @@ const styles = StyleSheet.create({
   },
   targetTitle: {
     fontFamily: Fonts.SystemRoundedBold,
-    fontSize: 19.5,
-    fontWeight: '800',
+    fontSize: 21,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   targetSubtitle: {
     fontFamily: Fonts.SystemRoundedMedium,

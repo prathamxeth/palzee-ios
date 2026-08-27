@@ -394,7 +394,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
       ]}
     >
       {/* TOP NAVIGATION HEADER (Exact matching VlogSheet positioning & dimensions) */}
-        <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 4, 12) }]}>
+        <View style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}>
           {/* Top Left: Back button & Calendar Archive button or 0 pals pill */}
           <View style={styles.headerLeftCluster}>
             {show0Pals ? (
@@ -484,7 +484,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           </View>
 
           {/* Top Center: Group Name Capsule & Page Dot */}
-          <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top + 4, 12) }]} pointerEvents="box-none">
+          <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top - 1, 7) }]} pointerEvents="box-none">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setShowGroupDropdown(!showGroupDropdown)}
@@ -2154,7 +2154,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
+    paddingHorizontal: 20,
     paddingBottom: 10,
     zIndex: 20,
   },
