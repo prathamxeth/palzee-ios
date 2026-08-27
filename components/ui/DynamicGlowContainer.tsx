@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle, useColorScheme } from 'react-native';
+import { StyleSheet, View, ViewStyle, Platform, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, Filter, FeGaussianBlur, Rect } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
+import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
 interface DynamicGlowContainerProps {
   selectedThemeColor: string;
@@ -11,8 +13,6 @@ interface DynamicGlowContainerProps {
   style?: ViewStyle;
 }
 
-import { useFastColorScheme } from '../../hooks/useFastColorScheme';
-
 export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   selectedThemeColor,
   showBorder = true,
@@ -20,9 +20,24 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   children,
   style,
 }) => {
+  const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const systemScheme = useFastColorScheme();
   const isDark = systemScheme === 'dark';
   const containerBg = isDark ? '#000000' : Colors.PalBackground;
+
+  // Dynamically compute precise hardware bezel corner radius for any iPhone/iOS device
+  // iPhone 16 Pro / 17: ~56dp, iPhone 14/15 Pro: ~55dp, iPhone 12/13/14: ~48dp, older/home button: 0-20dp
+  const deviceCornerRadius =
+    Platform.OS === 'ios'
+      ? insets.top >= 59
+        ? 56
+        : insets.top >= 50
+        ? 55
+        : insets.top > 20
+        ? 48
+        : 0
+      : 32;
 
   // 1. Screen edge boundary line remains the theme border color
   const accentColor =
@@ -34,57 +49,60 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
     Colors.LogoTextAccent[selectedThemeColor as keyof typeof Colors.LogoTextAccent] ||
     accentColor;
 
+  const borderWidth = 3.5;
+  const halfBorder = borderWidth / 2;
+  const glowStrokeWidth = 14.0;
+  const halfGlow = glowStrokeWidth / 2;
+
   return (
     <View style={[styles.wrapper, { backgroundColor: containerBg }]}>
-      {/* 1. ONE SINGLE UNIFIED SCREEN EDGE COLOUR BOUNDARY LINE */}
-      <View
-        style={[
-          styles.outerContainer,
-          { backgroundColor: containerBg },
-          showBorder && {
-            borderColor: accentColor,
-            borderWidth: 3.5,
-            shadowColor: showGlow ? innerGlowColor : 'transparent',
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: showGlow ? (isDark ? 0.50 : 0.49) : 0,
-            shadowRadius: showGlow ? 9.5 : 0,
-            elevation: showGlow ? 9.5 : 0,
-          },
-          style,
-        ]}
-      >
-        {/* MAIN CONTENT (CAMERA PREVIEW / FEED) */}
-        <View style={styles.innerContainer}>
-          {children}
-        </View>
+      {/* MAIN CONTENT LAYER */}
+      <View style={[styles.contentContainer, style]}>
+        {children}
+      </View>
 
-        {/* 360-DEGREE ISOTROPIC GAUSSIAN BLURRED CORNER & EDGE GLOW OVERLAY */}
-        {showBorder && showGlow && (
-          <View style={styles.inwardGlowOverlay} pointerEvents="none">
-            <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-              <Defs>
-                <Filter id="cornerGlowBlur" x="-20%" y="-20%" width="140%" height="140%">
-                  <FeGaussianBlur stdDeviation="3.5" />
-                </Filter>
-              </Defs>
+      {/* 360-DEGREE SCREEN EDGE BOUNDARY & INWARD GLOW (0.00dp spacing from screen edge) */}
+      {showBorder && screenWidth > 0 && screenHeight > 0 && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Svg width={screenWidth} height={screenHeight} style={StyleSheet.absoluteFill}>
+            <Defs>
+              <Filter id="cornerGlowBlur" x="-30%" y="-30%" width="160%" height="160%">
+                <FeGaussianBlur stdDeviation="4.0" />
+              </Filter>
+            </Defs>
 
+            {/* 1. INWARD AMBIENT ISOTROPIC GLOW (Starts exactly from outer screen edge) */}
+            {showGlow && (
               <Rect
-                x="0"
-                y="0"
-                width="100%"
-                height="100%"
-                rx={48}
-                ry={48}
+                x={halfGlow}
+                y={halfGlow}
+                width={screenWidth - glowStrokeWidth}
+                height={screenHeight - glowStrokeWidth}
+                rx={Math.max(0, deviceCornerRadius - halfGlow)}
+                ry={Math.max(0, deviceCornerRadius - halfGlow)}
                 stroke={innerGlowColor}
-                strokeWidth={13.5}
-                strokeOpacity={isDark ? 0.38 : 0.34}
+                strokeWidth={glowStrokeWidth}
+                strokeOpacity={isDark ? 0.45 : 0.40}
                 fill="none"
                 filter="url(#cornerGlowBlur)"
               />
-            </Svg>
-          </View>
-        )}
-      </View>
+            )}
+
+            {/* 2. EXACT SCREEN EDGE BOUNDARY OUTLINE (Starts exactly at 0.0dp screen edge) */}
+            <Rect
+              x={halfBorder}
+              y={halfBorder}
+              width={screenWidth - borderWidth}
+              height={screenHeight - borderWidth}
+              rx={Math.max(0, deviceCornerRadius - halfBorder)}
+              ry={Math.max(0, deviceCornerRadius - halfBorder)}
+              stroke={accentColor}
+              strokeWidth={borderWidth}
+              fill="none"
+            />
+          </Svg>
+        </View>
+      )}
     </View>
   );
 };
@@ -93,30 +111,11 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: 'transparent',
-  },
-  outerContainer: {
-    flex: 1,
-    borderRadius: 48,
-    backgroundColor: 'transparent',
     overflow: 'hidden',
-    position: 'relative',
-    margin: -0.25,
   },
-  innerContainer: {
+  contentContainer: {
     flex: 1,
     backgroundColor: 'transparent',
-    borderRadius: 48,
     overflow: 'hidden',
-    position: 'relative',
-  },
-  inwardGlowOverlay: {
-    position: 'absolute',
-    top: -1.10,
-    bottom: -1.10,
-    left: -1.10,
-    right: -1.10,
-    borderRadius: 48,
-    overflow: 'hidden',
-    zIndex: 9999,
   },
 });

@@ -2866,6 +2866,7 @@ const styles = StyleSheet.create({
     top: 4,
     left: 10,
     right: 10,
+    height: 45,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

@@ -417,7 +417,7 @@ export default function PalVideoSendPreviewModal({
             style={[styles.modalContainer, { backgroundColor: containerBg }]}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top - 46, 0) + 40, paddingBottom: 20 }}>
+              <View style={{ flex: 1, paddingHorizontal: 10.0, paddingTop: Math.max(insets.top + 4, 12), paddingBottom: 20 }}>
                 {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
                 <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}

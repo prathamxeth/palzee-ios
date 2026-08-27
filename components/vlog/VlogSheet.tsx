@@ -703,7 +703,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               )}
             </View>
 
-            <View style={[styles.centerHeaderGroup, { marginTop: 52.5 }]} pointerEvents="box-none">
+            <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top + 4, 12) }]} pointerEvents="box-none">
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setShowVlogDropdown(!showVlogDropdown)}
@@ -1089,16 +1089,17 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
-          {/* BOTTOM BAR FOR VLOGSHEET MATCHING IMAGE 2 (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
+          {/* BOTTOM BAR FOR VLOGSHEET MATCHING HOMESCREEN FOOTER (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
           <View
             style={{
               position: 'absolute',
-              bottom: Math.max(insets.bottom - 12, 0),
-              left: 20,
-              right: 20,
+              bottom: 24,
+              left: 0,
+              right: 0,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
+              paddingHorizontal: 12,
               zIndex: 100,
             }}
             pointerEvents="box-none"

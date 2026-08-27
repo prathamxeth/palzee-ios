@@ -483,8 +483,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             )}
           </View>
 
-          {/* Top Center: Group Name Capsule & Page Dot (Moved below by 1.5dp -> marginTop: 49.0dp) */}
-          <View style={[styles.centerHeaderGroup, { marginTop: 49.0 }]} pointerEvents="box-none">
+          {/* Top Center: Group Name Capsule & Page Dot */}
+          <View style={[styles.centerHeaderGroup, { top: Math.max(insets.top + 4, 12) }]} pointerEvents="box-none">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setShowGroupDropdown(!showGroupDropdown)}
