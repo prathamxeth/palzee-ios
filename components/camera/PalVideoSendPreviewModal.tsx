@@ -613,19 +613,27 @@ export default function PalVideoSendPreviewModal({
                           </Text>
                         </View>
 
-                        {/* Right: Row of member count smileys (Exact 18.5x18.5 size as vlog box, flexShrink: 0) */}
+                        {/* Right: Row of member count smileys (Exact 18.5x18.5 size with outline badge as vlog box, flexShrink: 0) */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 }}>
                           {Array.from({ length: group.size || group.members?.length || 1 }).map((_, idx) => (
-                            <Image
+                            <View
                               key={idx}
-                              source={require('../../assets/images/custom_rotate_smiley.png')}
-                              style={{
-                                width: 18.5,
-                                height: 18.5,
-                                tintColor: isDark ? '#FFFFFF' : '#000000',
-                              }}
-                              resizeMode="contain"
-                            />
+                              style={[
+                                styles.smileyBadgeContainer,
+                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
+                              ]}
+                            >
+                              <Image
+                                source={require('../../assets/images/custom_rotate_smiley.png')}
+                                style={{
+                                  width: 18.5,
+                                  height: 18.5,
+                                  transform: [{ rotate: '0deg' }],
+                                  tintColor: iconColor,
+                                }}
+                                resizeMode="contain"
+                              />
+                            </View>
                           ))}
                         </View>
                       </TouchableOpacity>

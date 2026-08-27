@@ -45,47 +45,45 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
           styles.liquidCircleInner,
           {
             borderRadius: btnRadius,
-            backgroundColor: isDark ? 'transparent' : '#F2F2F7',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.35)',
           },
         ]}
       >
-        {isDark && (
-          <BlurView
-            key={`blur_${idPrefix}_dark`}
-            intensity={Platform.OS === 'ios' ? 45 : 30}
-            tint="dark"
-            style={StyleSheet.absoluteFill}
-          />
-        )}
+        <BlurView
+          key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemMaterialLight'}`}
+          intensity={Platform.OS === 'ios' ? 45 : 30}
+          tint={isDark ? 'dark' : 'systemMaterialLight'}
+          style={StyleSheet.absoluteFill}
+        />
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
           <Defs>
             <LinearGradient id={`${idPrefix}GlassRim`} x1="0%" y1="0%" x2="0%" y2="100%">
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={0.45}
+                stopOpacity={isDark ? 0.45 : 0.70}
               />
               <Stop
                 offset="40%"
                 stopColor="#FFFFFF"
-                stopOpacity={0.15}
+                stopOpacity={isDark ? 0.15 : 0.30}
               />
               <Stop
                 offset="100%"
-                stopColor="#FFFFFF"
-                stopOpacity={0.05}
+                stopColor={isDark ? '#FFFFFF' : '#000000'}
+                stopOpacity={isDark ? 0.05 : 0.06}
               />
             </LinearGradient>
           </Defs>
           <Rect
-            x="0.5"
-            y="0.5"
-            width={size - 1.0}
-            height={size - 1.0}
-            rx={btnRadius - 0.5}
+            x="0.75"
+            y="0.75"
+            width={size - 1.5}
+            height={size - 1.5}
+            rx={btnRadius - 0.75}
             fill="none"
-            stroke={isDark ? `url(#${idPrefix}GlassRim)` : 'rgba(0, 0, 0, 0.04)'}
-            strokeWidth={isDark ? 1.0 : 0.8}
+            stroke={`url(#${idPrefix}GlassRim)`}
+            strokeWidth={1.0}
           />
         </Svg>
         <View style={styles.contentContainer}>
@@ -99,10 +97,10 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
 const styles = StyleSheet.create({
   liquidCircleWrapper: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 3,
     backgroundColor: 'transparent',
   },
   liquidCircleInner: {
