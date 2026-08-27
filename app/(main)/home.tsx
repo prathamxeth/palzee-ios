@@ -1801,7 +1801,7 @@ export default function HomeScreen({
                   </Svg>
 
                   {/* ADD MENU ITEMS LIST */}
-                  <View style={{ paddingTop: 11.5, paddingBottom: 16.5, paddingLeft: 20.0, paddingRight: 12 }}>
+                  <View style={{ paddingTop: 11.5, paddingBottom: 12.0, paddingLeft: 20.0, paddingRight: 12 }}>
                     {/* Option 1: create a pal */}
                     <TouchableOpacity
                       style={{ paddingVertical: 7.5 }}
@@ -2883,6 +2883,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginTop: -5,
   },
   circleIconBtnWrapper: {
     borderRadius: 22,
@@ -3303,7 +3304,7 @@ const styles = StyleSheet.create({
   },
   profileDropdownCard: {
     position: 'absolute',
-    top: 56,
+    top: 44.0,
     right: 13,
     width: 246.75,
     borderRadius: 24,
@@ -3365,7 +3366,7 @@ const styles = StyleSheet.create({
   },
   profileSubDropdownCard: {
     position: 'absolute',
-    top: 102,
+    top: 90.0,
     right: 10,
     width: 253,
     borderRadius: 24,
@@ -3378,7 +3379,7 @@ const styles = StyleSheet.create({
   },
   profileColorDropdownCard: {
     position: 'absolute',
-    top: 234,
+    top: 222.0,
     right: 7,
     width: 259.5,
     borderRadius: 24,
@@ -3391,8 +3392,8 @@ const styles = StyleSheet.create({
   },
   addDropdownCard: {
     position: 'absolute',
-    top: 55.5,
-    left: 62.5,
+    top: 43.0,
+    left: 65.0,
     width: 195.0,
     borderRadius: 26,
     borderWidth: 0,

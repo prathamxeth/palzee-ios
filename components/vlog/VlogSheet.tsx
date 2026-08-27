@@ -907,7 +907,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       style={{
                         fontSize: 23.5,
                         fontWeight: '900',
-                        color: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.40)',
+                        color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
                         marginLeft: -5,
                       }}
                     >
@@ -1013,7 +1013,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         fontSize: 21,
                         fontFamily: Fonts.SystemRoundedSemibold,
                         fontWeight: '600',
-                        color: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.40)',
+                        color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.16)',
                         marginRight: -5,
                       }}
                     >
