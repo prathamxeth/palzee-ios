@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
-  Image,
   PanResponder,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import Svg, { Circle } from 'react-native-svg';
@@ -654,7 +654,7 @@ export default function PalCameraPreview({
                 transform: [{ rotate: '90deg' }],
                 tintColor: flash === 'on' ? '#FFCC00' : '#FFFFFF',
               }}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </TouchableOpacity>
 
@@ -690,7 +690,7 @@ export default function PalCameraPreview({
                   height: 71.7,
                   transform: [{ rotate: '90deg' }],
                 }}
-                resizeMode="contain"
+                contentFit="contain"
               />
             </Animated.View>
           </View>

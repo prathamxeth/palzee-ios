@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
-  Image,
   Platform,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   useColorScheme,
   useWindowDimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
@@ -141,7 +141,7 @@ export default function OnboardingScreen({
               width: W * 0.10,
               height: W * 0.10,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Star 2 (top-left happy star) */}
@@ -154,7 +154,7 @@ export default function OnboardingScreen({
               width: W * 0.20,
               height: W * 0.20,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Star 3 (top-center small sparkle) */}
@@ -167,7 +167,7 @@ export default function OnboardingScreen({
               width: W * 0.08,
               height: W * 0.08,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Star 4 (top-right happy star) */}
@@ -180,7 +180,7 @@ export default function OnboardingScreen({
               width: W * 0.20,
               height: W * 0.20,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Star 5 (top-right sparkle) */}
@@ -193,7 +193,7 @@ export default function OnboardingScreen({
               width: W * 0.10,
               height: W * 0.10,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Envelope (left side) */}
@@ -206,7 +206,7 @@ export default function OnboardingScreen({
               width: W * 0.14 + 15,
               height: W * 0.14 + 15,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Moon (right side) */}
@@ -219,7 +219,7 @@ export default function OnboardingScreen({
               width: W * 0.17 + 15,
               height: W * 0.17 + 15,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Pizza Slice (lower-left) */}
@@ -233,7 +233,7 @@ export default function OnboardingScreen({
               height: W * 0.25 + 10,
               transform: [{ rotate: '-15deg' }],
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Orange Fruit (center-bottom) */}
@@ -246,7 +246,7 @@ export default function OnboardingScreen({
               width: W * 0.11 + 10,
               height: W * 0.11 + 10,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Potted Plant (lower-right) */}
@@ -259,7 +259,7 @@ export default function OnboardingScreen({
               width: W * 0.41 + 25,
               height: W * 0.41 + 25,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Tea Cup (lower-left) */}
@@ -272,7 +272,7 @@ export default function OnboardingScreen({
               width: W * 0.186 + 25,
               height: W * 0.25 + 25,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Flames (lower-center) */}
@@ -285,7 +285,7 @@ export default function OnboardingScreen({
               width: W * 0.186,
               height: W * 0.15,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
 
           {/* Bingsu Ice Cream Glass (lower-right) */}
@@ -298,13 +298,12 @@ export default function OnboardingScreen({
               width: W * 0.17 + 25,
               height: W * 0.24 + 25,
             }}
-            resizeMode="contain"
+            contentFit="contain"
           />
         </Animated.View>
 
         {/* 2. CENTRAL CLOUD CHARACTER (Pops in first) */}
-        <Animated.Image
-          source={require('../../assets/images/onboarding_logo.png')}
+        <Animated.View
           style={{
             position: 'absolute',
             left: W * 0.50 - (W * 0.365) / 2,
@@ -314,8 +313,16 @@ export default function OnboardingScreen({
             opacity: cloudAnim,
             transform: [{ scale: cloudScale }],
           }}
-          resizeMode="contain"
-        />
+        >
+          <Image
+            source={require('../../assets/images/onboarding_logo.png')}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            contentFit="contain"
+          />
+        </Animated.View>
 
         {/* 3. BRANDING & TAGLINE (Fades & slides up) */}
         <Animated.View

@@ -3,7 +3,6 @@ import {
   Modal,
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
@@ -19,6 +18,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -633,7 +633,7 @@ export default function PalVideoSendPreviewModal({
                                   transform: [{ rotate: '0deg' }],
                                   tintColor: iconColor,
                                 }}
-                                resizeMode="contain"
+                                contentFit="contain"
                               />
                             </View>
                           ))}
@@ -706,7 +706,7 @@ export default function PalVideoSendPreviewModal({
                             transform: [{ rotate: '180deg' }],
                             tintColor: '#000000',
                           }}
-                          resizeMode="contain"
+                          contentFit="contain"
                         />
                       </View>
                     ) : (
@@ -724,7 +724,7 @@ export default function PalVideoSendPreviewModal({
                             transform: [{ rotate: '0deg' }],
                             tintColor: iconColor,
                           }}
-                          resizeMode="contain"
+                          contentFit="contain"
                         />
                       </View>
                     )}

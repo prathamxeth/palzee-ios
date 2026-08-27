@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
   useColorScheme,
   useWindowDimensions,
   Animated,
@@ -17,6 +16,7 @@ import {
   PanResponder,
   NativeModules,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Video, ResizeMode } from 'expo-av';
 import Svg, { Defs, LinearGradient, RadialGradient, Stop, Pattern, Rect, Circle, Path, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -259,7 +259,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   tintColor: '#000000',
                   transform: [{ scale: 1.1 }],
                 }}
-                resizeMode="contain"
+                contentFit="contain"
               />
             </View>
           ) : (
@@ -631,7 +631,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
       <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F5F5F7' }]}>
           {/* 1. TOP NAVIGATION HEADER BAR */}
-          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}>
+          <View
+            style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}
+            pointerEvents="box-none"
+          >
             <View style={{ minWidth: 45, height: 45, justifyContent: 'center' }}>
               {show0Logs ? (
                 <Animated.View style={{ opacity: logsOpacityAnim }}>
@@ -666,25 +669,30 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       />
                     </Svg>
                     <View style={[styles.logsSmileyCircle, { backgroundColor: '#FF3B30' }]}>
-                      <Animated.Image
-                        source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={[
-                          styles.logsSmileyImg,
-                          {
-                            tintColor: '#000000',
-                            transform: [
-                              { scale: 1.22 },
-                              {
-                                rotate: logsRotateAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: ['0deg', '360deg'],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}
-                        resizeMode="contain"
-                      />
+                      <Animated.View
+                        style={{
+                          transform: [
+                            { scale: 1.22 },
+                            {
+                              rotate: logsRotateAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '360deg'],
+                              }),
+                            },
+                          ],
+                        }}
+                      >
+                        <Image
+                          source={require('../../assets/images/custom_rotate_smiley.png')}
+                          style={[
+                            styles.logsSmileyImg,
+                            {
+                              tintColor: '#000000',
+                            },
+                          ]}
+                          contentFit="contain"
+                        />
+                      </Animated.View>
                     </View>
                     <Text
                       style={[
@@ -755,7 +763,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                           tintColor: '#000000',
                           transform: [{ scale: 1.035 }],
                         }}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </TouchableOpacity>
                   );
@@ -879,7 +887,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       <Image
                         source={require('../../assets/images/capture_smile.png')}
                         style={styles.smileyIcon}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     )}
                   </View>
@@ -1608,10 +1616,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
+    backgroundColor: 'transparent',
     zIndex: 100,
   },
   zeroLogsPillBtn: {

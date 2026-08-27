@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 
@@ -105,7 +105,7 @@ export const PasskeySetupSheet: React.FC<PasskeySetupSheetProps> = ({
               <Image
                 source={isDark ? require('../../assets/images/pal_logo_dark.png') : require('../../assets/images/pal_logo_light.png')}
                 style={{ width: 22, height: 22, borderRadius: 11 }}
-                resizeMode="contain"
+                contentFit="contain"
               />
             </View>
           </View>

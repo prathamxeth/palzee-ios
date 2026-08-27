@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
-  Image,
   Linking,
   Modal,
   Platform,
@@ -13,6 +12,7 @@ import {
   View,
   useColorScheme,
 } from 'react-native';
+import { Image } from 'expo-image';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -391,7 +391,7 @@ export const PasskeyTypewriterFlow: React.FC<PasskeyTypewriterFlowProps> = ({
               <Image
                 source={require('../../assets/images/onboarding_logo.png')}
                 style={styles.cloudLogo}
-                resizeMode="contain"
+                contentFit="contain"
               />
               {step !== 'PERMISSIONS' && (
                 <TouchableOpacity

@@ -405,7 +405,10 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
       ]}
     >
       {/* TOP NAVIGATION HEADER (Exact matching VlogSheet positioning & dimensions) */}
-        <View style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}>
+      <View
+        style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}
+        pointerEvents="box-none"
+      >
           {/* Top Left: Back button & Calendar Archive button or 0 pals pill */}
           <View style={styles.headerLeftCluster}>
             {show0Pals ? (
@@ -441,25 +444,30 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     />
                   </Svg>
                   <View style={[styles.logsSmileyCircle, { backgroundColor: '#FF3B30' }]}>
-                    <Animated.Image
-                      source={require('../../assets/images/custom_rotate_smiley.png')}
-                      style={[
-                        styles.logsSmileyImg,
-                        {
-                          tintColor: '#000000',
-                          transform: [
-                            { scale: 1.22 },
-                            {
-                              rotate: logsRotateAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: ['0deg', '360deg'],
-                              }),
-                            },
-                          ],
-                        },
-                      ]}
-                      resizeMode="contain"
-                    />
+                    <Animated.View
+                      style={{
+                        transform: [
+                          { scale: 1.22 },
+                          {
+                            rotate: logsRotateAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ['0deg', '360deg'],
+                            }),
+                          },
+                        ],
+                      }}
+                    >
+                      <Image
+                        source={require('../../assets/images/custom_rotate_smiley.png')}
+                        style={[
+                          styles.logsSmileyImg,
+                          {
+                            tintColor: '#000000',
+                          },
+                        ]}
+                        contentFit="contain"
+                      />
+                    </Animated.View>
                   </View>
                   <Text
                     style={[
@@ -564,13 +572,13 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           </View>
         </View>
 
-        {/* BODY LIST OF PAL CARDS (Adequate bottom spacing + moved upwards) */}
+        {/* BODY LIST OF PAL CARDS (Scrolls underneath floating glass header) */}
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: 8,
+              paddingTop: Math.max(insets.top - 1, 7) + 55 + (maxSlots <= 3 ? 19 : 8),
               paddingBottom: Math.max(insets.bottom, 24) + 32,
               gap: 2,
               justifyContent: 'flex-start',
@@ -639,7 +647,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       <Image
                         source={require('../../assets/images/capture_smile.png')}
                         style={styles.smileyIcon}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     )}
                   </View>
@@ -2011,12 +2019,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 10,
-    zIndex: 20,
+    backgroundColor: 'transparent',
+    zIndex: 100,
   },
   headerLeftCluster: {
     flexDirection: 'row',

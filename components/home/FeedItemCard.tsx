@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Colors, getSmileyColorForUser } from '../../constants/colors';
 import { Fonts } from '../../constants/typography';
 import { SubmissionDbItem } from '../../types';
@@ -27,7 +28,7 @@ export const FeedItemCard: React.FC<FeedItemCardProps> = ({ item }) => {
         <Text style={styles.name}>{name}</Text>
       </View>
 
-      <Image source={{ uri: item.imageUrl }} style={styles.media} resizeMode="cover" />
+      <Image source={{ uri: item.imageUrl }} style={styles.media} contentFit="cover" />
     </View>
   );
 };

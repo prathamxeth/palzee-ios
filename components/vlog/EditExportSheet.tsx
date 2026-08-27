@@ -319,7 +319,10 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
           ]}
         >
           {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
-          <View style={[styles.headerBar, { paddingTop: Math.max(insets.top + 21.5, 29.5) }]}>
+          <View
+            style={[styles.headerBar, { paddingTop: Math.max(insets.top + 21.5, 29.5) }]}
+            pointerEvents="box-none"
+          >
             <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
               <Ionicons name="chevron-back" size={30} color={isDark ? '#FFFFFF' : '#000000'} style={{ marginLeft: -1.5 }} />
             </LiquidGlassIconButton>
@@ -555,11 +558,16 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerBar: {
-    height: 52,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    zIndex: 100,
   },
   centerContent: {
     flex: 1,

@@ -92,7 +92,7 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = React.memo(({
     <View
       style={[
         StyleSheet.absoluteFill,
-        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#141418' : '#F7F6F3' },
+        { borderRadius, overflow: 'hidden', backgroundColor: isDark ? '#0A0A0C' : '#F7F6F3' },
       ]}
       pointerEvents="none"
     >
@@ -104,7 +104,7 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = React.memo(({
           height: '120%',
           left: '-10%',
           top: '-10%',
-          opacity: isDark ? 0.14 : 0.12,
+          opacity: isDark ? 0.08 : 0.12,
           transform: [
             { translateX: grainX1 },
             { translateY: grainY1 },
@@ -129,7 +129,7 @@ export const CRTStaticCard: React.FC<CRTStaticCardProps> = React.memo(({
           height: '120%',
           left: '-10%',
           top: '-10%',
-          opacity: isDark ? 0.11 : 0.10,
+          opacity: isDark ? 0.06 : 0.10,
           transform: [
             { translateX: grainX2 },
             { translateY: grainY2 },

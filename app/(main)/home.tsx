@@ -5,7 +5,6 @@ import {
   DeviceEventEmitter,
   Dimensions,
   Easing,
-  Image,
   ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
@@ -24,6 +23,7 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useFastColorScheme } from '../../hooks/useFastColorScheme';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -1121,7 +1121,7 @@ export default function HomeScreen({
                   <Image
                     source={{ uri: profilePhotoUri }}
                     style={{ width: 30, height: 30, borderRadius: 15 }}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                 ) : (
                   <MaterialPersonIcon size={30} color={iconColor} />
@@ -1156,7 +1156,7 @@ export default function HomeScreen({
                   <Image
                     source={require('../../assets/images/custom_rotate_smiley.png')}
                     style={{ width: 15.5, height: 15.5, tintColor: '#000000' }}
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 </Animated.View>
                 <Text style={{ fontSize: 16, color: isDark ? '#8E8E93' : '#636366', fontFamily: Fonts.SystemRoundedMedium }}>
@@ -1418,7 +1418,7 @@ export default function HomeScreen({
                 <Image
                   source={require('../../assets/images/dm_star_4.png')}
                   style={styles.starDoodleImage}
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               </TouchableOpacity>
             )}
@@ -1463,7 +1463,7 @@ export default function HomeScreen({
                             tintColor: '#000000',
                           },
                         ]}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </TouchableOpacity>
 
@@ -1481,7 +1481,7 @@ export default function HomeScreen({
                       <Image
                         source={require('../../assets/images/camera_list_icon.png')}
                         style={[styles.palGroupActionIcon, { tintColor: isDark ? '#5C5C5E' : '#FFFFFF' }]}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     </TouchableOpacity>
                   </View>
@@ -1608,7 +1608,7 @@ export default function HomeScreen({
                       <Image
                         source={require('../../assets/images/ufo_turtle.png')}
                         style={styles.ufoTurtleImage}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                       <View style={styles.groundLine} />
                     </View>
@@ -1690,7 +1690,7 @@ export default function HomeScreen({
                 <Image
                   source={require('../../assets/images/custom_timer_icon.png')}
                   style={{ width: 30, height: 30, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               )}
             </LiquidGlassIconButton>
@@ -1729,7 +1729,7 @@ export default function HomeScreen({
               <Image
                 source={require('../../assets/images/custom_flip_icon.png')}
                 style={{ width: 35, height: 35, tintColor: iconColor }}
-                resizeMode="contain"
+                contentFit="contain"
               />
             </LiquidGlassIconButton>
           </Animated.View>
@@ -1962,13 +1962,13 @@ export default function HomeScreen({
                       <Image
                         source={{ uri: profilePhotoUri }}
                         style={{ width: 31.6, height: 31.6, borderRadius: 15.8 }}
-                        resizeMode="cover"
+                        contentFit="cover"
                       />
                     ) : (
                       <Image
                         source={require('../../assets/images/capture_smile.png')}
                         style={{ width: 31.8, height: 31.8 }}
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                     )}
                   </View>

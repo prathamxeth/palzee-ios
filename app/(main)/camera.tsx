@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, useColorScheme, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraType } from 'expo-camera';
 import Svg, { Circle, Path, Text as SvgText } from 'react-native-svg';
@@ -82,7 +83,7 @@ function CameraTimerIcon({ timerMode, iconColor }: { timerMode: TimerMode; iconC
     <Image
       source={require('../../assets/images/custom_timer_icon.png')}
       style={{ width: 28, height: 28, tintColor: iconColor, transform: [{ rotate: '90deg' }] }}
-      resizeMode="contain"
+      contentFit="contain"
     />
   );
 }
@@ -158,7 +159,7 @@ export default function CameraScreen({ onCapture, onClose, selectedThemeColor = 
             <Image
               source={require('../../assets/images/custom_flip_icon.png')}
               style={{ width: 30, height: 30, tintColor: iconColor }}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </LiquidGlassIconButton>
         </View>
