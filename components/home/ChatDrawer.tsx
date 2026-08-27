@@ -247,7 +247,7 @@ export const ChatDrawer = ({
                 {
                   backgroundColor: screenBg,
                   paddingTop: Math.max(insets.top, 12),
-                  paddingBottom: Math.max(insets.bottom, 12),
+                  paddingBottom: Math.max(insets.bottom - 10, 2),
                 },
               ]}
             >

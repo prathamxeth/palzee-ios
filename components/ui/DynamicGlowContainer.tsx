@@ -51,7 +51,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
 
   const borderWidth = 3.5;
   const halfBorder = borderWidth / 2;
-  const glowStrokeWidth = 14.0;
+  const glowStrokeWidth = 8.5;
   const halfGlow = glowStrokeWidth / 2;
 
   return (
@@ -67,7 +67,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
           <Svg width={screenWidth} height={screenHeight} style={StyleSheet.absoluteFill}>
             <Defs>
               <Filter id="cornerGlowBlur" x="-30%" y="-30%" width="160%" height="160%">
-                <FeGaussianBlur stdDeviation="4.0" />
+                <FeGaussianBlur stdDeviation="2.8" />
               </Filter>
             </Defs>
 

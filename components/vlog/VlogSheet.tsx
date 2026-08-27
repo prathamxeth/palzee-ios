@@ -1089,11 +1089,11 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             </View>
           </View>
 
-          {/* BOTTOM BAR FOR VLOGSHEET MATCHING HOMESCREEN FOOTER (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
+          {/* BOTTOM BAR FOR VLOGSHEET (CALENDAR ON BOTTOM-LEFT, CHAT ON BOTTOM-RIGHT) */}
           <View
             style={{
               position: 'absolute',
-              bottom: 24,
+              bottom: 14,
               left: 0,
               right: 0,
               flexDirection: 'row',

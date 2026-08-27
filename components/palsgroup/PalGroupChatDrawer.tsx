@@ -177,7 +177,7 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
               },
             ],
             paddingTop: Math.max(insets.top + 4, 12),
-            paddingBottom: Math.max(insets.bottom, 16),
+            paddingBottom: Math.max(insets.bottom - 10, 6),
           },
         ]}
       >
