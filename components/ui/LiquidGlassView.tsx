@@ -19,7 +19,7 @@ export const LiquidGlassPillBackground: React.FC<LiquidGlassPillBackgroundProps>
 }) => {
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const rx = borderRadius !== undefined ? borderRadius : layout.height > 0 ? layout.height / 2 : 26;
-  const bg = backgroundColor !== undefined ? backgroundColor : (isDark ? 'transparent' : 'rgba(255, 255, 255, 0.78)');
+  const bg = backgroundColor !== undefined ? backgroundColor : (isDark ? 'transparent' : '#FFFFFF');
 
   return (
     <View
@@ -39,19 +39,21 @@ export const LiquidGlassPillBackground: React.FC<LiquidGlassPillBackgroundProps>
         }
       }}
     >
-      <BlurView
-        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
-        intensity={Platform.OS === 'ios' ? 50 : 35}
-        tint={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFill}
-      />
+      {isDark && (
+        <BlurView
+          key={`blur_${idPrefix}_dark`}
+          intensity={Platform.OS === 'ios' ? 45 : 30}
+          tint="dark"
+          style={StyleSheet.absoluteFill}
+        />
+      )}
       {layout.width > 0 && (
         <Svg width={layout.width} height={layout.height} style={StyleSheet.absoluteFill}>
           <Defs>
             <LinearGradient id={`${idPrefix}Rim`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-              <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.45} />
-              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 1.0} />
+              <Stop offset="40%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.6} />
+              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.08)'} stopOpacity={isDark ? 0.05 : 1.0} />
             </LinearGradient>
           </Defs>
           <Rect
@@ -63,7 +65,7 @@ export const LiquidGlassPillBackground: React.FC<LiquidGlassPillBackgroundProps>
             ry={rx - 0.6}
             fill="none"
             stroke={`url(#${idPrefix}Rim)`}
-            strokeWidth={1.2}
+            strokeWidth={1.0}
           />
         </Svg>
       )}
@@ -102,10 +104,10 @@ export const LiquidGlassCapsule: React.FC<LiquidGlassCapsuleProps> = ({
           height,
           borderRadius: rx,
           shadowColor: '#000000',
-          shadowOffset: { width: 0, height: 3 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
-          shadowRadius: 10,
-          elevation: 3,
+          shadowRadius: 8,
+          elevation: 2,
         },
         style,
       ]}
@@ -115,23 +117,25 @@ export const LiquidGlassCapsule: React.FC<LiquidGlassCapsuleProps> = ({
           flex: 1,
           borderRadius: rx,
           overflow: 'hidden',
-          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.78)',
+          backgroundColor: isDark ? 'transparent' : '#FFFFFF',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <BlurView
-          key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
-          intensity={Platform.OS === 'ios' ? 50 : 35}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
+        {isDark && (
+          <BlurView
+            key={`blur_${idPrefix}_dark`}
+            intensity={Platform.OS === 'ios' ? 45 : 30}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        )}
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
           <Defs>
             <LinearGradient id={`${idPrefix}CapsuleRim`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.95} />
-              <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.45} />
-              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 1.0} />
+              <Stop offset="40%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.6} />
+              <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.08)'} stopOpacity={isDark ? 0.05 : 1.0} />
             </LinearGradient>
           </Defs>
           <Rect
@@ -143,7 +147,7 @@ export const LiquidGlassCapsule: React.FC<LiquidGlassCapsuleProps> = ({
             ry={rx - 0.75}
             fill="none"
             stroke={`url(#${idPrefix}CapsuleRim)`}
-            strokeWidth={1.2}
+            strokeWidth={1.0}
           />
         </Svg>
         {children}
@@ -190,17 +194,19 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           styles.liquidInner,
           {
             borderRadius,
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.78)',
+            backgroundColor: isDark ? 'transparent' : '#FFFFFF',
           },
         ]}
       >
-        {/* 1. FROSTED BACKDROP BLUR (ORGANIC APPLE TRANSLUCENCY) */}
-        <BlurView
-          key={`blur_view_${isDark ? 'dark' : 'light'}`}
-          intensity={Platform.OS === 'ios' ? 50 : 35}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
+        {/* 1. FROSTED BACKDROP BLUR (ORGANIC APPLE TRANSLUCENCY IN DARK MODE) */}
+        {isDark && (
+          <BlurView
+            key={`blur_view_dark`}
+            intensity={Platform.OS === 'ios' ? 45 : 30}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        )}
 
         {/* 2. SPECULAR LIGHT-EDGE HIGHLIGHT RIM (NO SOLID COLOR FILLS) */}
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -209,17 +215,17 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.45 : 0.95}
+                stopOpacity={isDark ? 0.45 : 1.0}
               />
               <Stop
-                offset="35%"
+                offset="40%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.15 : 0.45}
+                stopOpacity={isDark ? 0.15 : 0.6}
               />
               <Stop
                 offset="100%"
-                stopColor={isDark ? '#FFFFFF' : '#000000'}
-                stopOpacity={isDark ? 0.05 : 0.08}
+                stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.08)'}
+                stopOpacity={isDark ? 0.05 : 1.0}
               />
             </LinearGradient>
           </Defs>
@@ -232,7 +238,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             ry={Math.max(0, borderRadius - 0.75)}
             fill="none"
             stroke="url(#glassViewRim)"
-            strokeWidth={1.2}
+            strokeWidth={1.0}
           />
         </Svg>
 

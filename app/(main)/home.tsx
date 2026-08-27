@@ -181,45 +181,47 @@ const LiquidGlassNavPillBar = ({
         style={[
           styles.liquidOuterCapsule,
           {
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+            backgroundColor: isDark ? 'transparent' : '#F2F2F7',
           },
         ]}
       >
-        <BlurView
-          key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
-          intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
+        {isDark && (
+          <BlurView
+            key={`blur_capsule_dark`}
+            intensity={Platform.OS === 'ios' ? 45 : 30}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        )}
         <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
           <Defs>
             <LinearGradient id="capsuleRim" x1="0%" y1="0%" x2="0%" y2="100%">
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.45 : 0.85}
+                stopOpacity={isDark ? 0.45 : 1.0}
               />
               <Stop
-                offset="35%"
+                offset="40%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.15 : 0.40}
+                stopOpacity={isDark ? 0.15 : 0.6}
               />
               <Stop
                 offset="100%"
-                stopColor={isDark ? '#FFFFFF' : '#000000'}
-                stopOpacity={isDark ? 0.05 : 0.08}
+                stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.08)'}
+                stopOpacity={isDark ? 0.05 : 1.0}
               />
             </LinearGradient>
           </Defs>
           <Rect
-            x="0.75"
-            y="0.75"
-            width="166"
-            height="48.5"
-            rx="24.25"
+            x="0.5"
+            y="0.5"
+            width="166.5"
+            height="49"
+            rx="24.5"
             fill="none"
-            stroke="url(#capsuleRim)"
-            strokeWidth={1.2}
+            stroke={isDark ? "url(#capsuleRim)" : "rgba(0, 0, 0, 0.04)"}
+            strokeWidth={isDark ? 1.0 : 0.8}
           />
         </Svg>
 
@@ -237,37 +239,37 @@ const LiquidGlassNavPillBar = ({
                     <Stop
                       offset="0%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.50 : 0.85}
+                      stopOpacity={isDark ? 0.50 : 1.0}
                     />
                     <Stop
-                      offset="35%"
+                      offset="40%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.20 : 0.40}
+                      stopOpacity={isDark ? 0.20 : 0.6}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.08}
+                      stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.06)'}
+                      stopOpacity={isDark ? 0.08 : 1.0}
                     />
                   </LinearGradient>
                 </Defs>
                 <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="80.75"
-                  height="46.5"
-                  rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.92)'}
-                  stroke="url(#actBdr1)"
-                  strokeWidth={1.2}
+                  x="0.5"
+                  y="0.5"
+                  width="81.25"
+                  height="47"
+                  rx="23.5"
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#FFFFFF'}
+                  stroke={isDark ? "url(#actBdr1)" : "rgba(0, 0, 0, 0.04)"}
+                  strokeWidth={isDark ? 1.0 : 0.8}
                 />
               </Svg>
             )}
             <Text
               style={[
                 activeTab === 'camera'
-                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
-                  : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000', fontWeight: '700' }]
+                  : [styles.inactiveSegmentText, { color: '#8E8E93' }],
               ]}
             >
               camera
@@ -287,37 +289,37 @@ const LiquidGlassNavPillBar = ({
                     <Stop
                       offset="0%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.50 : 0.85}
+                      stopOpacity={isDark ? 0.50 : 1.0}
                     />
                     <Stop
-                      offset="35%"
+                      offset="40%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.20 : 0.40}
+                      stopOpacity={isDark ? 0.20 : 0.6}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.08}
+                      stopColor={isDark ? '#FFFFFF' : 'rgba(0, 0, 0, 0.06)'}
+                      stopOpacity={isDark ? 0.08 : 1.0}
                     />
                   </LinearGradient>
                 </Defs>
                 <Rect
-                  x="0.75"
-                  y="0.75"
-                  width="80.75"
-                  height="46.5"
-                  rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.92)'}
-                  stroke="url(#actBdr2)"
-                  strokeWidth={1.2}
+                  x="0.5"
+                  y="0.5"
+                  width="81.25"
+                  height="47"
+                  rx="23.5"
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#FFFFFF'}
+                  stroke={isDark ? "url(#actBdr2)" : "rgba(0, 0, 0, 0.04)"}
+                  strokeWidth={isDark ? 1.0 : 0.8}
                 />
               </Svg>
             )}
             <Text
               style={[
                 activeTab === 'pals'
-                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000' }]
-                  : [styles.inactiveSegmentText, { color: isDark ? '#8E8E93' : '#666666' }],
+                  ? [styles.activeSegmentText, { color: isDark ? '#FFFFFF' : '#000000', fontWeight: '700' }]
+                  : [styles.inactiveSegmentText, { color: '#8E8E93' }],
               ]}
             >
               pals
@@ -3116,16 +3118,16 @@ const styles = StyleSheet.create({
   },
   liquidNavShadowWrapper: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     elevation: 3,
   },
   liquidCircleWrapper: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     elevation: 3,
   },
   liquidOuterCapsule: {
