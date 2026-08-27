@@ -246,13 +246,15 @@ export const ChatDrawer = ({
                 styles.container,
                 {
                   backgroundColor: screenBg,
-                  paddingTop: Math.max(insets.top - 1, 7),
                   paddingBottom: 24,
                 },
               ]}
             >
               {/* 1. TOP HEADER */}
-              <View style={styles.headerRow}>
+              <View
+                style={[styles.headerRow, { paddingTop: Math.max(insets.top - 1, 7) }]}
+                pointerEvents="box-none"
+              >
                 <LiquidGlassIconButton idPrefix="btnChatBack" isDark={isDark} onPress={onClose}>
                   <Ionicons name="chevron-back" size={30} color={textColor} style={{ marginLeft: -1.5 }} />
                 </LiquidGlassIconButton>
@@ -285,7 +287,12 @@ export const ChatDrawer = ({
                 <ScrollView
                   ref={scrollViewRef}
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 8 }}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'flex-end',
+                    paddingTop: Math.max(insets.top - 1, 7) + 55,
+                    paddingBottom: 8,
+                  }}
                   onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
                 >
                   {(() => {
@@ -616,11 +623,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   headerRow: {
-    height: 45,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
+    backgroundColor: 'transparent',
+    zIndex: 100,
   },
   vlogPillWrapper: {
     alignItems: 'center',

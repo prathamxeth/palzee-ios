@@ -36,7 +36,7 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(
   onSmileyHover,
   pillRect,
 }) => {
-  const smileySize = 60.0;
+  const smileySize = cardWidth < 160 ? 38.0 : cardWidth < 220 ? 46.0 : 60.0;
   const maxX = Math.max(0, cardWidth - smileySize);
   const maxY = Math.max(0, cardHeight - smileySize);
 

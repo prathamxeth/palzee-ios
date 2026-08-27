@@ -1047,14 +1047,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
                     <LiquidGlassIconButton
                       idPrefix="btnCaptionClose"
-                      isDark={isDark}
+                      isDark={true}
                       size={45}
                       onPress={() => {
                         Keyboard.dismiss();
                         setShowEditCaptionBox(false);
                       }}
                     >
-                      <Ionicons name="close-sharp" size={25} color={isDark ? '#FFFFFF' : '#000000'} />
+                      <Ionicons name="close-sharp" size={25} color="#FFFFFF" />
                     </LiquidGlassIconButton>
                   </View>
 
@@ -1062,7 +1062,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                   <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
                     <LiquidGlassIconButton
                       idPrefix="btnCaptionSave"
-                      isDark={isDark}
+                      isDark={true}
                       size={45}
                       onPress={() => {
                         Keyboard.dismiss();
@@ -1070,7 +1070,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         handleSaveCaption();
                       }}
                     >
-                      <Ionicons name="checkmark-sharp" size={25} color={isDark ? '#FFFFFF' : '#000000'} />
+                      <Ionicons name="checkmark-sharp" size={25} color="#FFFFFF" />
                     </LiquidGlassIconButton>
                   </View>
 
@@ -1156,7 +1156,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 backgroundColor: 'transparent',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
-                paddingBottom: !currentUri ? 302.6 : 300.0,
+                paddingBottom: !currentUri ? 322.6 : 320.0,
                 paddingRight: 10.0,
               }}
               activeOpacity={1}
@@ -1682,7 +1682,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -100,
+    marginTop: -40,
   },
   cardOuter: {
     borderRadius: 28,
