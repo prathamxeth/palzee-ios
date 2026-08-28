@@ -974,32 +974,88 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center', borderRadius: cardRadius, overflow: 'hidden' }]}>
             {/* TOP LEFT CROSS BUTTON */}
             <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
-              <LiquidGlassIconButton
-                idPrefix="btnGrpCaptionClose"
-                isDark={true}
-                size={45}
+              <TouchableOpacity
+                style={{
+                  width: 45,
+                  height: 45,
+                  borderRadius: 22.5,
+                  overflow: 'hidden',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: isDark ? 'rgba(0, 0, 0, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }}
+                activeOpacity={0.8}
                 onPress={() => {
                   Keyboard.dismiss();
                   setShowEditCaptionBox(false);
                 }}
               >
-                <Ionicons name="close-sharp" size={25} color="#FFFFFF" />
-              </LiquidGlassIconButton>
+                <BlurView
+                  key={`blur_grp_caption_close_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 40 : 30}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="grpCaptionCloseRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0.75" y="0.75" width="43.5" height="43.5" rx="21.75" ry="21.75" fill="none" stroke="url(#grpCaptionCloseRim)" strokeWidth={1.2} />
+                </Svg>
+                <Ionicons name="close-sharp" size={27} color={isDark ? '#FFFFFF' : '#000000'} />
+              </TouchableOpacity>
             </View>
 
             {/* TOP RIGHT TICK BUTTON */}
             <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
-              <LiquidGlassIconButton
-                idPrefix="btnGrpCaptionSave"
-                isDark={true}
-                size={45}
+              <TouchableOpacity
+                style={{
+                  width: 45,
+                  height: 45,
+                  borderRadius: 22.5,
+                  overflow: 'hidden',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: isDark ? 'rgba(0, 0, 0, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }}
+                activeOpacity={0.8}
                 onPress={() => {
                   Keyboard.dismiss();
                   handleSaveCaption();
                 }}
               >
-                <Ionicons name="checkmark-sharp" size={25} color="#FFFFFF" />
-              </LiquidGlassIconButton>
+                <BlurView
+                  key={`blur_grp_caption_save_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 40 : 30}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="grpCaptionSaveRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0.75" y="0.75" width="43.5" height="43.5" rx="21.75" ry="21.75" fill="none" stroke="url(#grpCaptionSaveRim)" strokeWidth={1.2} />
+                </Svg>
+                <Ionicons name="checkmark-sharp" size={27} color={isDark ? '#FFFFFF' : '#000000'} />
+              </TouchableOpacity>
             </View>
 
             {/* CENTER BLINKING CURSOR CAPTION INPUT */}
@@ -1008,7 +1064,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 width: '85%',
                 textAlign: 'center',
                 color: '#FFFFFF',
-                fontSize: 22,
+                fontSize: 25,
                 fontFamily: Fonts.SystemRoundedBold,
                 paddingHorizontal: 16,
                 paddingVertical: 12,
@@ -1644,7 +1700,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       {currentGroupName || group.name}
                     </Text>
 
-                    {/* Code Item with Vertical Barcode Stripes (+2.5dp -> 17) */}
+                    {/* Code Item with Vertical Barcode Stripes (+2.5dp -> 18) */}
                     <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={handleShareInvite}
@@ -1657,11 +1713,11 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                         zIndex: 10,
                       }}
                     >
-                      <VerticalBarcodeIcon size={19} color={isDark ? '#FFFFFF' : '#000000'} />
+                      <VerticalBarcodeIcon size={22} color={isDark ? '#FFFFFF' : '#000000'} />
                       <Text
                         style={{
-                          fontSize: 17,
-                          fontFamily: Fonts.IBMPlexMono,
+                          fontSize: 18,
+                          fontFamily: Fonts.SystemRoundedMedium,
                           color: isDark ? '#FFFFFF' : '#000000',
                         }}
                       >

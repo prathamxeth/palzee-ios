@@ -1548,10 +1548,10 @@ const styles = StyleSheet.create({
     textShadowRadius: 6,
   },
   modalCaptionText: {
-    fontSize: 16,
-    fontFamily: Fonts.SystemRoundedSemibold,
+    fontSize: 25,
+    fontFamily: Fonts.SystemRoundedBold,
     color: '#FFFFFF',
-    marginTop: 4,
+    marginTop: 1,
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,

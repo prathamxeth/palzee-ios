@@ -898,13 +898,30 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
               <View style={styles.cardMiddleRow} pointerEvents="box-none">
                 {!!currentUri ? (
                   <>
-                    <Text style={[styles.cardVlogTitle, { color: '#FFFFFF' }]}>vlog</Text>
+                    <Text
+                      style={{
+                        fontSize: 23.5,
+                        fontWeight: '900',
+                        color: '#FFFFFF',
+                        marginLeft: -5,
+                      }}
+                    >
+                      Vlog
+                    </Text>
                     {!!currentCaption && (
-                      <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center', flex: 1, marginHorizontal: 8 }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold, textAlign: 'center', flex: 1, marginHorizontal: 8 }}>
                         {currentCaption}
                       </Text>
                     )}
-                    <Text style={[styles.timestampText, { color: '#FFFFFF' }]}>
+                    <Text
+                      style={{
+                        fontSize: 21,
+                        fontFamily: Fonts.SystemRoundedSemibold,
+                        fontWeight: '600',
+                        color: '#FFFFFF',
+                        marginRight: -5,
+                      }}
+                    >
                       {formatExactTime((currentClip as any)?.displayTime || currentClip?.timestamp || timestamp)}
                     </Text>
                   </>
@@ -1045,33 +1062,89 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 100, justifyContent: 'center', alignItems: 'center' }]}>
                   {/* TOP LEFT CROSS BUTTON */}
                   <View style={{ position: 'absolute', top: 9.5, left: 11.5, zIndex: 110 }}>
-                    <LiquidGlassIconButton
-                      idPrefix="btnCaptionClose"
-                      isDark={true}
-                      size={45}
+                    <TouchableOpacity
+                      style={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: 22.5,
+                        overflow: 'hidden',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isDark ? 'rgba(0, 0, 0, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.12,
+                        shadowRadius: 8,
+                        elevation: 4,
+                      }}
+                      activeOpacity={0.8}
                       onPress={() => {
                         Keyboard.dismiss();
                         setShowEditCaptionBox(false);
                       }}
                     >
-                      <Ionicons name="close-sharp" size={25} color="#FFFFFF" />
-                    </LiquidGlassIconButton>
+                      <BlurView
+                        key={`blur_vlog_caption_close_${isDark ? 'dark' : 'light'}`}
+                        intensity={Platform.OS === 'ios' ? 40 : 30}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                        <Defs>
+                          <LinearGradient id="vlogCaptionCloseRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                            <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                          </LinearGradient>
+                        </Defs>
+                        <Rect x="0.75" y="0.75" width="43.5" height="43.5" rx="21.75" ry="21.75" fill="none" stroke="url(#vlogCaptionCloseRim)" strokeWidth={1.2} />
+                      </Svg>
+                      <Ionicons name="close-sharp" size={27} color={isDark ? '#FFFFFF' : '#000000'} />
+                    </TouchableOpacity>
                   </View>
 
                   {/* TOP RIGHT TICK BUTTON */}
                   <View style={{ position: 'absolute', top: 9.5, right: 11.5, zIndex: 110 }}>
-                    <LiquidGlassIconButton
-                      idPrefix="btnCaptionSave"
-                      isDark={true}
-                      size={45}
+                    <TouchableOpacity
+                      style={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: 22.5,
+                        overflow: 'hidden',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isDark ? 'rgba(0, 0, 0, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.12,
+                        shadowRadius: 8,
+                        elevation: 4,
+                      }}
+                      activeOpacity={0.8}
                       onPress={() => {
                         Keyboard.dismiss();
                         setShowEditCaptionBox(false);
                         handleSaveCaption();
                       }}
                     >
-                      <Ionicons name="checkmark-sharp" size={25} color="#FFFFFF" />
-                    </LiquidGlassIconButton>
+                      <BlurView
+                        key={`blur_vlog_caption_save_${isDark ? 'dark' : 'light'}`}
+                        intensity={Platform.OS === 'ios' ? 40 : 30}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                        <Defs>
+                          <LinearGradient id="vlogCaptionSaveRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                            <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                            <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                          </LinearGradient>
+                        </Defs>
+                        <Rect x="0.75" y="0.75" width="43.5" height="43.5" rx="21.75" ry="21.75" fill="none" stroke="url(#vlogCaptionSaveRim)" strokeWidth={1.2} />
+                      </Svg>
+                      <Ionicons name="checkmark-sharp" size={27} color={isDark ? '#FFFFFF' : '#000000'} />
+                    </TouchableOpacity>
                   </View>
 
                   {/* CENTER BLINKING CURSOR CAPTION INPUT */}
@@ -1080,7 +1153,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                       width: '85%',
                       textAlign: 'center',
                       color: '#FFFFFF',
-                      fontSize: 22,
+                      fontSize: 25,
                       fontFamily: Fonts.SystemRoundedBold,
                       paddingHorizontal: 16,
                       paddingVertical: 12,
@@ -1461,6 +1534,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center',
                 paddingHorizontal: 20,
+                paddingBottom: 30,
               }}
               activeOpacity={1}
               onPress={() => setShowDeleteDialog(false)}

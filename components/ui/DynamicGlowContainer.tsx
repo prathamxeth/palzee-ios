@@ -27,15 +27,18 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
   const containerBg = isDark ? '#000000' : Colors.PalBackground;
 
   // Dynamically compute precise hardware bezel corner radius for any iPhone/iOS device
-  // iPhone 16 Pro / 17: ~56dp, iPhone 14/15 Pro: ~55dp, iPhone 12/13/14: ~48dp, older/home button: 0-20dp
   const deviceCornerRadius =
     Platform.OS === 'ios'
       ? insets.top >= 59
         ? 56
         : insets.top >= 50
-        ? 55
+        ? 53.5
+        : insets.top >= 44
+        ? 47.33
+        : insets.top >= 40
+        ? 39
         : insets.top > 20
-        ? 48
+        ? 39
         : 0
       : 32;
 
@@ -88,7 +91,7 @@ export const DynamicGlowContainer: React.FC<DynamicGlowContainerProps> = ({
               />
             )}
 
-            {/* 2. EXACT SCREEN EDGE BOUNDARY OUTLINE (Starts exactly at 0.0dp screen edge) */}
+            {/* 2. EXACT SCREEN EDGE BOUNDARY OUTLINE (0.00dp spacing from screen corners) */}
             <Rect
               x={halfBorder}
               y={halfBorder}

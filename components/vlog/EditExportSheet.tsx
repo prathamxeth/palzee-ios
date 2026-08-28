@@ -309,24 +309,24 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999, backgroundColor: isDark ? '#000000' : '#F2F2F7' }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: isDark ? '#000000' : '#F2F2F7',
+            paddingBottom: Math.max(insets.bottom, 12),
+          },
+        ]}
+      >
+        {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK ICON */}
         <View
-          style={[
-            styles.container,
-            {
-              backgroundColor: isDark ? '#000000' : '#F2F2F7',
-              paddingBottom: Math.max(insets.bottom, 12),
-            },
-          ]}
+          style={[styles.headerBar, { paddingTop: Math.max(insets.top - 1, 7) }]}
+          pointerEvents="box-none"
         >
-          {/* 1. TOP HEADER BAR: LEFT CHEVRON BACK */}
-          <View
-            style={[styles.headerBar, { paddingTop: Math.max(insets.top + 21.5, 29.5) }]}
-            pointerEvents="box-none"
-          >
-            <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} onPress={onClose}>
-              <Ionicons name="chevron-back" size={30} color={isDark ? '#FFFFFF' : '#000000'} style={{ marginLeft: -1.5 }} />
-            </LiquidGlassIconButton>
-          </View>
+          <LiquidGlassIconButton idPrefix="btnExportBack" isDark={isDark} size={45} onPress={onClose}>
+            <Ionicons name="chevron-back" size={30} color={isDark ? '#FFFFFF' : '#000000'} style={{ marginLeft: -1.5 }} />
+          </LiquidGlassIconButton>
+        </View>
 
           {/* 2. CENTER 16:9 VIDEO PREVIEW BOX */}
           <View style={styles.centerContent}>
@@ -397,7 +397,7 @@ export const EditExportSheet: React.FC<EditExportSheetProps> = ({
                   <Text
                     style={{
                       color: '#FFFFFF',
-                      fontSize: 20,
+                      fontSize: 25,
                       fontFamily: Fonts.SystemRoundedBold,
                       textShadowColor: 'rgba(0, 0, 0, 0.8)',
                       textShadowOffset: { width: 0, height: 1 },
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     backgroundColor: 'transparent',
     zIndex: 100,
   },

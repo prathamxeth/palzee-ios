@@ -1293,7 +1293,7 @@ export default function HomeScreen({
                           vlog
                         </Text>
                         {!!activeTodayClip?.caption && (
-                          <Text style={{ color: '#FFFFFF', fontSize: 20, fontFamily: Fonts.SystemRoundedSemibold }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 25, fontFamily: Fonts.SystemRoundedBold }}>
                             {activeTodayClip?.caption}
                           </Text>
                         )}
@@ -1878,18 +1878,18 @@ export default function HomeScreen({
                       ...StyleSheet.absoluteFillObject,
                       borderRadius: 24,
                       overflow: 'hidden',
-                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.50)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                     }}
                   >
                     {/* 1. FROSTED GLASS BACKDROP BLUR */}
                     <BlurView
                       key={`blur_profile_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 70 : 50}
+                      intensity={Platform.OS === 'ios' ? 80 : 50}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
 
-                    {/* 2. INNER DIAGONAL AMBIENT THEME GLOW */}
+                    {/* 2. INNER DIAGONAL AMBIENT THEME GLOW (MATCHING EDIT PROFILE SUBMENU EXACTLY) */}
                     <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                       <Defs>
                         <LinearGradient
@@ -1899,10 +1899,10 @@ export default function HomeScreen({
                           x2="0%"
                           y2="100%"
                         >
-                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.81} />
-                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.475} />
-                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.20} />
-                          <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.06} />
+                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.21} />
+                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.116} />
+                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.042} />
+                          <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.015} />
                         </LinearGradient>
                       </Defs>
                       <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -2090,10 +2090,10 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.50} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.275} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.10} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.04} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.21} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.116} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.042} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.015} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
