@@ -297,7 +297,10 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
             return (
               <TouchableOpacity
                 activeOpacity={0.82}
-                onPress={() => handleSelectSound(item)}
+                onPress={() => {
+                  handleTogglePlay(item);
+                  handleSelectSound(item);
+                }}
                 style={[
                   styles.soundCard,
                   {

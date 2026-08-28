@@ -473,14 +473,8 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
                                   </Text>
                                 )}
 
-                                {/* Timestamp Header Above Thumbnail: Day Text BOLD, Time Text REGULAR */}
-                                <Text
-                                  style={{
-                                    alignSelf: isUserClip ? 'flex-end' : 'flex-start',
-                                    marginBottom: 6,
-                                    marginHorizontal: 4,
-                                  }}
-                                >
+                                {/* Timestamp Header in Center (Exact Replication of VlogSheet / ChatDrawer) */}
+                                <Text style={{ alignSelf: 'center', marginBottom: 10 }}>
                                   <Text
                                     style={{
                                       fontSize: 16.5,
@@ -575,6 +569,7 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
                                         edgeColor={edgeColor}
                                         isDark={isDark}
                                         textColor={textColor}
+                                        screenBg={screenBg}
                                         text={reply.text}
                                       />
                                     </View>
@@ -706,10 +701,29 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
 
                       return (
                         <View key={msg.id} style={{ width: '100%', marginVertical: 4 }}>
-                          {/* Centered Timestamp Header (e.g. "Today 2:52 PM") */}
+                          {/* Centered Timestamp Header (Exact Replication of VlogSheet / ChatDrawer) */}
                           {showDateHeader && (
-                            <Text style={styles.appleDateHeader}>
-                              {msg.fullDateText || `Today ${msg.timestamp}`}
+                            <Text style={{ alignSelf: 'center', marginBottom: 10, marginTop: 12 }}>
+                              <Text
+                                style={{
+                                  fontSize: 16.5,
+                                  fontFamily: Fonts.SystemRoundedBold,
+                                  fontWeight: '700',
+                                  color: isDark ? '#8E8E93' : '#636366',
+                                }}
+                              >
+                                {msg.fullDateText ? msg.fullDateText.split(' ')[0] : 'Today'}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 16.5,
+                                  fontFamily: Fonts.SystemRoundedRegular,
+                                  fontWeight: '400',
+                                  color: isDark ? '#8E8E93' : '#636366',
+                                }}
+                              >
+                                {` ${msg.timestamp}`}
+                              </Text>
                             </Text>
                           )}
 
@@ -731,6 +745,7 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
                             edgeColor={edgeColor}
                             isDark={isDark}
                             textColor={textColor}
+                            screenBg={screenBg}
                             text={msg.text}
                           />
                         </View>
@@ -742,35 +757,19 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
               {/* 3. BOTTOM INPUT BAR (Previous Vlog Smiley Pill + Message Box) */}
               <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
                 <View style={styles.inputRow}>
-                  {/* Previous Vlog Smiley Pill */}
-                  <TouchableOpacity
-                    style={[
-                      styles.smileyBtn,
-                      {
-                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
-                        borderWidth: 0,
-                        overflow: 'hidden',
-                      },
-                    ]}
-                    activeOpacity={0.85}
-                    onPress={() => {
-                      onClose();
-                      if (onOpenCamera) onOpenCamera();
-                    }}
+                  {/* Meme Sounds Sheet Button (Troll Face SVG) */}
+                  <LiquidGlassIconButton
+                    idPrefix="btnPalGroupBottomTroll"
+                    isDark={isDark}
+                    size={48}
+                    onPress={() => setShowMemeSounds(true)}
                   >
-                    <LiquidGlassPillBackground
-                      idPrefix="palChatSmileyPill"
-                      isDark={isDark}
-                      borderRadius={21}
+                    <Image
+                      source={require('../../assets/images/troll_face_clean.svg')}
+                      style={{ width: 36.5, height: 36.5 }}
+                      contentFit="contain"
                     />
-                    <View style={[styles.smileyCircle, { backgroundColor: edgeColor, zIndex: 5 }]}>
-                      <Image
-                        source={require('../../assets/images/custom_rotate_smiley.png')}
-                        style={{ width: 25, height: 25 }}
-                        contentFit="contain"
-                      />
-                    </View>
-                  </TouchableOpacity>
+                  </LiquidGlassIconButton>
 
                   {/* Apple Liquid Glass Message Box */}
                   <View
@@ -1122,24 +1121,19 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
   );
 };
 
-// Apple iMessage Bubble Component with exact tail and theme styling
+// Apple iMessage Bubble Component (Exact Apple Messages Tail Formula)
 const AppleMessageBubble: React.FC<{
   isUser: boolean;
   edgeColor: string;
   isDark: boolean;
   textColor: string;
+  screenBg?: string;
   text?: string;
   children?: React.ReactNode;
-}> = ({ isUser, edgeColor, isDark, textColor, text, children }) => {
-  const bubbleBg = isUser
-    ? edgeColor
-    : isDark
-    ? '#26252A'
-    : '#E9E9EB';
-
-  const contentColor = isUser
-    ? '#000000'
-    : textColor;
+}> = ({ isUser, edgeColor, isDark, textColor, screenBg, text, children }) => {
+  const currentScreenBg = screenBg || (isDark ? '#000000' : '#F5F5F7');
+  const bubbleBg = isUser ? edgeColor : isDark ? '#26252A' : '#E5E5EA';
+  const contentColor = isUser ? '#FFFFFF' : isDark ? '#FFFFFF' : '#000000';
 
   return (
     <View
@@ -1149,18 +1143,19 @@ const AppleMessageBubble: React.FC<{
         maxWidth: '78%',
         marginRight: isUser ? 10 : 0,
         marginLeft: isUser ? 0 : 10,
-        marginVertical: 2,
+        marginVertical: 4,
       }}
     >
+      {/* Main Capsule Body */}
       <View
         style={{
           backgroundColor: bubbleBg,
           paddingHorizontal: 16,
           paddingVertical: 10,
           borderRadius: 20,
-          borderBottomRightRadius: isUser ? 4 : 20,
-          borderBottomLeftRadius: isUser ? 20 : 4,
-          overflow: 'hidden',
+          minHeight: 38,
+          justifyContent: 'center',
+          zIndex: 1,
         }}
       >
         {children ? (
@@ -1171,6 +1166,7 @@ const AppleMessageBubble: React.FC<{
               fontSize: 17,
               fontFamily: Fonts.SystemRoundedMedium,
               lineHeight: 22,
+              letterSpacing: -0.3,
               color: contentColor,
             }}
           >
@@ -1178,31 +1174,66 @@ const AppleMessageBubble: React.FC<{
           </Text>
         )}
       </View>
-      {/* Authentic iMessage Tail */}
+
+      {/* Right / Sent Tail Construction (Exact iOS iMessage Cutout Formula) */}
       {isUser ? (
-        <Svg
-          width={14}
-          height={18}
-          viewBox="0 0 14 18"
-          style={{ position: 'absolute', right: -6, bottom: 0 }}
-        >
-          <Path
-            d="M0 0 C0 10.5 4.5 17.5 14 18 C6.5 17.5 0 14 0 0 Z"
-            fill={bubbleBg}
+        <>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: -7,
+              width: 20,
+              height: 20,
+              backgroundColor: bubbleBg,
+              borderBottomLeftRadius: 16,
+              zIndex: 0,
+            }}
+            pointerEvents="none"
           />
-        </Svg>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: -10,
+              width: 10,
+              height: 20,
+              backgroundColor: currentScreenBg,
+              borderBottomLeftRadius: 10,
+              zIndex: 2,
+            }}
+            pointerEvents="none"
+          />
+        </>
       ) : (
-        <Svg
-          width={14}
-          height={18}
-          viewBox="0 0 14 18"
-          style={{ position: 'absolute', left: -6, bottom: 0, transform: [{ scaleX: -1 }] }}
-        >
-          <Path
-            d="M0 0 C0 10.5 4.5 17.5 14 18 C6.5 17.5 0 14 0 0 Z"
-            fill={bubbleBg}
+        <>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: -7,
+              width: 20,
+              height: 20,
+              backgroundColor: bubbleBg,
+              borderBottomRightRadius: 16,
+              zIndex: 0,
+            }}
+            pointerEvents="none"
           />
-        </Svg>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: -10,
+              width: 10,
+              height: 20,
+              backgroundColor: currentScreenBg,
+              borderBottomRightRadius: 10,
+              zIndex: 2,
+            }}
+            pointerEvents="none"
+          />
+        </>
       )}
     </View>
   );
