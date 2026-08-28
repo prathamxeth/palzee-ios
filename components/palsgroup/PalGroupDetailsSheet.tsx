@@ -134,6 +134,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [selectedMemberForOptions, setSelectedMemberForOptions] = useState<PalGroupMember | null>(null);
   const [showEditCaptionBox, setShowEditCaptionBox] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingCaptionText, setEditingCaptionText] = useState('');
   const [memberCaptions, setMemberCaptions] = useState<Record<string, string>>({});
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -146,6 +147,18 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
       }));
     }
     setShowEditCaptionBox(false);
+  };
+
+  const handleDeleteLog = () => {
+    if (selectedMemberForOptions) {
+      setMemberCaptions((prev) => {
+        const next = { ...prev };
+        delete next[selectedMemberForOptions.id];
+        return next;
+      });
+      selectedMemberForOptions.hasCaptured = false;
+      selectedMemberForOptions.videoUri = undefined;
+    }
   };
 
   const logsRotateAnim = useRef(new Animated.Value(0)).current;
@@ -411,56 +424,46 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
       { items: allSlots.slice(2, 3), layoutType: 'full', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
     ];
   } else if (maxSlots === 4) {
-    // 4 member view: 2 upper half, 2 middle half (2x2 grid fitting 3-box vertical span)
-    const colGap = 2;
-    const itemW = Math.floor((cardWidth - colGap) / 2);
-    const itemH = Math.floor((base3TotalHeight - 2) / 2);
+    // 4 member view: 4 stacked full-width cards fitting the reference 3-box vertical span
+    const h = Math.floor((base3TotalHeight - 6) / 4);
     rowGap = 2;
     topScrollPadding = Math.max(insets.top - 1, 7) + 55 + 19;
     rowConfigs = [
-      { items: allSlots.slice(0, 2), layoutType: 'half', itemWidth: itemW, itemHeight: itemH, colGap },
-      { items: allSlots.slice(2, 4), layoutType: 'half', itemWidth: itemW, itemHeight: itemH, colGap },
+      { items: allSlots.slice(0, 1), layoutType: 'half', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(1, 2), layoutType: 'half', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(2, 3), layoutType: 'half', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(3, 4), layoutType: 'half', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
     ];
   } else if (maxSlots === 5) {
-    // 5 member view: 2 upper, 2 middle, 1 center box (fitting 3-box vertical span)
-    const colGap = 2;
-    const itemW = Math.floor((cardWidth - colGap) / 2);
-    const itemH = base3CardHeight;
+    // 5 member view: 5 stacked full-width cards fitting the reference 3-box vertical span
+    const h = Math.floor((base3TotalHeight - 8) / 5);
     rowGap = 2;
     topScrollPadding = Math.max(insets.top - 1, 7) + 55 + 19;
     rowConfigs = [
-      { items: allSlots.slice(0, 2), layoutType: 'half', itemWidth: itemW, itemHeight: itemH, colGap },
-      { items: allSlots.slice(2, 4), layoutType: 'half', itemWidth: itemW, itemHeight: itemH, colGap },
-      { items: allSlots.slice(4, 5), layoutType: 'half', itemWidth: itemW, itemHeight: itemH, colGap, isCentered: true },
-    ];
-  } else if (maxSlots === 6) {
-    // 6 member view: 3/3 split box (Row 1 has 3, Row 2 has 3) fitting 3-box vertical span
-    const colGap = 2;
-    const itemW = Math.floor((cardWidth - colGap * 2) / 3);
-    const itemH = Math.floor((base3TotalHeight - 2) / 2);
-    rowGap = 2;
-    topScrollPadding = Math.max(insets.top - 1, 7) + 55 + 19;
-    rowConfigs = [
-      { items: allSlots.slice(0, 3), layoutType: 'third', itemWidth: itemW, itemHeight: itemH, colGap },
-      { items: allSlots.slice(3, 6), layoutType: 'third', itemWidth: itemW, itemHeight: itemH, colGap },
+      { items: allSlots.slice(0, 1), layoutType: 'third', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(1, 2), layoutType: 'third', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(2, 3), layoutType: 'third', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(3, 4), layoutType: 'third', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
+      { items: allSlots.slice(4, 5), layoutType: 'third', itemWidth: cardWidth, itemHeight: h, colGap: 0 },
     ];
   } else {
-    // > 6 member view (7 to 10): 3 cards per row, bottom row centered if < 3
+    // 6 and above member view: 2-column grid of unrounded rectangular/square boxes matching 3-card height & bottom bounds exactly
     const colGap = 2;
-    const itemW = Math.floor((cardWidth - colGap * 2) / 3);
-    const itemH = base3CardHeight;
+    const numRows = Math.ceil(maxSlots / 2);
+    const itemW = Math.floor((cardWidth - colGap) / 2);
+    const itemH = Math.floor((base3TotalHeight - (numRows - 1) * 2) / numRows);
     rowGap = 2;
     topScrollPadding = Math.max(insets.top - 1, 7) + 55 + 19;
     rowConfigs = [];
-    for (let i = 0; i < allSlots.length; i += 3) {
-      const slice = allSlots.slice(i, i + 3);
+    for (let i = 0; i < allSlots.length; i += 2) {
+      const slice = allSlots.slice(i, i + 2);
       rowConfigs.push({
         items: slice,
-        layoutType: 'third',
+        layoutType: 'half',
         itemWidth: itemW,
         itemHeight: itemH,
         colGap,
-        isCentered: slice.length < 3,
+        isCentered: slice.length === 1,
       });
     }
   }
@@ -474,6 +477,12 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
     itemHeight: number,
     layoutType: 'full' | 'half' | 'third'
   ) => {
+    const isSmallGrid = maxSlots >= 6;
+    const cardRadius = isSmallGrid ? 0 : 28;
+    const avatarDiameter = isSmallGrid ? 23.0 : 30.0;
+    const nameFontSize = isSmallGrid ? 14 : 22;
+    const delaTimeFontSize = isSmallGrid ? 20 : 26;
+
     if (slot.type === 'empty') {
       return (
         <TouchableOpacity
@@ -487,9 +496,11 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               width: itemWidth,
               height: itemHeight,
               backgroundColor: solidCardBg,
-              borderRadius: layoutType === 'third' ? 18 : layoutType === 'half' ? 22 : 28,
+              borderRadius: cardRadius,
               borderWidth: 0,
               borderColor: 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
             },
           ]}
         >
@@ -497,16 +508,16 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             style={[
               styles.plusIconCircle,
               {
-                width: layoutType === 'third' ? 28 : layoutType === 'half' ? 34 : 40,
-                height: layoutType === 'third' ? 28 : layoutType === 'half' ? 34 : 40,
-                borderRadius: layoutType === 'third' ? 14 : layoutType === 'half' ? 17 : 20,
+                width: isSmallGrid ? 32 : 46,
+                height: isSmallGrid ? 32 : 46,
+                borderRadius: isSmallGrid ? 16 : 23,
                 backgroundColor: isDark ? '#242428' : '#FFFFFF',
               },
             ]}
           >
             <Ionicons
               name="add"
-              size={layoutType === 'third' ? 18 : layoutType === 'half' ? 22 : 26}
+              size={isSmallGrid ? 20 : 26}
               color={isDark ? '#FFFFFF' : '#000000'}
             />
           </View>
@@ -514,12 +525,14 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             style={[
               styles.inviteText,
               {
-                color: isDark ? '#8E8E93' : '#636366',
-                fontSize: layoutType === 'third' ? 13 : layoutType === 'half' ? 16 : 20,
+                color: isDark ? '#8E8E93' : '#8E8E93',
+                fontSize: isSmallGrid ? 13.5 : 18,
+                marginTop: 4,
+                fontFamily: Fonts.SystemRoundedMedium,
               },
             ]}
           >
-            invite
+            invite a friend
           </Text>
         </TouchableOpacity>
       );
@@ -532,11 +545,6 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
       ? (activeVideoUri || (vlogList && vlogList.length > 0 ? vlogList[0]?.uri : null) || member.videoUri)
       : member.videoUri;
     const hasVideo = !!memberVideoUri;
-
-    const cardRadius = layoutType === 'third' ? 18 : layoutType === 'half' ? 22 : 28;
-    const avatarSize = layoutType === 'third' ? 20 : layoutType === 'half' ? 24 : 30;
-    const nameFontSize = layoutType === 'third' ? 12 : layoutType === 'half' ? 15 : 22;
-    const delaTimeFontSize = layoutType === 'third' ? 15 : layoutType === 'half' ? 19 : 26;
 
     const vWidth = itemHeight;
     const vHeight = itemWidth;
@@ -590,9 +598,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           style={[
             styles.memberHeaderRow,
             {
-              top: layoutType === 'third' ? 8 : 12,
-              left: layoutType === 'third' ? 8 : 14,
-              right: layoutType === 'third' ? 8 : 16,
+              top: isSmallGrid ? 10 : 12,
+              left: isSmallGrid ? 10 : 14,
+              right: isSmallGrid ? 10 : 16,
             },
           ]}
           pointerEvents="none"
@@ -601,6 +609,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             style={[
               styles.avatarCircle,
               {
+                width: avatarDiameter,
+                height: avatarDiameter,
+                borderRadius: avatarDiameter / 2,
                 backgroundColor: (user?.photoURL && isCurrentUser) || member.avatarUri
                   ? 'transparent'
                   : themeFillColor,
@@ -614,7 +625,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             ) : (
               <Image
                 source={require('../../assets/images/capture_smile.png')}
-                style={styles.smileyIcon}
+                style={{ width: avatarDiameter, height: avatarDiameter }}
                 contentFit="contain"
               />
             )}
@@ -622,7 +633,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           <Text
             style={[
               styles.memberNameText,
-              { color: hasVideo ? '#FFFFFF' : '#636366', fontSize: nameFontSize, marginLeft: layoutType === 'third' ? 4 : 8 },
+              { color: hasVideo ? '#FFFFFF' : '#636366', fontSize: nameFontSize, marginLeft: isSmallGrid ? 6 : 8 },
             ]}
             numberOfLines={1}
           >
@@ -637,6 +648,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               cardWidth={itemWidth}
               cardHeight={itemHeight}
               onSmileyHover={handleSmileyHover}
+              useCustomRotateSmiley={maxSlots >= 6}
+              sizeOverride={maxSlots === 4 || maxSlots === 5 ? 52.5 : undefined}
             />
           </View>
         )}
@@ -679,9 +692,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   if (onOpenCamera) onOpenCamera();
                 }}
                 style={{
-                  paddingHorizontal: layoutType === 'third' ? 10 : layoutType === 'half' ? 14 : 22,
-                  paddingVertical: layoutType === 'third' ? 6 : layoutType === 'half' ? 8 : 12,
-                  borderRadius: layoutType === 'third' ? 14 : layoutType === 'half' ? 18 : 22,
+                  paddingHorizontal: isSmallGrid ? 14 : 22,
+                  paddingVertical: isSmallGrid ? 8 : 12,
+                  borderRadius: isSmallGrid ? 18 : 22,
                   justifyContent: 'center',
                   alignItems: 'center',
                   position: 'relative',
@@ -696,7 +709,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 <View
                   style={{
                     ...StyleSheet.absoluteFillObject,
-                    borderRadius: layoutType === 'third' ? 14 : layoutType === 'half' ? 18 : 22,
+                    borderRadius: isSmallGrid ? 18 : 22,
                     overflow: 'hidden',
                     backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
                   }}
@@ -723,7 +736,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                             id="grpSmileyRippleGlow"
                             cx={`${smileyTouch.relX || 0}`}
                             cy={`${smileyTouch.relY || 0}`}
-                            r={layoutType === 'third' ? "28" : layoutType === 'half' ? "36" : "46"}
+                            r={isSmallGrid ? "36" : "46"}
                             gradientUnits="userSpaceOnUse"
                           >
                             <Stop offset="0%" stopColor={smileyTouch.color || '#FE75F5'} stopOpacity={isDark ? 0.70 : 0.60} />
@@ -749,7 +762,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                       y={0.6}
                       width="98.8%"
                       height="98.8%"
-                      rx={layoutType === 'third' ? 14 : layoutType === 'half' ? 18 : 22}
+                      rx={isSmallGrid ? 18 : 22}
                       fill="none"
                       stroke="url(#grpTapBorderGrad)"
                       strokeWidth={1.2}
@@ -760,7 +773,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 <Text
                   style={{
                     color: isDark ? '#FFFFFF' : '#000000',
-                    fontSize: layoutType === 'third' ? 11 : layoutType === 'half' ? 13 : 17,
+                    fontSize: isSmallGrid ? 13 : 17,
                     fontFamily: Fonts.SystemRoundedBold,
                     zIndex: 2,
                   }}
@@ -774,8 +787,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
 
         {/* Caption Display if set */}
         {!!memberCaptions[member.id] && (
-          <View style={{ position: 'absolute', left: 12, right: 12, bottom: layoutType === 'third' ? 24 : 40, zIndex: 32, alignItems: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontSize: layoutType === 'third' ? 12 : 16, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center' }}>
+          <View style={{ position: 'absolute', left: 12, right: 12, bottom: isSmallGrid ? 28 : 40, zIndex: 32, alignItems: 'center' }}>
+            <Text style={{ color: '#FFFFFF', fontSize: isSmallGrid ? 14 : 16, fontFamily: Fonts.SystemRoundedSemibold, textAlign: 'center' }}>
               {memberCaptions[member.id]}
             </Text>
           </View>
@@ -788,8 +801,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             styles.cardOptionsBtn,
             {
               position: 'absolute',
-              right: layoutType === 'third' ? 8 : 14,
-              bottom: layoutType === 'third' ? 8 : 12,
+              right: isSmallGrid ? 10 : 14,
+              bottom: isSmallGrid ? 8 : 12,
               zIndex: 35,
             },
           ]}
@@ -805,7 +818,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
         >
           <Ionicons
             name="ellipsis-horizontal"
-            size={layoutType === 'third' ? 16 : layoutType === 'half' ? 19 : 22}
+            size={isSmallGrid ? 18 : 22}
             color={hasVideo || member.hasCaptured ? '#FFFFFF' : (isDark ? 'rgba(255, 255, 255, 0.40)' : 'rgba(0, 0, 0, 0.35)')}
           />
         </TouchableOpacity>
@@ -815,9 +828,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           <View
             style={{
               position: 'absolute',
-              bottom: layoutType === 'third' ? 34 : 40,
-              right: layoutType === 'third' ? 6 : 10,
-              width: layoutType === 'third' ? 140 : 155,
+              bottom: isSmallGrid ? 34 : 40,
+              right: isSmallGrid ? 8 : 10,
+              width: isSmallGrid ? 145 : 155,
               borderRadius: 20,
               shadowColor: '#000000',
               shadowOffset: { width: 0, height: 6 },
@@ -832,13 +845,13 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 ...StyleSheet.absoluteFillObject,
                 borderRadius: 20,
                 overflow: 'hidden',
-                backgroundColor: isDark ? 'rgba(28, 28, 30, 0.94)' : 'rgba(255, 255, 255, 0.96)',
+                backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
               }}
             >
               <BlurView
-                key={`blur_grp_opts_${isDark ? 'dark' : 'light'}`}
-                intensity={Platform.OS === 'ios' ? 40 : 30}
-                tint={isDark ? 'dark' : 'light'}
+                key={`blur_grp_opts_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
+                intensity={Platform.OS === 'ios' ? 45 : 30}
+                tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
                 style={StyleSheet.absoluteFill}
               />
               <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -933,6 +946,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   activeOpacity={0.7}
                   onPress={() => {
                     setShowOptionsMenu(false);
+                    setTimeout(() => {
+                      setShowDeleteDialog(true);
+                    }, 50);
                   }}
                 >
                   <Ionicons name="trash-outline" size={18} color="#FF3B30" />
@@ -1199,6 +1215,168 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
           </View>
         ))}
       </ScrollView>
+
+        {/* DELETE CONFIRMATION DIALOG MODAL (MATCHING VLOGSHEET) */}
+        <Modal
+          visible={showDeleteDialog}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDeleteDialog(false)}
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+            }}
+            activeOpacity={1}
+            onPress={() => setShowDeleteDialog(false)}
+          >
+            <TouchableOpacity
+              style={{
+                width: Math.min(cardWidth * 0.88, 270),
+                borderRadius: 24,
+                shadowColor: '#000000',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.16,
+                shadowRadius: 16,
+                elevation: 8,
+                backgroundColor: 'transparent',
+                position: 'relative',
+              }}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <View
+                style={{
+                  ...StyleSheet.absoluteFillObject,
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
+                }}
+              >
+                <BlurView
+                  key={`blur_grp_del_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 40 : 30}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="grpDelCardRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect
+                    x="0.75"
+                    y="0.75"
+                    width="99.2%"
+                    height="98.5%"
+                    rx={23.25}
+                    ry={23.25}
+                    fill="none"
+                    stroke="url(#grpDelCardRim)"
+                    strokeWidth={1.2}
+                  />
+                </Svg>
+              </View>
+
+              <View style={{ paddingHorizontal: 14, paddingTop: 18, paddingBottom: 16, alignItems: 'center', zIndex: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 15.5,
+                    fontFamily: Fonts.SystemRoundedBold,
+                    fontWeight: 'bold',
+                    color: isDark ? '#FFFFFF' : '#000000',
+                    textAlign: 'center',
+                    lineHeight: 21,
+                    marginBottom: 16,
+                  }}
+                >
+                  are you sure you want to delete this pal completely?
+                </Text>
+
+                <View style={{ flexDirection: 'row', gap: 10, width: '100%' }}>
+                  {/* Cancel Button */}
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      height: 44,
+                      borderRadius: 22,
+                      overflow: 'hidden',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+                    }}
+                    activeOpacity={0.7}
+                    onPress={() => setShowDeleteDialog(false)}
+                  >
+                    <BlurView
+                      key={`blur_grp_del_cancel_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="grpCancelDelRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                          <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                          <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#grpCancelDelRim)" strokeWidth={1.2} />
+                    </Svg>
+                    <Text style={{ fontSize: 14.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: isDark ? '#FFFFFF' : '#000000', zIndex: 10 }}>
+                      cancel
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Delete Pal Button (Liquid Glass + Red Text) */}
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      height: 44,
+                      borderRadius: 22,
+                      overflow: 'hidden',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+                    }}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setShowDeleteDialog(false);
+                      handleDeleteLog();
+                    }}
+                  >
+                    <BlurView
+                      key={`blur_grp_del_btn_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      tint={isDark ? 'dark' : 'light'}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                      <Defs>
+                        <LinearGradient id="grpDelBtnRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <Stop offset="0%" stopColor="#FF3B30" stopOpacity={isDark ? 0.6 : 0.8} />
+                          <Stop offset="100%" stopColor="#FF3B30" stopOpacity={0.15} />
+                        </LinearGradient>
+                      </Defs>
+                      <Rect x="0.75" y="0.75" width="99%" height="42.5" rx={21.25} fill="none" stroke="url(#grpDelBtnRim)" strokeWidth={1.2} />
+                    </Svg>
+                    <Text style={{ fontSize: 14.5, fontFamily: Fonts.SystemRoundedBold, fontWeight: 'bold', color: '#FF3B30', zIndex: 10 }}>
+                      delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
 
         {/* EMBEDDED CALENDAR ARCHIVE MODAL (Exact Matching VlogSheet Calendar Bottom Sheet) */}
         <Modal

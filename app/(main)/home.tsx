@@ -1476,7 +1476,7 @@ export default function HomeScreen({
 
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => setShowCamera(true)}
+                      onPress={() => setActiveTab('camera')}
                     >
                       <Image
                         source={require('../../assets/images/camera_list_icon.png')}
@@ -2792,7 +2792,7 @@ export default function HomeScreen({
       onOpenCamera={() => {
         setShowChatDrawer(false);
         setShowExportSheet(false);
-        setShowCamera(true);
+        setActiveTab('camera');
       }}
       onOpenChat={() => {
         setShowChatDrawer(true);
@@ -2830,7 +2830,7 @@ export default function HomeScreen({
       }
       onOpenCamera={() => {
         setActivePalGroupDetails(null);
-        setShowCamera(true);
+        setActiveTab('camera');
       }}
       onDeleteGroup={(groupCode) => {
         setUserPalRooms((prev: PalRoom[]) => prev.filter((r: PalRoom) => r.code !== groupCode));

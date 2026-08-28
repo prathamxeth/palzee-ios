@@ -415,6 +415,7 @@ export const ChatDrawer = ({
                               {
                                 marginTop: 6,
                                 overflow: 'hidden',
+                                backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
                               },
                             ]}
                           >
@@ -444,9 +445,8 @@ export const ChatDrawer = ({
                       style={[
                         styles.smileyBtn,
                         {
-                          backgroundColor: isDark ? 'rgba(30, 30, 34, 0.75)' : 'rgba(255, 255, 255, 0.75)',
-                          borderWidth: 1.2,
-                          borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)',
+                          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
+                          borderWidth: 0,
                           overflow: 'hidden',
                         },
                       ]}
@@ -456,8 +456,12 @@ export const ChatDrawer = ({
                         if (onOpenCamera) onOpenCamera();
                       }}
                     >
-                      <BlurView key={isDark ? 'dark' : 'light'} intensity={35} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-                      <View style={[styles.smileyCircle, { backgroundColor: edgeColor }]}>
+                      <LiquidGlassPillBackground
+                        idPrefix="chatSmileyPill"
+                        isDark={isDark}
+                        borderRadius={21}
+                      />
+                      <View style={[styles.smileyCircle, { backgroundColor: edgeColor, zIndex: 5 }]}>
                         <Image
                           source={require('../../assets/images/custom_rotate_smiley.png')}
                           style={{ width: 25, height: 25 }}
@@ -474,6 +478,7 @@ export const ChatDrawer = ({
                           paddingLeft: 18,
                           paddingRight: 6,
                           overflow: 'hidden',
+                          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
                         },
                       ]}
                     >

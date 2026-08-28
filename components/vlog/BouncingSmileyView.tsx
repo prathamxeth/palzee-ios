@@ -28,6 +28,8 @@ export interface BouncingSmileyViewProps {
   cardHeight: number;
   onSmileyHover?: (info: SmileyTouchInfo | null) => void;
   pillRect?: { x: number; y: number; width: number; height: number };
+  sizeOverride?: number;
+  useCustomRotateSmiley?: boolean;
 }
 
 export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(({
@@ -35,8 +37,13 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(
   cardHeight,
   onSmileyHover,
   pillRect,
+  sizeOverride,
+  useCustomRotateSmiley = false,
 }) => {
-  const smileySize = cardWidth < 160 ? 38.0 : cardWidth < 220 ? 46.0 : 60.0;
+  const defaultSize = useCustomRotateSmiley
+    ? (cardWidth < 160 ? 34.5 : cardWidth < 220 ? 38.5 : 52.5)
+    : (cardWidth < 160 ? 38.0 : cardWidth < 220 ? 46.0 : 60.0);
+  const smileySize = sizeOverride ?? defaultSize;
   const maxX = Math.max(0, cardWidth - smileySize);
   const maxY = Math.max(0, cardHeight - smileySize);
 
@@ -139,40 +146,67 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(
 
       if (hit) {
         colorIndexRef.current = (colorIndexRef.current + 1) % TWELVE_PALZEE_COLORS.length;
+        const nextColor = TWELVE_PALZEE_COLORS[colorIndexRef.current];
+        if (boxRef.current) {
+          boxRef.current.setNativeProps({
+            style: {
+              backgroundColor: nextColor,
+            },
+          });
+        }
       }
 
-      const pRect = pillRectRef.current;
-      const pillW = pRect?.width ?? 155;
-      const pillH = pRect?.height ?? 48;
-      const pillX = pRect?.x ?? (cardWidth - pillW) / 2;
-      const pillY = pRect?.y ?? (cardHeight - pillH) / 2;
+      // Check overlap with the center "tap to capture" pill
+      if (pillRectRef.current) {
+        const pr = pillRectRef.current;
+        const pCenterX = pr.x + pr.width / 2;
+        const pCenterY = pr.y + pr.height / 2;
+        const pHalfW = pr.width / 2;
+        const pHalfH = pr.height / 2;
 
-      const isOverlapping = (
-        nextX + smileySize >= pillX &&
-        nextX <= pillX + pillW &&
-        nextY + smileySize >= pillY &&
-        nextY <= pillY + pillH
-      );
+        const sCenterX = nextX + smileySize / 2;
+        const sCenterY = nextY + smileySize / 2;
+        const sRadius = smileySize / 2;
 
-      if (isOverlapping) {
-        isOverlappingRef.current = true;
-        const relX = Math.round(nextX + smileySize / 2 - pillX);
-        const relY = Math.round(nextY + smileySize / 2 - pillY);
-        hoverCallbackRef.current?.({
-          color: TWELVE_PALZEE_COLORS[colorIndexRef.current],
-          relX,
-          relY,
-        });
-      } else if (isOverlappingRef.current) {
-        isOverlappingRef.current = false;
-        hoverCallbackRef.current?.(null);
+        const distX = Math.abs(sCenterX - pCenterX);
+        const distY = Math.abs(sCenterY - pCenterY);
+
+        if (distX <= (pHalfW + sRadius) && distY <= (pHalfH + sRadius)) {
+          const cornerDistSq = Math.pow(distX - pHalfW, 2) + Math.pow(distY - pHalfH, 2);
+          const isOverlapping = (distX <= pHalfW) || (distY <= pHalfH) || (cornerDistSq <= Math.pow(sRadius, 2));
+
+          if (isOverlapping) {
+            if (!isOverlappingRef.current) {
+              isOverlappingRef.current = true;
+              const currentColor = TWELVE_PALZEE_COLORS[colorIndexRef.current];
+              const relX = Math.max(0, Math.min(pr.width, sCenterX - pr.x));
+              const relY = Math.max(0, Math.min(pr.height, sCenterY - pr.y));
+              if (hoverCallbackRef.current) {
+                hoverCallbackRef.current({ color: currentColor, relX, relY });
+              }
+            }
+          } else {
+            if (isOverlappingRef.current) {
+              isOverlappingRef.current = false;
+              if (hoverCallbackRef.current) {
+                hoverCallbackRef.current(null);
+              }
+            }
+          }
+        } else {
+          if (isOverlappingRef.current) {
+            isOverlappingRef.current = false;
+            if (hoverCallbackRef.current) {
+              hoverCallbackRef.current(null);
+            }
+          }
+        }
       }
 
       if (boxRef.current) {
         boxRef.current.setNativeProps({
           style: {
             transform: [{ translateX: nextX }, { translateY: nextY }],
-            backgroundColor: TWELVE_PALZEE_COLORS[colorIndexRef.current],
           },
         });
       }
@@ -226,10 +260,14 @@ export const BouncingSmileyView: React.FC<BouncingSmileyViewProps> = React.memo(
           }}
         >
           <Image
-            source={require('../../assets/images/capture_smile.png')}
+            source={
+              useCustomRotateSmiley
+                ? require('../../assets/images/custom_rotate_smiley.png')
+                : require('../../assets/images/capture_smile.png')
+            }
             style={{
-              width: smileySize,
-              height: smileySize,
+              width: useCustomRotateSmiley ? Math.max(10, smileySize - 3.0) : smileySize,
+              height: useCustomRotateSmiley ? Math.max(10, smileySize - 3.0) : smileySize,
               tintColor: '#000000',
             }}
             contentFit="contain"
