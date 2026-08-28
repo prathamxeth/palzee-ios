@@ -2302,9 +2302,23 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
         <PalGroupChatDrawer
           visible={showChatDrawer}
           onClose={() => setShowChatDrawer(false)}
+          onOpenCamera={() => {
+            setShowChatDrawer(false);
+            onClose();
+            if (onOpenCamera) onOpenCamera();
+          }}
+          onOpenVlog={() => {
+            setShowChatDrawer(false);
+            setShowExportSheet(true);
+          }}
           palName={currentGroupName || group?.name || 'pals'}
+          palCode={group?.code || 'palzee_space'}
+          user={user}
           selectedThemeColor={selectedThemeColor}
+          vlogList={vlogList}
+          activeVideoUri={activeVideoUri}
           members={joinedMembers.map(m => m.name)}
+          joinedMembers={joinedMembers}
         />
     </View>
   );

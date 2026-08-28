@@ -543,7 +543,10 @@ export const ChatDrawer = ({
                     },
                   ]}
                 >
-                  <View style={styles.headerRow}>
+                  <View
+                    style={[styles.headerRow, { paddingTop: Math.max(insets.top - 1, 7) }]}
+                    pointerEvents="box-none"
+                  >
                     <LiquidGlassIconButton
                       idPrefix="btnClosePreview"
                       isDark={isDark}
@@ -677,7 +680,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   viewPalBtn: {
-    width: '92%',
+    width: '100%',
     alignSelf: 'center',
     height: 58,
     borderRadius: 24,
