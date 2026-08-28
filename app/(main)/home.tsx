@@ -1878,7 +1878,7 @@ export default function HomeScreen({
                       ...StyleSheet.absoluteFillObject,
                       borderRadius: 24,
                       overflow: 'hidden',
-                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.08)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.50)',
                     }}
                   >
                     {/* 1. FROSTED GLASS BACKDROP BLUR */}
@@ -1899,10 +1899,10 @@ export default function HomeScreen({
                           x2="0%"
                           y2="100%"
                         >
-                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
-                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
-                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
-                          <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
+                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.65} />
+                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.38} />
+                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.16} />
+                          <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.05} />
                         </LinearGradient>
                       </Defs>
                       <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />

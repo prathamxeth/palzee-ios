@@ -949,12 +949,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                           ...StyleSheet.absoluteFillObject,
                           borderRadius: 22,
                           overflow: 'hidden',
-                          backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                         }}
                       >
                         <BlurView
                           key={`blur_tap_capture_${isDark ? 'dark' : 'light'}`}
-                          intensity={Platform.OS === 'ios' ? 40 : 30}
+                          intensity={Platform.OS === 'ios' ? 45 : 30}
                           tint={isDark ? 'dark' : 'light'}
                           style={StyleSheet.absoluteFill}
                         />

@@ -14,7 +14,7 @@ import {
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, CameraType, FlashMode, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import { Ionicons } from '@expo/vector-icons';
@@ -568,35 +568,56 @@ export default function PalCameraPreview({
                     height: pillHeight,
                     marginTop: -pillHeight / 2,
                     opacity: pillOpacity,
+                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                   },
                 ]}
                 pointerEvents="none"
               >
-              <BlurView
-                intensity={45}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.specularBorderHighlight} pointerEvents="none" />
-              <Text
-                style={[
-                  styles.modePillText,
-                  { width: pillHeight },
-                  timerMode !== 'off' && { fontSize: 15 },
-                ]}
-              >
-                {timerMode === 'off'
-                  ? 'off'
-                  : timerMode === '3s'
-                  ? '3 second timer'
-                  : timerMode === '5s'
-                  ? '5 second timer'
-                  : timerMode === 'timelapse'
-                  ? 'timelapse'
-                  : 'jump cut'}
-              </Text>
-            </Animated.View>
-          )}
+                <BlurView
+                  key={`blur_cam_mode_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 45 : 30}
+                  tint={isDark ? 'dark' : 'light'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="camModePillRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.45 : 0.85} />
+                      <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.15 : 0.40} />
+                      <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect
+                    x="0.75"
+                    y="0.75"
+                    width="42.5"
+                    height={pillHeight - 1.5}
+                    rx={21.25}
+                    ry={21.25}
+                    fill="none"
+                    stroke="url(#camModePillRim)"
+                    strokeWidth={1.2}
+                  />
+                </Svg>
+                <Text
+                  style={[
+                    styles.modePillText,
+                    { width: pillHeight, color: isDark ? '#FFFFFF' : '#000000', zIndex: 10 },
+                    timerMode !== 'off' && { fontSize: 15 },
+                  ]}
+                >
+                  {timerMode === 'off'
+                    ? 'off'
+                    : timerMode === '3s'
+                    ? '3 second timer'
+                    : timerMode === '5s'
+                    ? '5 second timer'
+                    : timerMode === 'timelapse'
+                    ? 'timelapse'
+                    : 'jump cut'}
+                </Text>
+              </Animated.View>
+            )}
 
           {/* ZOOM NUMBERS (.5, 1) */}
           <View
@@ -831,17 +852,15 @@ const styles = StyleSheet.create({
     right: 16,
     width: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 400,
-  },
-  specularBorderHighlight: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.55)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   modePillText: {
     color: '#000000',

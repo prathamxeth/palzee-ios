@@ -711,12 +711,12 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: isSmallGrid ? 18 : 22,
                     overflow: 'hidden',
-                    backgroundColor: isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)',
+                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                   }}
                 >
                   <BlurView
                     key={`blur_grp_tap_${isDark ? 'dark' : 'light'}`}
-                    intensity={Platform.OS === 'ios' ? 40 : 30}
+                    intensity={Platform.OS === 'ios' ? 45 : 30}
                     tint={isDark ? 'dark' : 'light'}
                     style={StyleSheet.absoluteFill}
                   />
@@ -1046,9 +1046,9 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 onPress={onClose}
               >
                 <BlurView
-                  key={`blur_logs_${isDark ? 'dark' : 'systemMaterialLight'}`}
-                  intensity={Platform.OS === 'ios' ? 40 : 30}
-                  tint={isDark ? 'dark' : 'systemMaterialLight'}
+                  key={`blur_logs_${isDark ? 'dark' : 'light'}`}
+                  intensity={Platform.OS === 'ios' ? 45 : 30}
+                  tint={isDark ? 'dark' : 'light'}
                   style={StyleSheet.absoluteFill}
                 />
                 <Svg width={96} height={42} style={StyleSheet.absoluteFill}>
@@ -1569,7 +1569,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   borderRadius: 24,
                   overflow: 'hidden',
                   position: 'relative',
-                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.65)' : 'rgba(255, 255, 255, 0.65)',
+                  backgroundColor: isDark ? 'rgba(28, 28, 32, 0.65)' : 'rgba(255, 255, 255, 0.08)',
                   paddingVertical: 12,
                   paddingHorizontal: 14,
                 }}

@@ -250,7 +250,7 @@ export const PalGroupChatDrawer: React.FC<PalGroupChatDrawerProps> = ({
                         isPlaying
                           ? isDark
                             ? 'rgba(32, 28, 44, 0.90)'
-                            : 'rgba(255, 255, 255, 0.94)'
+                            : 'rgba(255, 255, 255, 0.15)'
                           : undefined
                       }
                     />
