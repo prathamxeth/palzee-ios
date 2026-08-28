@@ -14,21 +14,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#F7F6F3"
     },
-    "android": {
-      "package": "com.pratham.palzee",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/pal_logo.png",
-        "backgroundColor": "#F7F6F3"
-      },
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO"
-      ]
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.pratham.palzee",

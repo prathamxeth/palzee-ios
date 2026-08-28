@@ -418,16 +418,12 @@ export default function PalVideoSendPreviewModal({
               style={[styles.modalContainer, { backgroundColor: containerBg }]}
             >
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: Math.max(insets.top - 1, 7), paddingBottom: 20 }}>
+                <View style={{ flex: 1, paddingHorizontal: 10, paddingTop: Math.max(insets.top - 1, 7), paddingBottom: 20 }}>
                   {/* 1. HEADER ROW: HOMESCREEN EXACT LIQUID GLASS CLOSE (X), HEADER TITLE (vlog >) & LIQUID GLASS SEND ARROW (↑) */}
                   <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
                   <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
-                    {Platform.OS === 'ios' ? (
-                      <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
-                    ) : (
-                      <Ionicons name="close" size={20} color={iconColor} />
-                    )}
+                    <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
                   </LiquidGlassCircleButton>
 
                   {/* Header Title Text: "vlog >" when vlog box is clicked/selected, "send" when unselected */}
@@ -449,11 +445,7 @@ export default function PalVideoSendPreviewModal({
                         alignItems: 'center',
                       }}
                     >
-                      {Platform.OS === 'ios' ? (
-                        <SymbolView name="arrow.up" size={22} weight="bold" tintColor="#FFFFFF" />
-                      ) : (
-                        <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
-                      )}
+                      <SymbolView name="arrow.up" size={22} weight="bold" tintColor="#FFFFFF" />
                     </TouchableOpacity>
                   ) : (
                     <LiquidGlassCircleButton
@@ -461,16 +453,12 @@ export default function PalVideoSendPreviewModal({
                       idPrefix="sendBtnInactive"
                       isDark={isDark}
                     >
-                      {Platform.OS === 'ios' ? (
-                        <SymbolView
-                          name="arrow.up"
-                          size={22}
-                          weight="medium"
-                          tintColor={isDark ? '#8E8E93' : '#636366'}
-                        />
-                      ) : (
-                        <Ionicons name="arrow-up" size={22} color={isDark ? '#8E8E93' : '#636366'} />
-                      )}
+                      <SymbolView
+                        name="arrow.up"
+                        size={22}
+                        weight="medium"
+                        tintColor={isDark ? '#8E8E93' : '#636366'}
+                      />
                     </LiquidGlassCircleButton>
                   )}
                 </View>
@@ -599,11 +587,7 @@ export default function PalVideoSendPreviewModal({
                         <View style={styles.leftCircleWrapper}>
                           {isSelected ? (
                             <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                              {Platform.OS === 'ios' ? (
-                                <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
-                              ) : (
-                                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                              )}
+                              <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
                             </View>
                           ) : (
                             <View
@@ -679,11 +663,7 @@ export default function PalVideoSendPreviewModal({
                     <View style={styles.leftCircleWrapper}>
                       {selectedTargets.includes('vlog') ? (
                         <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                          {Platform.OS === 'ios' ? (
-                            <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
-                          ) : (
-                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                          )}
+                          <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
                         </View>
                       ) : (
                         <View

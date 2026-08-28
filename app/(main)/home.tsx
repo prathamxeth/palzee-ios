@@ -61,13 +61,7 @@ const LucidePlus = ({
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) => (
-  Platform.OS === 'ios' ? (
-    <SymbolView name="plus" size={size} tintColor={color} />
-  ) : (
-    <Ionicons name="add" size={size} color={color} />
-  )
-);
+}) => <SymbolView name="plus" size={size} tintColor={color} />;
 
 const LucideBell = ({
   size = 25,
@@ -76,20 +70,10 @@ const LucideBell = ({
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) => (
-  Platform.OS === 'ios' ? (
-    <SymbolView name="bell" size={size} tintColor={color} />
-  ) : (
-    <Ionicons name="notifications-outline" size={size} color={color} />
-  )
-);
+}) => <SymbolView name="bell" size={size} tintColor={color} />;
 
 const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) => (
-  Platform.OS === 'ios' ? (
-    <SymbolView name="person" size={size} tintColor={color} />
-  ) : (
-    <Ionicons name="person-outline" size={size} color={color} />
-  )
+  <SymbolView name="person" size={size} tintColor={color} />
 );
 
 const LiquidGlassPillButton = ({
@@ -2915,7 +2899,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: -5,
+    marginTop: 5,
   },
   circleIconBtnWrapper: {
     borderRadius: 22,

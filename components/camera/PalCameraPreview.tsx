@@ -540,11 +540,7 @@ export default function PalCameraPreview({
                   isDark={isDark}
                   onPress={onClose}
                 >
-                  {Platform.OS === 'ios' ? (
-                    <SymbolView name="xmark" size={30} tintColor={iconColor} />
-                  ) : (
-                    <Ionicons name="close" size={28} color={iconColor} />
-                  )}
+                  <SymbolView name="xmark" size={30} tintColor={iconColor} />
                 </LiquidGlassIconButton>
               </View>
             )}
