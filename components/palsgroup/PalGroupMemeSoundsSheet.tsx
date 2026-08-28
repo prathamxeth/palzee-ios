@@ -312,7 +312,7 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                       ...StyleSheet.absoluteFillObject,
                       borderRadius: 28,
                       overflow: 'hidden',
-                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.92)' : 'rgba(255, 255, 255, 0.08)',
                     }}
                   >
                     {/* 1. Frosted Backdrop Blur */}

@@ -106,7 +106,7 @@ const LiquidGlassPillButton = ({
           width: 118,
           height: 36,
           borderRadius: 18,
-          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
+          backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
           overflow: 'hidden',
         },
       ]}
@@ -114,9 +114,9 @@ const LiquidGlassPillButton = ({
       onPress={onPress}
     >
       <BlurView
-        key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
+        key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
         intensity={Platform.OS === 'ios' ? 45 : 30}
-        tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
+        tint={isDark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
       <Svg width={118} height={36} style={StyleSheet.absoluteFill}>
@@ -125,17 +125,17 @@ const LiquidGlassPillButton = ({
             <Stop
               offset="0%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.45 : 0.70}
+              stopOpacity={isDark ? 0.45 : 0.85}
             />
             <Stop
               offset="35%"
               stopColor="#FFFFFF"
-              stopOpacity={isDark ? 0.15 : 0.30}
+              stopOpacity={isDark ? 0.15 : 0.40}
             />
             <Stop
               offset="100%"
               stopColor={isDark ? '#FFFFFF' : '#000000'}
-              stopOpacity={isDark ? 0.05 : 0.06}
+              stopOpacity={isDark ? 0.05 : 0.08}
             />
           </LinearGradient>
         </Defs>
@@ -181,14 +181,14 @@ const LiquidGlassNavPillBar = ({
         style={[
           styles.liquidOuterCapsule,
           {
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
           },
         ]}
       >
         <BlurView
-          key={`blur_capsule_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
+          key={`blur_capsule_${isDark ? 'dark' : 'light'}`}
           intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
+          tint={isDark ? 'dark' : 'light'}
           style={StyleSheet.absoluteFill}
         />
         <Svg width={167.5} height={50} style={StyleSheet.absoluteFill}>
@@ -197,17 +197,17 @@ const LiquidGlassNavPillBar = ({
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.45 : 0.70}
+                stopOpacity={isDark ? 0.45 : 0.85}
               />
               <Stop
                 offset="40%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.15 : 0.30}
+                stopOpacity={isDark ? 0.15 : 0.40}
               />
               <Stop
                 offset="100%"
                 stopColor={isDark ? '#FFFFFF' : '#000000'}
-                stopOpacity={isDark ? 0.05 : 0.06}
+                stopOpacity={isDark ? 0.05 : 0.08}
               />
             </LinearGradient>
           </Defs>
@@ -237,17 +237,17 @@ const LiquidGlassNavPillBar = ({
                     <Stop
                       offset="0%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.50 : 0.70}
+                      stopOpacity={isDark ? 0.50 : 0.85}
                     />
                     <Stop
                       offset="40%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.20 : 0.30}
+                      stopOpacity={isDark ? 0.20 : 0.45}
                     />
                     <Stop
                       offset="100%"
                       stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.06}
+                      stopOpacity={isDark ? 0.08 : 0.08}
                     />
                   </LinearGradient>
                 </Defs>
@@ -257,7 +257,7 @@ const LiquidGlassNavPillBar = ({
                   width="80.75"
                   height="46.5"
                   rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#F5F5F7'}
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(255, 255, 255, 0.65)'}
                   stroke={`url(#actBdr1)`}
                   strokeWidth={1.0}
                 />
@@ -287,17 +287,17 @@ const LiquidGlassNavPillBar = ({
                     <Stop
                       offset="0%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.50 : 0.70}
+                      stopOpacity={isDark ? 0.50 : 0.85}
                     />
                     <Stop
                       offset="40%"
                       stopColor="#FFFFFF"
-                      stopOpacity={isDark ? 0.20 : 0.30}
+                      stopOpacity={isDark ? 0.20 : 0.45}
                     />
                     <Stop
                       offset="100%"
                       stopColor={isDark ? '#FFFFFF' : '#000000'}
-                      stopOpacity={isDark ? 0.08 : 0.06}
+                      stopOpacity={isDark ? 0.08 : 0.08}
                     />
                   </LinearGradient>
                 </Defs>
@@ -307,7 +307,7 @@ const LiquidGlassNavPillBar = ({
                   width="80.75"
                   height="46.5"
                   rx="23.25"
-                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : '#F5F5F7'}
+                  fill={isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(255, 255, 255, 0.65)'}
                   stroke={`url(#actBdr2)`}
                   strokeWidth={1.0}
                 />
@@ -1878,7 +1878,7 @@ export default function HomeScreen({
                       ...StyleSheet.absoluteFillObject,
                       borderRadius: 24,
                       overflow: 'hidden',
-                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
+                      backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.08)',
                     }}
                   >
                     {/* 1. FROSTED GLASS BACKDROP BLUR */}

@@ -45,14 +45,14 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
           styles.liquidCircleInner,
           {
             borderRadius: btnRadius,
-            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.12)',
+            backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
           },
         ]}
       >
         <BlurView
-          key={`blur_${idPrefix}_${isDark ? 'dark' : 'systemUltraThinMaterialLight'}`}
+          key={`blur_${idPrefix}_${isDark ? 'dark' : 'light'}`}
           intensity={Platform.OS === 'ios' ? 45 : 30}
-          tint={isDark ? 'dark' : 'systemUltraThinMaterialLight'}
+          tint={isDark ? 'dark' : 'light'}
           style={StyleSheet.absoluteFill}
         />
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
@@ -61,17 +61,17 @@ export const LiquidGlassIconButton: React.FC<LiquidGlassIconButtonProps> = ({
               <Stop
                 offset="0%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.45 : 0.70}
+                stopOpacity={isDark ? 0.45 : 0.85}
               />
               <Stop
                 offset="40%"
                 stopColor="#FFFFFF"
-                stopOpacity={isDark ? 0.15 : 0.30}
+                stopOpacity={isDark ? 0.15 : 0.40}
               />
               <Stop
                 offset="100%"
                 stopColor={isDark ? '#FFFFFF' : '#000000'}
-                stopOpacity={isDark ? 0.05 : 0.06}
+                stopOpacity={isDark ? 0.05 : 0.08}
               />
             </LinearGradient>
           </Defs>

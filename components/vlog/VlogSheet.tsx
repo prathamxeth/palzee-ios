@@ -644,9 +644,9 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     onPress={handleClose}
                   >
                     <BlurView
-                      key={`blur_logs_${isDark ? 'dark' : 'systemMaterialLight'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
-                      tint={isDark ? 'dark' : 'systemMaterialLight'}
+                      key={`blur_logs_${isDark ? 'dark' : 'light'}`}
+                      intensity={Platform.OS === 'ios' ? 45 : 30}
+                      tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
                     <Svg width={96} height={42} style={StyleSheet.absoluteFill}>
@@ -1457,7 +1457,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
             <TouchableOpacity
               style={{
                 flex: 1,
-                backgroundColor: 'transparent',
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
                 justifyContent: 'center',
                 alignItems: 'center',
                 paddingHorizontal: 20,
@@ -1485,12 +1485,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: 24,
                     overflow: 'hidden',
-                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
+                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                   }}
                 >
                   <BlurView
                     key={`blur_del_card_${isDark ? 'dark' : 'light'}`}
-                    intensity={Platform.OS === 'ios' ? 40 : 30}
+                    intensity={Platform.OS === 'ios' ? 45 : 30}
                     tint={isDark ? 'dark' : 'light'}
                     style={StyleSheet.absoluteFill}
                   />
@@ -1541,14 +1541,14 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                       }}
                       activeOpacity={0.7}
                       onPress={() => setShowDeleteDialog(false)}
                     >
                       <BlurView
                         key={`blur_cancel_${isDark ? 'dark' : 'light'}`}
-                        intensity={Platform.OS === 'ios' ? 40 : 30}
+                        intensity={Platform.OS === 'ios' ? 45 : 30}
                         tint={isDark ? 'dark' : 'light'}
                         style={StyleSheet.absoluteFill}
                       />
@@ -1576,21 +1576,21 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.88)',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                       }}
                       activeOpacity={0.7}
                       onPress={handleConfirmDelete}
                     >
                       <BlurView
                         key={`blur_del_btn_${isDark ? 'dark' : 'light'}`}
-                        intensity={Platform.OS === 'ios' ? 40 : 30}
+                        intensity={Platform.OS === 'ios' ? 45 : 30}
                         tint={isDark ? 'dark' : 'light'}
                         style={StyleSheet.absoluteFill}
                       />
                       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
                         <Defs>
                           <LinearGradient id="delBtnRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <Stop offset="0%" stopColor="#FF3B30" stopOpacity={isDark ? 0.6 : 0.8} />
+                            <Stop offset="0%" stopColor="#FF3B30" stopOpacity={isDark ? 0.6 : 0.85} />
                             <Stop offset="100%" stopColor="#FF3B30" stopOpacity={0.15} />
                           </LinearGradient>
                         </Defs>

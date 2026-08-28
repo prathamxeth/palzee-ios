@@ -329,14 +329,14 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           {
                             backgroundColor: isActive
                               ? accentColor
-                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.72)'),
+                              : (isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)'),
                           },
                         ]}
                       >
                         <BlurView
-                          key={`blur_size_${key}_${isDark ? 'dark' : 'systemMaterialLight'}`}
-                          intensity={Platform.OS === 'ios' ? 35 : 25}
-                          tint={isDark ? 'dark' : 'systemMaterialLight'}
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          intensity={Platform.OS === 'ios' ? 45 : 30}
+                          tint={isDark ? 'dark' : 'light'}
                           style={StyleSheet.absoluteFill}
                         />
                         <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -398,14 +398,14 @@ export const CreatePalModal: React.FC<CreatePalModalProps> = ({
                           {
                             backgroundColor: isActive
                               ? accentColor
-                              : (isDark ? 'rgba(30, 30, 34, 0.65)' : 'rgba(255, 255, 255, 0.35)'),
+                              : (isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)'),
                           },
                         ]}
                       >
                         <BlurView
-                          key={`blur_size_${key}_${isDark ? 'dark' : 'systemMaterialLight'}`}
-                          intensity={Platform.OS === 'ios' ? 35 : 25}
-                          tint={isDark ? 'dark' : 'systemMaterialLight'}
+                          key={`blur_size_${key}_${isDark ? 'dark' : 'light'}`}
+                          intensity={Platform.OS === 'ios' ? 45 : 30}
+                          tint={isDark ? 'dark' : 'light'}
                           style={StyleSheet.absoluteFill}
                         />
                         <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject} pointerEvents="none">

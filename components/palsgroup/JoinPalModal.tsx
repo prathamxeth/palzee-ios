@@ -91,13 +91,13 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                     style={[
                       styles.topCardInner,
                       {
-                        backgroundColor: isDark ? 'rgba(28, 28, 30, 0.85)' : 'rgba(255, 255, 255, 0.94)',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                       },
                     ]}
                   >
                     <BlurView
                       key={`blur_join_top_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      intensity={Platform.OS === 'ios' ? 45 : 30}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />
@@ -138,13 +138,13 @@ export const JoinPalModal: React.FC<JoinPalModalProps> = ({
                     style={[
                       styles.inputCapsuleInner,
                       {
-                        backgroundColor: isDark ? 'rgba(28, 28, 30, 0.85)' : 'rgba(255, 255, 255, 0.94)',
+                        backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
                       },
                     ]}
                   >
                     <BlurView
                       key={`blur_join_input_${isDark ? 'dark' : 'light'}`}
-                      intensity={Platform.OS === 'ios' ? 40 : 30}
+                      intensity={Platform.OS === 'ios' ? 45 : 30}
                       tint={isDark ? 'dark' : 'light'}
                       style={StyleSheet.absoluteFill}
                     />

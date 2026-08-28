@@ -573,8 +573,8 @@ export default function PalCameraPreview({
                 pointerEvents="none"
               >
               <BlurView
-                intensity={55}
-                tint="systemMaterialLight"
+                intensity={45}
+                tint={isDark ? 'dark' : 'light'}
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.specularBorderHighlight} pointerEvents="none" />
