@@ -1180,7 +1180,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: 20,
                     overflow: 'hidden',
-                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.94)',
+                    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.94)' : 'rgba(255, 255, 255, 0.94)',
                   }}
                 >
                   <BlurView
@@ -1485,7 +1485,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                     ...StyleSheet.absoluteFillObject,
                     borderRadius: 24,
                     overflow: 'hidden',
-                    backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
+                    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                   }}
                 >
                   <BlurView
