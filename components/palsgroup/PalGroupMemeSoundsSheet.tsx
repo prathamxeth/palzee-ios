@@ -79,11 +79,12 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
 
   const soundObjectRef = useRef<Audio.Sound | null>(null);
 
-  const screenBg = isDark ? '#000000' : '#F5F5F7';
+  const screenBg = isDark ? '#000000' : '#FFFFFF';
   const screenEdgeColor =
-    (Colors as any)?.[selectedThemeColor]?.primary || (Colors as any)?.[selectedThemeColor] || '#22D3EE';
+    (Colors.BorderGlow as any)?.[selectedThemeColor] || '#11D5F3';
+  const palzeeTextColor =
+    (Colors.LogoTextAccent as any)?.[selectedThemeColor] || screenEdgeColor;
   const textColor = isDark ? '#FFFFFF' : '#000000';
-  const palzeeTextColor = textColor;
 
   // Cleanup audio playback on unmount / dismiss
   useEffect(() => {
@@ -193,7 +194,7 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
           style={{
             width: '100%',
             height: Math.min(screenHeight * 0.85, 640),
-            backgroundColor: isDark ? '#1C1C20' : '#F7F6F3',
+            backgroundColor: screenBg,
             borderRadius: 36,
             borderWidth: 1.2,
             borderColor: isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.10)',
@@ -203,13 +204,6 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
             overflow: 'hidden',
           }}
         >
-          <BlurView
-            key={isDark ? 'dark' : 'light'}
-            intensity={60}
-            tint={isDark ? 'dark' : 'light'}
-            style={StyleSheet.absoluteFill}
-          />
-
           {/* Drag Handle */}
           <View
             style={{
@@ -341,10 +335,10 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                                 x2="0%"
                                 y2="100%"
                               >
-                                <Stop offset="0%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.50 : 0.65} />
-                                <Stop offset="40%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.28 : 0.38} />
-                                <Stop offset="75%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.10 : 0.16} />
-                                <Stop offset="100%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.03 : 0.05} />
+                                <Stop offset="0%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.625 : 0.81} />
+                                <Stop offset="40%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.35 : 0.475} />
+                                <Stop offset="75%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.125 : 0.20} />
+                                <Stop offset="100%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.04 : 0.06} />
                               </LinearGradient>
                             </Defs>
                             <Rect width="100%" height="100%" rx={24} ry={24} fill={`url(#memeSelectedDiagGlow_${index})`} />

@@ -554,22 +554,29 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
     return (
       <View
         key={member.id || `member_${slot.slotIdx}`}
-        style={[
-          styles.palCard,
-          {
-            width: itemWidth,
-            height: itemHeight,
-            backgroundColor: solidCardBg,
-            borderRadius: cardRadius,
-            borderWidth: 0,
-            borderColor: 'transparent',
-            position: 'relative',
-            overflow: showOptionsMenu && selectedMemberForOptions?.id === member.id ? 'visible' : 'hidden',
-            zIndex: showOptionsMenu && selectedMemberForOptions?.id === member.id ? 200 : 1,
-          },
-        ]}
+        style={{
+          width: itemWidth,
+          height: itemHeight,
+          position: 'relative',
+          zIndex: showOptionsMenu && selectedMemberForOptions?.id === member.id ? 200 : 1,
+        }}
       >
-        {/* VIDEO PLAYBACK WHEN VIDEO PAL EXISTS */}
+        <View
+          style={[
+            styles.palCard,
+            {
+              width: itemWidth,
+              height: itemHeight,
+              backgroundColor: solidCardBg,
+              borderRadius: cardRadius,
+              borderWidth: 0,
+              borderColor: 'transparent',
+              position: 'relative',
+              overflow: 'hidden',
+            },
+          ]}
+        >
+          {/* VIDEO PLAYBACK WHEN VIDEO PAL EXISTS */}
         {hasVideo && (
           <Video
             source={{ uri: memberVideoUri }}
@@ -822,21 +829,22 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
             color={hasVideo || member.hasCaptured ? '#FFFFFF' : (isDark ? 'rgba(255, 255, 255, 0.40)' : 'rgba(0, 0, 0, 0.35)')}
           />
         </TouchableOpacity>
+      </View>
 
-        {/* TRIPLE DOT 3-OPTIONS MENU POPUP (Rendered directly inside respective card container) */}
+        {/* TRIPLE DOT 3-OPTIONS MENU POPUP (MATCHING VLOGSHEET EXACTLY) */}
         {showOptionsMenu && selectedMemberForOptions?.id === member.id && (
           <View
             style={{
               position: 'absolute',
-              bottom: isSmallGrid ? 34 : 40,
-              right: isSmallGrid ? 8 : 10,
-              width: isSmallGrid ? 145 : 155,
+              bottom: isSmallGrid ? -6.5 : -0.5,
+              right: isSmallGrid ? -2 : 0,
+              width: 155,
               borderRadius: 20,
               shadowColor: '#000000',
               shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.16,
+              shadowOpacity: 0.12,
               shadowRadius: 14,
-              elevation: 20,
+              elevation: 6,
               zIndex: 300,
             }}
           >
@@ -845,12 +853,12 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 ...StyleSheet.absoluteFillObject,
                 borderRadius: 20,
                 overflow: 'hidden',
-                backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
+                backgroundColor: isDark ? 'transparent' : 'rgba(255, 255, 255, 0.94)',
               }}
             >
               <BlurView
                 key={`blur_grp_opts_${isDark ? 'dark' : 'light'}`}
-                intensity={Platform.OS === 'ios' ? 45 : 30}
+                intensity={Platform.OS === 'ios' ? 40 : 30}
                 tint={isDark ? 'dark' : 'light'}
                 style={StyleSheet.absoluteFill}
               />
@@ -893,8 +901,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                 setShowEditCaptionBox(true);
               }}
             >
-              <Ionicons name="create-outline" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
-              <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+              <Ionicons name="create-outline" size={20} color={isDark ? '#FFFFFF' : '#000000'} />
+              <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                 edit caption
               </Text>
             </TouchableOpacity>
@@ -923,11 +931,11 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                   }}
                 >
                   {saveState === 'saving' ? (
-                    <ActivityIndicator size="small" color={isDark ? '#FFFFFF' : '#000000'} style={{ width: 18, height: 18 }} />
+                    <ActivityIndicator size="small" color={isDark ? '#FFFFFF' : '#000000'} style={{ width: 20, height: 20 }} />
                   ) : (
-                    <Ionicons name={saveState === 'saved' ? "checkmark" : "download-outline"} size={18} color={isDark ? '#FFFFFF' : '#000000'} />
+                    <Ionicons name={saveState === 'saved' ? "checkmark" : "download-outline"} size={20} color={isDark ? '#FFFFFF' : '#000000'} />
                   )}
-                  <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
+                  <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: isDark ? '#FFFFFF' : '#000000' }}>
                     {saveState === 'saved' ? 'saved' : 'save'}
                   </Text>
                 </TouchableOpacity>
@@ -951,8 +959,8 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
                     }, 50);
                   }}
                 >
-                  <Ionicons name="trash-outline" size={18} color="#FF3B30" />
-                  <Text style={{ fontSize: 15, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
+                  <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                  <Text style={{ fontSize: 16.5, fontFamily: Fonts.SystemRoundedSemibold, color: '#FF3B30' }}>
                     delete
                   </Text>
                 </TouchableOpacity>
@@ -1230,6 +1238,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               justifyContent: 'center',
               alignItems: 'center',
               paddingHorizontal: 20,
+              paddingBottom: 370,
             }}
             activeOpacity={1}
             onPress={() => setShowDeleteDialog(false)}

@@ -1899,10 +1899,10 @@ export default function HomeScreen({
                           x2="0%"
                           y2="100%"
                         >
-                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.65} />
-                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.38} />
-                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.16} />
-                          <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.03 : 0.05} />
+                          <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.81} />
+                          <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.475} />
+                          <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.20} />
+                          <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.06} />
                         </LinearGradient>
                       </Defs>
                       <Rect width="100%" height="100%" fill="url(#dropdownDiagonalGlow)" />
@@ -2090,10 +2090,10 @@ export default function HomeScreen({
                   <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                     <Defs>
                       <LinearGradient id="subDropdownDiagonalGlow" x1="100%" y1="0%" x2="0%" y2="100%">
-                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.50 : 0.40} />
-                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.28 : 0.22} />
-                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.10 : 0.08} />
-                        <Stop offset="100%" stopColor={accentColor} stopOpacity={0.03} />
+                        <Stop offset="0%" stopColor={accentColor} stopOpacity={isDark ? 0.625 : 0.50} />
+                        <Stop offset="40%" stopColor={accentColor} stopOpacity={isDark ? 0.35 : 0.275} />
+                        <Stop offset="75%" stopColor={accentColor} stopOpacity={isDark ? 0.125 : 0.10} />
+                        <Stop offset="100%" stopColor={accentColor} stopOpacity={isDark ? 0.04 : 0.04} />
                       </LinearGradient>
                     </Defs>
                     <Rect width="100%" height="100%" fill="url(#subDropdownDiagonalGlow)" />
@@ -3321,7 +3321,7 @@ const styles = StyleSheet.create({
   profileDropdownCard: {
     position: 'absolute',
     top: 44.0,
-    right: 13,
+    right: 10,
     width: 246.75,
     borderRadius: 24,
     borderWidth: 0,
@@ -3383,7 +3383,7 @@ const styles = StyleSheet.create({
   profileSubDropdownCard: {
     position: 'absolute',
     top: 90.0,
-    right: 10,
+    right: 7,
     width: 253,
     borderRadius: 24,
     borderWidth: 0,
@@ -3396,7 +3396,7 @@ const styles = StyleSheet.create({
   profileColorDropdownCard: {
     position: 'absolute',
     top: 222.0,
-    right: 7,
+    right: 4,
     width: 259.5,
     borderRadius: 24,
     borderWidth: 0,
