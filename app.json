@@ -4,13 +4,29 @@
     "slug": "palzee-ios",
     "version": "1.0.0",
     "platforms": [
-      "ios"
+      "ios",
+      "android"
     ],
     "orientation": "default",
     "icon": "./assets/images/pal_logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {
       "backgroundColor": "#F7F6F3"
+    },
+    "android": {
+      "package": "com.pratham.palzee",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/pal_logo.png",
+        "backgroundColor": "#F7F6F3"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
     },
     "ios": {
       "supportsTablet": false,

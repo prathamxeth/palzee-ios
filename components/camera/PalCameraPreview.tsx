@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   PanResponder,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -539,7 +540,11 @@ export default function PalCameraPreview({
                   isDark={isDark}
                   onPress={onClose}
                 >
-                  <SymbolView name="xmark" size={30} tintColor={iconColor} />
+                  {Platform.OS === 'ios' ? (
+                    <SymbolView name="xmark" size={30} tintColor={iconColor} />
+                  ) : (
+                    <Ionicons name="close" size={28} color={iconColor} />
+                  )}
                 </LiquidGlassIconButton>
               </View>
             )}

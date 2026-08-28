@@ -423,7 +423,11 @@ export default function PalVideoSendPreviewModal({
                   <View style={styles.headerRow}>
                   {/* Exact Home Screen Liquid Glass Close Button (X) */}
                   <LiquidGlassCircleButton onPress={handleClose} idPrefix="closeBtn" isDark={isDark}>
-                    <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
+                    {Platform.OS === 'ios' ? (
+                      <SymbolView name="xmark" size={20} weight="semibold" tintColor={iconColor} />
+                    ) : (
+                      <Ionicons name="close" size={20} color={iconColor} />
+                    )}
                   </LiquidGlassCircleButton>
 
                   {/* Header Title Text: "vlog >" when vlog box is clicked/selected, "send" when unselected */}
@@ -445,7 +449,11 @@ export default function PalVideoSendPreviewModal({
                         alignItems: 'center',
                       }}
                     >
-                      <SymbolView name="arrow.up" size={22} weight="bold" tintColor="#FFFFFF" />
+                      {Platform.OS === 'ios' ? (
+                        <SymbolView name="arrow.up" size={22} weight="bold" tintColor="#FFFFFF" />
+                      ) : (
+                        <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
+                      )}
                     </TouchableOpacity>
                   ) : (
                     <LiquidGlassCircleButton
@@ -453,12 +461,16 @@ export default function PalVideoSendPreviewModal({
                       idPrefix="sendBtnInactive"
                       isDark={isDark}
                     >
-                      <SymbolView
-                        name="arrow.up"
-                        size={22}
-                        weight="medium"
-                        tintColor={isDark ? '#8E8E93' : '#636366'}
-                      />
+                      {Platform.OS === 'ios' ? (
+                        <SymbolView
+                          name="arrow.up"
+                          size={22}
+                          weight="medium"
+                          tintColor={isDark ? '#8E8E93' : '#636366'}
+                        />
+                      ) : (
+                        <Ionicons name="arrow-up" size={22} color={isDark ? '#8E8E93' : '#636366'} />
+                      )}
                     </LiquidGlassCircleButton>
                   )}
                 </View>
@@ -587,7 +599,11 @@ export default function PalVideoSendPreviewModal({
                         <View style={styles.leftCircleWrapper}>
                           {isSelected ? (
                             <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                              <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                              {Platform.OS === 'ios' ? (
+                                <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                              ) : (
+                                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                              )}
                             </View>
                           ) : (
                             <View
@@ -663,7 +679,11 @@ export default function PalVideoSendPreviewModal({
                     <View style={styles.leftCircleWrapper}>
                       {selectedTargets.includes('vlog') ? (
                         <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                          <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                          {Platform.OS === 'ios' ? (
+                            <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                          ) : (
+                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                          )}
                         </View>
                       ) : (
                         <View

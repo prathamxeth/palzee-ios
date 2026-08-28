@@ -61,7 +61,13 @@ const LucidePlus = ({
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) => <SymbolView name="plus" size={size} tintColor={color} />;
+}) => (
+  Platform.OS === 'ios' ? (
+    <SymbolView name="plus" size={size} tintColor={color} />
+  ) : (
+    <Ionicons name="add" size={size} color={color} />
+  )
+);
 
 const LucideBell = ({
   size = 25,
@@ -70,10 +76,20 @@ const LucideBell = ({
   size?: number;
   color?: string;
   strokeWidth?: number;
-}) => <SymbolView name="bell" size={size} tintColor={color} />;
+}) => (
+  Platform.OS === 'ios' ? (
+    <SymbolView name="bell" size={size} tintColor={color} />
+  ) : (
+    <Ionicons name="notifications-outline" size={size} color={color} />
+  )
+);
 
 const MaterialPersonIcon = ({ size = 25, color = '#FFFFFF' }) => (
-  <SymbolView name="person" size={size} tintColor={color} />
+  Platform.OS === 'ios' ? (
+    <SymbolView name="person" size={size} tintColor={color} />
+  ) : (
+    <Ionicons name="person-outline" size={size} color={color} />
+  )
 );
 
 const LiquidGlassPillButton = ({
