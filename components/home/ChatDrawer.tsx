@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   viewPalBtn: {
-    marginHorizontal: 10,
+    marginHorizontal: 20,
     height: 58,
     borderRadius: 29,
     flexDirection: 'row',
