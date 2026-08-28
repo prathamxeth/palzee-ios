@@ -251,7 +251,7 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                   </LiquidGlassCapsule>
                 </View>
 
-                {/* Top Right Send Button (Liquid Glass + Selected Accent Fill) */}
+                {/* Top Right Send Button (Pure Screen Edge Fill Inside, No Outer Boundary) */}
                 <TouchableOpacity
                   style={[
                     styles.headerSendBtn,
@@ -281,9 +281,7 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                     color={
                       selectedSound
                         ? '#000000'
-                        : isDark
-                        ? 'rgba(255, 255, 255, 0.25)'
-                        : 'rgba(0, 0, 0, 0.25)'
+                        : screenEdgeColor
                     }
                     style={{ zIndex: 10 }}
                   />
@@ -315,25 +313,25 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                         },
                       ]}
                     >
-                      {/* Screen edge color fill inside + Palzee text color on boundary + Apple liquid glass */}
+                      {/* Profile Dropdown Glow Fill Style + Palzee Text Color Boundary */}
                       {isSelected ? (
                         <View
                           style={{
                             ...StyleSheet.absoluteFillObject,
-                            borderRadius: 28,
+                            borderRadius: 24,
                             overflow: 'hidden',
-                            backgroundColor: isDark ? 'rgba(32, 28, 44, 0.92)' : 'rgba(255, 255, 255, 0.08)',
+                            backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.50)',
                           }}
                         >
                           {/* 1. Frosted Backdrop Blur */}
                           <BlurView
                             key={`blur_selected_meme_${index}_${isDark ? 'dark' : 'light'}`}
-                            intensity={Platform.OS === 'ios' ? 65 : 45}
+                            intensity={Platform.OS === 'ios' ? 70 : 50}
                             tint={isDark ? 'dark' : 'light'}
                             style={StyleSheet.absoluteFill}
                           />
 
-                          {/* 2. Screen Edge Colour Fill Inside the Pill (Cleanly Clipped with rx={28}) */}
+                          {/* 2. Inner Diagonal Ambient Theme Glow (Exact Profile Dropdown Formula) */}
                           <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                             <Defs>
                               <LinearGradient
@@ -343,47 +341,24 @@ export const PalGroupMemeSoundsSheet: React.FC<PalGroupMemeSoundsSheetProps> = (
                                 x2="0%"
                                 y2="100%"
                               >
-                                <Stop offset="0%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.50 : 0.40} />
-                                <Stop offset="40%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.28 : 0.22} />
-                                <Stop offset="75%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.10 : 0.08} />
-                                <Stop offset="100%" stopColor={screenEdgeColor} stopOpacity={0.02} />
-                              </LinearGradient>
-                              <LinearGradient
-                                id={`memeSelectedRim_${index}`}
-                                x1="0%"
-                                y1="0%"
-                                x2="0%"
-                                y2="100%"
-                              >
-                                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.55 : 0.85} />
-                                <Stop offset="35%" stopColor="#FFFFFF" stopOpacity={isDark ? 0.20 : 0.40} />
-                                <Stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.05 : 0.08} />
+                                <Stop offset="0%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.50 : 0.65} />
+                                <Stop offset="40%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.28 : 0.38} />
+                                <Stop offset="75%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.10 : 0.16} />
+                                <Stop offset="100%" stopColor={screenEdgeColor} stopOpacity={isDark ? 0.03 : 0.05} />
                               </LinearGradient>
                             </Defs>
-                            <Rect width="100%" height="100%" rx={28} ry={28} fill={`url(#memeSelectedDiagGlow_${index})`} />
-                            {/* Crisp Palzee Text Color Boundary Stroke */}
+                            <Rect width="100%" height="100%" rx={24} ry={24} fill={`url(#memeSelectedDiagGlow_${index})`} />
+                            {/* Single Crisp Palzee Text Color Boundary Stroke (No Double Lining) */}
                             <Rect
                               x="1"
                               y="1"
-                              width="99.4%"
+                              width="99.2%"
                               height="96.5%"
-                              rx={27}
-                              ry={27}
+                              rx={23}
+                              ry={23}
                               fill="none"
                               stroke={palzeeTextColor}
-                              strokeWidth={2}
-                            />
-                            {/* Specular Highlight Rim */}
-                            <Rect
-                              x="1"
-                              y="1"
-                              width="99.4%"
-                              height="96.5%"
-                              rx={27}
-                              ry={27}
-                              fill="none"
-                              stroke={`url(#memeSelectedRim_${index})`}
-                              strokeWidth={1}
+                              strokeWidth={1.5}
                             />
                           </Svg>
                         </View>
