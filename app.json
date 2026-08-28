@@ -4,13 +4,14 @@
     "slug": "palzee-ios",
     "version": "1.0.0",
     "platforms": [
-      "ios",
-      "android"
+      "ios"
     ],
     "orientation": "default",
     "icon": "./assets/images/pal_logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/images/pal_logo.png",
+      "resizeMode": "contain",
       "backgroundColor": "#F7F6F3"
     },
     "android": {
