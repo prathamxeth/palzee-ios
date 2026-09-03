@@ -300,7 +300,7 @@ export default function PalCameraPreview({
     }
   }, [isRecording, isPreparingVideo, countdown]);
 
-  const sideMargin = 8.5;
+  const sideMargin = 11.0;
   let cameraWidth = Math.max(screenWidth - sideMargin * 2, 320);
   let cameraHeight = (screenWidth + 15) * (16 / 9) + 95;
 
@@ -495,7 +495,7 @@ export default function PalCameraPreview({
               left: -0.75,
               right: -0.75,
               borderRadius: 32,
-              borderWidth: 2.125,
+              borderWidth: 1.625,
               borderColor: baseAccentColor,
               opacity: 0.75,
               zIndex: 100,

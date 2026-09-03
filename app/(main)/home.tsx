@@ -1130,7 +1130,7 @@ export default function HomeScreen({
             </View>
           </View>
 
-          <ScrollView style={StyleSheet.absoluteFill} contentContainerStyle={{ paddingTop: 62.5, paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
+          <ScrollView style={StyleSheet.absoluteFill} contentContainerStyle={{ paddingTop: 52.5, paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
             <View style={styles.vlogFeedSection}>
               {/* ROTATE TO CAPTURE HEADER ROW (DISPLAYED BY DEFAULT ON HOMESCREEN ALWAYS ABOVE VLOG BOX) */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -12.5, marginBottom: 6, paddingLeft: 4 }}>
@@ -1753,6 +1753,8 @@ export default function HomeScreen({
                   style={[
                     styles.addDropdownCard,
                     {
+                      top: insets.top + 1,
+                      right: 130,
                       backgroundColor: 'transparent',
                       shadowColor: '#000000',
                     },
@@ -1868,6 +1870,8 @@ export default function HomeScreen({
                   style={[
                     styles.profileDropdownCard,
                     {
+                      top: insets.top + 2,
+                      right: 10,
                       backgroundColor: 'transparent',
                       shadowColor: '#000000',
                     },
@@ -2080,6 +2084,7 @@ export default function HomeScreen({
                   style={[
                     styles.profileSubDropdownCard,
                     {
+                      top: insets.top + 48,
                       backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
@@ -2195,7 +2200,7 @@ export default function HomeScreen({
                   style={[
                     styles.profileSubDropdownCard,
                     {
-                      top: 146,
+                      top: insets.top + 99,
                       backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
@@ -2314,7 +2319,7 @@ export default function HomeScreen({
                   style={[
                     styles.profileSubDropdownCard,
                     {
-                      top: 190,
+                      top: insets.top + 143,
                       backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
@@ -2442,6 +2447,7 @@ export default function HomeScreen({
                   style={[
                     styles.profileColorDropdownCard,
                     {
+                      top: insets.top + 180,
                       backgroundColor: isDark ? 'rgba(32, 28, 44, 0.88)' : 'rgba(255, 255, 255, 0.94)',
                       shadowColor: isDark ? accentColor : 'rgba(138, 43, 226, 0.30)',
                     },
@@ -2879,7 +2885,7 @@ const styles = StyleSheet.create({
   },
   topHeader: {
     position: 'absolute',
-    top: 9,
+    top: -1,
     left: 10,
     right: 10,
     height: 45,
@@ -3320,7 +3326,7 @@ const styles = StyleSheet.create({
   },
   profileDropdownCard: {
     position: 'absolute',
-    top: 44.0,
+    top: 49.0,
     right: 10,
     width: 246.75,
     borderRadius: 24,
@@ -3382,7 +3388,7 @@ const styles = StyleSheet.create({
   },
   profileSubDropdownCard: {
     position: 'absolute',
-    top: 90.0,
+    top: 95.0,
     right: 7,
     width: 253,
     borderRadius: 24,
@@ -3395,7 +3401,7 @@ const styles = StyleSheet.create({
   },
   profileColorDropdownCard: {
     position: 'absolute',
-    top: 222.0,
+    top: 227.0,
     right: 4,
     width: 259.5,
     borderRadius: 24,
@@ -3408,8 +3414,8 @@ const styles = StyleSheet.create({
   },
   addDropdownCard: {
     position: 'absolute',
-    top: 43.0,
-    left: 65.0,
+    top: 48.0,
+    right: 130.0,
     width: 195.0,
     borderRadius: 26,
     borderWidth: 0,
