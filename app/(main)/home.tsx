@@ -1130,7 +1130,7 @@ export default function HomeScreen({
             </View>
           </View>
 
-          <ScrollView style={StyleSheet.absoluteFill} contentContainerStyle={{ paddingTop: 52.5, paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
+          <ScrollView style={StyleSheet.absoluteFill} contentContainerStyle={{ paddingTop: 62.5, paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
             <View style={styles.vlogFeedSection}>
               {/* ROTATE TO CAPTURE HEADER ROW (DISPLAYED BY DEFAULT ON HOMESCREEN ALWAYS ABOVE VLOG BOX) */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -12.5, marginBottom: 6, paddingLeft: 4 }}>
@@ -2879,7 +2879,7 @@ const styles = StyleSheet.create({
   },
   topHeader: {
     position: 'absolute',
-    top: -1,
+    top: 9,
     left: 10,
     right: 10,
     height: 45,
