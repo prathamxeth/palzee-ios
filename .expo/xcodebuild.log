@@ -1166,9 +1166,9 @@ ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeD
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x objective-c -c /dev/null
 
-ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x assembler-with-cpp -c /dev/null
-
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -x assembler-with-cpp -c /dev/null
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
 
@@ -1182,8 +1182,8 @@ ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --
 
 ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
 
-Build description signature: 3126d0345cff2dc2d1d78a57c895b54f
-Build description path: /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/XCBuildData/3126d0345cff2dc2d1d78a57c895b54f.xcbuilddata
+Build description signature: 958c80d8230f82f19f45b150d457dd27
+Build description path: /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/XCBuildData/958c80d8230f82f19f45b150d457dd27.xcbuilddata
 warning: Run script build phase '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'hermes-engine' from project 'Pods')
 PhaseScriptExecution [CP-User]\ [Hermes]\ Replace\ Hermes\ for\ the\ right\ configuration,\ if\ needed /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Pods.build/Debug-iphoneos/hermes-engine.build/Script-46EB2E0002DC70.sh (in target 'hermes-engine' from project 'Pods')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Pods
@@ -5253,11 +5253,51 @@ PhaseScriptExecution Bundle\ React\ Native\ code\ and\ images /Users/pratham/Lib
 + [[ ! iphoneos == *simulator ]]
 + for num in 0 1 2 3 4 5 6 7 8
 ++ ipconfig getifaddr en0
-+ IP=172.26.27.233
-+ '[' '!' -z 172.26.27.233 ']'
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en1
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en2
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en3
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en4
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en5
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en6
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en7
+++ echo ''
++ IP=
++ '[' '!' -z '' ']'
++ for num in 0 1 2 3 4 5 6 7 8
+++ ipconfig getifaddr en8
++ IP=169.254.213.168
++ '[' '!' -z 169.254.213.168 ']'
 + break
-+ '[' -z 172.26.27.233 ']'
-+ echo 172.26.27.233
++ '[' -z 169.254.213.168 ']'
++ echo 169.254.213.168
 + [[ -n 1 ]]
 + echo 'SKIP_BUNDLING enabled; skipping.'
 SKIP_BUNDLING enabled; skipping.
@@ -5281,14 +5321,14 @@ PhaseScriptExecution [CP]\ Copy\ Pods\ Resources /Users/pratham/Library/Develope
 Transfer starting: 37 files
 EXConstants.bundle/app.config
 
-sent 4267 bytes  received 42 bytes  1390000 bytes/sec
+sent 4267 bytes  received 42 bytes  2051904 bytes/sec
 total size is 25120  speedup is 5.83
 
 ExtractAppIntentsMetadata (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
     /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name Palzee --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 15.1 --bundle-identifier com.pratham.palzee --output /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app --target-triple arm64-apple-ios15.1 --binary-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Palzee --dependency-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee_dependency_info.dat --stringsdata-file /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee.SwiftFileList --metadata-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Palzee.DependencyMetadataFileList --static-metadata-file-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Palzee.DependencyStaticMetadataFileList --swift-const-vals-list /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Intermediates.noindex/Palzee.build/Debug-iphoneos/Palzee.build/Objects-normal/arm64/Palzee.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
-2026-09-03 15:12:43.672 appintentsmetadataprocessor[18907:679968] Starting appintentsmetadataprocessor export
-2026-09-03 15:12:43.679 appintentsmetadataprocessor[18907:679968] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+2026-09-03 15:14:39.470 appintentsmetadataprocessor[19553:684585] Starting appintentsmetadataprocessor export
+2026-09-03 15:14:39.478 appintentsmetadataprocessor[19553:684585] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 ProcessInfoPlistFile /Users/pratham/Library/Developer/Xcode/DerivedData/Palzee-bgfpdxarxdznakabmkhwxhtcchkb/Build/Products/Debug-iphoneos/Palzee.app/Info.plist /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios/Palzee/Info.plist (in target 'Palzee' from project 'Palzee')
     cd /Users/pratham/.gemini/antigravity-ide/scratch/palzee-ios/ios
