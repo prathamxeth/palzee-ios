@@ -31,6 +31,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PalGroupExportSheet } from './PalGroupExportSheet';
 import { PalGroupChatDrawer } from './PalGroupChatDrawer';
 import { EditPalModal } from './EditPalModal';
+import { parseToDate } from '../../utils/mediaUtils';
 
 const VerticalBarcodeIcon = ({ size = 20, color = '#FFFFFF' }: { size?: number; color?: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -242,6 +243,45 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
   const themeFillColor =
     Colors.BorderGlow[selectedThemeColor as keyof typeof Colors.BorderGlow] || '#FE9068';
 
+  const hasPalOnDate = (y: number, m: number, d: number) => {
+    // 1. Check vlogList passed from home (group clips)
+    if (Array.isArray(vlogList) && vlogList.length > 0) {
+      const hasVlog = vlogList.some((vlog: any) => {
+        if (!vlog) return false;
+        const rawDate = parseToDate(
+          vlog.timestamp ||
+          vlog.createdAt ||
+          vlog.date ||
+          (typeof vlog.id === 'string' && /^\d{13}$/.test(vlog.id) ? Number(vlog.id) : null)
+        );
+        if (!rawDate || isNaN(rawDate.getTime())) return false;
+        return (
+          rawDate.getFullYear() === y &&
+          rawDate.getMonth() === m &&
+          rawDate.getDate() === d
+        );
+      });
+      if (hasVlog) return true;
+    }
+
+    // 2. Also check group members if any member sent a pal on that date
+    if (group && Array.isArray(group.members)) {
+      const hasMemberPal = group.members.some((member: any) => {
+        if (!member) return false;
+        const rawDate = parseToDate(member.timestamp || member.createdAt || member.date);
+        if (!rawDate || isNaN(rawDate.getTime())) return false;
+        return (
+          rawDate.getFullYear() === y &&
+          rawDate.getMonth() === m &&
+          rawDate.getDate() === d
+        );
+      });
+      if (hasMemberPal) return true;
+    }
+
+    return false;
+  };
+
   const renderCalendarGridDays = () => {
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
@@ -261,6 +301,7 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const isToday = isCurrentMonth && day === todayDate;
+      const hasPalClip = hasPalOnDate(year, month, day);
 
       gridCells.push(
         <TouchableOpacity
@@ -302,6 +343,34 @@ export const PalGroupDetailsSheet: React.FC<PalGroupDetailsSheetProps> = ({
               {day}
             </Text>
           </View>
+
+          {hasPalClip ? (
+            <View
+              style={{
+                width: 16.5,
+                height: 16.5,
+                borderRadius: 8.25,
+                backgroundColor: themeFillColor,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 3,
+                overflow: 'hidden',
+              }}
+            >
+              <Image
+                source={require('../../assets/images/custom_rotate_smiley.png')}
+                style={{
+                  width: 16.5,
+                  height: 16.5,
+                  tintColor: '#000000',
+                  transform: [{ scale: 1.1 }],
+                }}
+                contentFit="contain"
+              />
+            </View>
+          ) : (
+            <View style={{ height: 16.5, marginTop: 3 }} />
+          )}
         </TouchableOpacity>
       );
     }

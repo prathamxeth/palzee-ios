@@ -89,6 +89,9 @@ export interface PalGroupItem {
   members?: string[];
   maxCount?: number;
   size?: number;
+  isCooldownActive?: boolean;
+  cooldownRemainingMinutes?: number;
+  lastSentHourText?: string;
 }
 
 interface PalVideoSendPreviewModalProps {
@@ -251,6 +254,8 @@ export default function PalVideoSendPreviewModal({
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const toggleTarget = (id: string) => {
+    const grp = palGroups.find((g) => g.id === id);
+    if (grp?.isCooldownActive) return;
     if (selectedTargets.includes(id)) {
       setSelectedTargets(selectedTargets.filter((t) => t !== id));
     } else {
@@ -561,88 +566,7 @@ export default function PalVideoSendPreviewModal({
                 </View>
 
                 <View style={{ marginTop: 12 }}>
-                  {/* PAL GROUPS / RECIPIENT BOXES (WHEN AT LEAST 1 PAL / GROUP IS PRESENT) */}
-                  {palGroups.map((group) => {
-                    const isSelected = selectedTargets.includes(group.id);
-                    return (
-                      <TouchableOpacity
-                        key={group.id}
-                        activeOpacity={0.85}
-                        onPress={() => toggleTarget(group.id)}
-                        style={[
-                          styles.targetBoxContainer,
-                          {
-                            backgroundColor: isSelected
-                              ? isDark
-                                ? '#222226'
-                                : '#E5E5EA'
-                              : isDark
-                              ? '#161616'
-                              : '#F5F5F7',
-                            marginBottom: 10,
-                          },
-                        ]}
-                      >
-                        {/* Left Selection Circle */}
-                        <View style={styles.leftCircleWrapper}>
-                          {isSelected ? (
-                            <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
-                              <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
-                            </View>
-                          ) : (
-                            <View
-                              style={[
-                                styles.unselectedCircleHollow,
-                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.18)' },
-                              ]}
-                            />
-                          )}
-                        </View>
-
-                        {/* Middle Title & Subtitle */}
-                        <View style={[styles.targetTextWrapper, { flex: 1, marginRight: 8 }]}>
-                          <Text style={[styles.targetTitle, { color: titleColor }]} numberOfLines={1} ellipsizeMode="tail">
-                            {group.name}
-                          </Text>
-                          <Text
-                            style={[styles.targetSubtitle, { color: isDark ? '#9E9EA5' : '#8E8E93' }]}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {group.members && group.members.length > 0
-                              ? group.members.join(', ')
-                              : (group.subtitle || userName || 'apple_user')}
-                          </Text>
-                        </View>
-
-                        {/* Right: Row of member count smileys (Exact 18.5x18.5 size with outline badge as vlog box, flexShrink: 0) */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-                          {Array.from({ length: group.size || group.members?.length || 1 }).map((_, idx) => (
-                            <View
-                              key={idx}
-                              style={[
-                                styles.smileyBadgeContainer,
-                                { borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)' },
-                              ]}
-                            >
-                              <Image
-                                source={require('../../assets/images/custom_rotate_smiley.png')}
-                                style={{
-                                  width: 18.5,
-                                  height: 18.5,
-                                  transform: [{ rotate: '0deg' }],
-                                  tintColor: iconColor,
-                                }}
-                                contentFit="contain"
-                              />
-                            </View>
-                          ))}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-
-                  {/* VLOG BOX */}
+                  {/* 1. VLOG BOX (ALWAYS TOPMOST DESTINATION) */}
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => toggleTarget('vlog')}
@@ -656,6 +580,7 @@ export default function PalVideoSendPreviewModal({
                           : isDark
                           ? '#161616'
                           : '#F5F5F7',
+                        marginBottom: palGroups.length > 0 ? 10 : 0,
                       },
                     ]}
                   >
@@ -729,6 +654,164 @@ export default function PalVideoSendPreviewModal({
                       </View>
                     )}
                   </TouchableOpacity>
+
+                  {/* 2. PAL GROUPS / RECIPIENT BOXES (BELOW VLOG BOX) */}
+                  {palGroups.map((group) => {
+                    const isCooldown = Boolean(group.isCooldownActive);
+                    const isSelected = !isCooldown && selectedTargets.includes(group.id);
+                    return (
+                      <TouchableOpacity
+                        key={group.id}
+                        activeOpacity={isCooldown ? 1 : 0.85}
+                        disabled={isCooldown}
+                        onPress={() => toggleTarget(group.id)}
+                        style={[
+                          styles.targetBoxContainer,
+                          {
+                            backgroundColor: isCooldown
+                              ? isDark
+                                ? '#121214'
+                                : '#ECECEE'
+                              : isSelected
+                              ? isDark
+                                ? '#222226'
+                                : '#E5E5EA'
+                              : isDark
+                              ? '#161616'
+                              : '#F5F5F7',
+                            opacity: isCooldown ? 0.42 : 1,
+                            marginBottom: 10,
+                          },
+                        ]}
+                      >
+                        {/* Left Selection Circle */}
+                        <View style={styles.leftCircleWrapper}>
+                          {isSelected ? (
+                            <View style={[styles.selectedCircleFilled, { backgroundColor: baseAccentColor }]}>
+                              <SymbolView name="checkmark" size={14} weight="bold" tintColor="#FFFFFF" />
+                            </View>
+                          ) : (
+                            <View
+                              style={[
+                                styles.unselectedCircleHollow,
+                                {
+                                  borderColor: isCooldown
+                                    ? isDark
+                                      ? 'rgba(255, 255, 255, 0.12)'
+                                      : 'rgba(0, 0, 0, 0.10)'
+                                    : isDark
+                                    ? 'rgba(255, 255, 255, 0.25)'
+                                    : 'rgba(0, 0, 0, 0.18)',
+                                },
+                              ]}
+                            />
+                          )}
+                        </View>
+
+                        {/* Middle Title & Subtitle */}
+                        <View style={[styles.targetTextWrapper, { flex: 1, marginRight: 8 }]}>
+                          <Text
+                            style={[
+                              styles.targetTitle,
+                              {
+                                color: isCooldown
+                                  ? isDark
+                                    ? '#636366'
+                                    : '#8E8E93'
+                                  : titleColor,
+                              },
+                            ]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {group.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.targetSubtitle,
+                              {
+                                color: isCooldown
+                                  ? isDark
+                                    ? '#48484A'
+                                    : '#AEAEB2'
+                                  : isDark
+                                  ? '#9E9EA5'
+                                  : '#8E8E93',
+                              },
+                            ]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {isCooldown
+                              ? `sent for ${group.lastSentHourText || 'this hour'}`
+                              : group.members && group.members.length > 0
+                              ? group.members.join(', ')
+                              : (group.subtitle || userName || 'apple_user')}
+                          </Text>
+                        </View>
+
+                        {/* Right: Row of member count smileys */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                          {Array.from({ length: group.size || group.members?.length || 1 }).map((_, idx) => {
+                            // When pal is sent (cooldown active), show the exact same coloured illuminated smiley as vlog
+                            const isMemberSent = isCooldown && idx === 0;
+                            if (isMemberSent) {
+                              return (
+                                <View
+                                  key={idx}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: 12,
+                                    backgroundColor: baseAccentColor,
+                                    borderWidth: 1.5,
+                                    borderColor: palzeeTextColor,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <Image
+                                    source={require('../../assets/images/custom_rotate_smiley.png')}
+                                    style={{
+                                      width: 18.5,
+                                      height: 18.5,
+                                      transform: [{ rotate: '180deg' }],
+                                      tintColor: '#000000',
+                                    }}
+                                    contentFit="contain"
+                                  />
+                                </View>
+                              );
+                            }
+
+                            return (
+                              <View
+                                key={idx}
+                                style={[
+                                  styles.smileyBadgeContainer,
+                                  {
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.14)',
+                                  },
+                                ]}
+                              >
+                                <Image
+                                  source={require('../../assets/images/custom_rotate_smiley.png')}
+                                  style={{
+                                    width: 18.5,
+                                    height: 18.5,
+                                    transform: [{ rotate: '0deg' }],
+                                    tintColor: iconColor,
+                                  }}
+                                  contentFit="contain"
+                                />
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
             </TouchableWithoutFeedback>

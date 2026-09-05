@@ -38,7 +38,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { InAppBrowserModal } from '../../components/ui/InAppBrowserModal';
 import { Fonts } from '../../constants/typography';
 import { Colors } from '../../constants/colors';
-import { getNearestHourText, formatExactTime, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset } from '../../utils/mediaUtils';
+import { getNearestHourText, formatExactTime, generateVideoThumbnail, getLiveSandboxUri, getClipsForDayOffset, parseToDate } from '../../utils/mediaUtils';
 import { DynamicGlowContainer } from '../../components/ui/DynamicGlowContainer';
 import { LiquidGlass } from '../../components/ui/LiquidGlassView';
 import { CreatePalModal, PalGroupDetailsSheet } from '../../components/palsgroup';
@@ -1052,12 +1052,40 @@ export default function HomeScreen({
                 const memberFirstNames = (r.members && r.members.length > 0)
                   ? r.members.map((m) => m.split(' ')[0])
                   : [currentFirstName];
+
+                const groupClips = groupClipsMap[r.code] || groupClipsMap[r.name] || [];
+                const latestClip = groupClips[0];
+                let isCooldownActive = false;
+                let cooldownRemainingMinutes = 0;
+                let lastSentHourText = '';
+                if (latestClip) {
+                  const clipDate = parseToDate(
+                    latestClip.timestamp ||
+                    latestClip.createdAt ||
+                    latestClip.date ||
+                    (typeof latestClip.id === 'string' && /^\d{13}$/.test(latestClip.id) ? Number(latestClip.id) : null)
+                  );
+                  if (clipDate && !isNaN(clipDate.getTime())) {
+                    const elapsed = Date.now() - clipDate.getTime();
+                    if (elapsed < 3600 * 1000 && elapsed >= 0) {
+                      isCooldownActive = true;
+                      cooldownRemainingMinutes = Math.ceil((3600 * 1000 - elapsed) / 60000);
+                      const hours = clipDate.getHours().toString().padStart(2, '0');
+                      lastSentHourText = `${hours}:00`;
+                    }
+                  }
+                }
+
                 return {
                   id: r.code,
                   name: r.name,
                   members: memberFirstNames,
                   size: memberFirstNames.length,
                   maxCount: r.maxCount || 5,
+                  isCooldownActive,
+                  cooldownRemainingMinutes,
+                  lastSentHourText,
+                  lastSentTimestamp: latestClip?.timestamp,
                 };
               })}
               onCaptureSuccess={(uri, caption, isMuted, rate, mode, targets) => handleVideoSent(uri, caption, isMuted, rate, mode, targets)}
