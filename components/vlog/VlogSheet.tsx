@@ -162,12 +162,10 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
         (typeof vlog.id === 'string' && /^\d{13}$/.test(vlog.id) ? Number(vlog.id) : null)
       );
       if (!rawDate || isNaN(rawDate.getTime())) return false;
-      // Shift 4 hours back to align with Palzee 4AM cycle boundary (04:00 AM - 03:59:59 AM)
-      const cycleDate = new Date(rawDate.getTime() - 4 * 3600 * 1000);
       return (
-        cycleDate.getFullYear() === y &&
-        cycleDate.getMonth() === m &&
-        cycleDate.getDate() === d
+        rawDate.getFullYear() === y &&
+        rawDate.getMonth() === m &&
+        rawDate.getDate() === d
       );
     });
   };
@@ -182,6 +180,12 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
     const todayDate = today.getDate();
+    const todayDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+    // Active selected day offset
+    const selectedDateObj = new Date(todayDayStart - (dayOffset || 0) * 24 * 3600 * 1000);
+    const isSelectedMonth = selectedDateObj.getFullYear() === year && selectedDateObj.getMonth() === month;
+    const selectedDay = selectedDateObj.getDate();
 
     const gridCells = [];
 
@@ -191,6 +195,7 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const isToday = isCurrentMonth && day === todayDate;
+      const isSelected = isSelectedMonth && day === selectedDay && !isToday;
       const hasPalClip = hasPalOnDate(year, month, day);
 
       gridCells.push(
@@ -198,11 +203,13 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
           key={`day-${day}`}
           activeOpacity={0.7}
           onPress={() => {
-            const selectedDate = new Date(year, month, day);
-            const diffTime = today.getTime() - selectedDate.getTime();
-            const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 3600 * 24)));
-            if (onSelectDayOffset) onSelectDayOffset(diffDays);
-            setShowCalendarModal(false);
+            const clickedDayStart = new Date(year, month, day).getTime();
+            const diffDays = Math.round((todayDayStart - clickedDayStart) / (24 * 3600 * 1000));
+            if (diffDays >= 0 && diffDays < 7) {
+              setDayOffset(diffDays);
+              if (onSelectDayOffset) onSelectDayOffset(diffDays);
+              setShowCalendarModal(false);
+            }
           }}
           style={{
             width: `${100 / 7}%`,
@@ -222,13 +229,18 @@ export const VlogSheet: React.FC<VlogSheetProps> = ({
                 justifyContent: 'center',
               },
               isToday && { backgroundColor: palzeeTextColor },
+              isSelected && {
+                borderWidth: 1.5,
+                borderColor: edgeColor,
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+              },
             ]}
           >
             <Text
               style={{
                 fontSize: 15,
-                fontFamily: isToday ? Fonts.SystemRoundedBold : Fonts.SystemRoundedMedium,
-                fontWeight: isToday ? '700' : '500',
+                fontFamily: isToday || isSelected ? Fonts.SystemRoundedBold : Fonts.SystemRoundedMedium,
+                fontWeight: isToday || isSelected ? '700' : '500',
                 color: isToday
                   ? (isDark ? '#000000' : '#FFFFFF')
                   : (isDark ? '#FFFFFF' : '#000000'),
